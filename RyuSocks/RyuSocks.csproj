@@ -9,14 +9,8 @@
         <PublishAot>true</PublishAot>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <ArrayNamespace>RyuSocks</ArrayNamespace>
-        <ArrayOutputPath>$(MSBuildProjectDirectory)\Generated</ArrayOutputPath>
-    </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="NetCoreServer" Version="8.0.3" />
-        <PackageReference Include="Ryujinx.CustomTasks" Version="1.0.12" />
     </ItemGroup>
 
     <ItemGroup>
