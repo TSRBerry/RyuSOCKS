@@ -129,7 +129,6 @@ namespace RyuSocks.Packets
                     array = new byte[1 + 4 + 2];
 
                     array[0] = (byte)AddressType;
-
                     Address.GetAddressBytes().CopyTo(array, 1);
                     BitConverter.GetBytes(_port).CopyTo(array, 5);
 
@@ -141,7 +140,6 @@ namespace RyuSocks.Packets
                     array = new byte[1 + 1 + DomainName.Length + 2];
 
                     array[0] = (byte)AddressType;
-
                     array[1] = (byte)DomainName.Length;
                     Encoding.ASCII.GetBytes(DomainName).CopyTo(array, 2);
                     BitConverter.GetBytes(_port).CopyTo(array, 1 + 1 + DomainName.Length);
@@ -154,7 +152,6 @@ namespace RyuSocks.Packets
                     array = new byte[1 + 16 + 2];
 
                     array[0] = (byte)AddressType;
-
                     Address.GetAddressBytes().CopyTo(array, 1);
                     BitConverter.GetBytes(_port).CopyTo(array, 17);
 

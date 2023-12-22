@@ -18,7 +18,7 @@ namespace RyuSocks.Packets
 
             if (Reserved != 0)
             {
-                throw new InvalidOperationException($"Reserved field is not 0: {Reserved}");
+                throw new InvalidOperationException($"{nameof(Reserved)} field is not 0: {Reserved}");
             }
         }
     }
