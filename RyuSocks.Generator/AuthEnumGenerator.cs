@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -81,7 +80,7 @@ namespace RyuSocks.Auth
 
             receiver.Classes.Sort(CompareMethodId);
 
-            // sort the classes by MethodId, and generate the source
+            // Sort the classes by MethodId, and generate the source
             foreach (INamedTypeSymbol classSymbol in receiver.Classes)
             {
                 var attributeData = GetAttributeData(classSymbol, attributeSymbol);
