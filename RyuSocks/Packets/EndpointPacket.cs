@@ -10,7 +10,7 @@ namespace RyuSocks.Packets
 
         protected uint _ipv4Address;
         protected string _domainName;
-        protected Array16<byte> _ipv6Address;
+        protected byte[] _ipv6Address = new byte[16];
 
         protected ushort _port;
 
@@ -22,7 +22,7 @@ namespace RyuSocks.Packets
                 {
                     AddressType.Ipv4Address => new IPAddress(BitConverter.GetBytes(_ipv4Address)),
                     AddressType.DomainName => null,
-                    AddressType.Ipv6Address => new IPAddress(_ipv6Address.AsSpan()),
+                    AddressType.Ipv6Address => new IPAddress(_ipv6Address),
                     _ => throw new ArgumentOutOfRangeException(),
                 };
             }
@@ -36,7 +36,6 @@ namespace RyuSocks.Packets
                     case AddressType.DomainName:
                         throw new InvalidOperationException();
                     case AddressType.Ipv6Address:
-                        _ipv6Address = new Array16<byte>();
                         value.GetAddressBytes().CopyTo(_ipv6Address.AsSpan());
                         return;
                     default:
