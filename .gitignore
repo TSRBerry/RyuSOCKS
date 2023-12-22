@@ -173,3 +173,6 @@ PublishProfiles/
 
 # Glade backup files
 *.glade~
+
+# Generated directory from Ryujinx.CustomTasks
+Generated/
