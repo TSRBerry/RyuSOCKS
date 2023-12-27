@@ -2,7 +2,7 @@ using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public class CommandRequest : CommandPacket
+    public abstract class CommandRequest : CommandPacket
     {
         // Version
         public ProxyCommand Command;
