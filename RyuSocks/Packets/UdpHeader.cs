@@ -7,6 +7,9 @@ namespace RyuSocks.Packets
     {
         public ushort Reserved;
         public byte Fragment;
+        // AddressType
+        // DestinationAddress
+        // DestinationPort
 
         public IPAddress DestinationAddress
         {

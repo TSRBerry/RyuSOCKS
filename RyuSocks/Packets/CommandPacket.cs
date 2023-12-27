@@ -7,6 +7,9 @@ namespace RyuSocks.Packets
         public byte Version;
         // ProxyCommand or ReplyField
         public byte Reserved;
+        // AddressType
+        // Address
+        // Port
         
         public override void Verify()
         {
