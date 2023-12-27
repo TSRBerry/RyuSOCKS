@@ -4,7 +4,12 @@ namespace RyuSocks.Packets
 {
     public class CommandResponse : CommandPacket
     {
+        // Version
         public ReplyField ReplyField;
+        // Reserved
+        // AddressType
+        // BoundAddress
+        // BoundPort
 
         public IPAddress BoundAddress
         {

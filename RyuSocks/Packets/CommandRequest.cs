@@ -4,7 +4,12 @@ namespace RyuSocks.Packets
 {
     public class CommandRequest : CommandPacket
     {
+        // Version
         public ProxyCommand Command;
+        // Reserved
+        // AddressType
+        // DestinationAddress
+        // DestinationPort
 
         public IPAddress DestinationAddress
         {
