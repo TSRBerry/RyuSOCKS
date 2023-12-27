@@ -12,14 +12,18 @@ namespace RyuSocks.Generator
     [Generator]
     public class AuthEnumGenerator : ISourceGenerator
     {
+        private const string Namespace = "RyuSocks.Auth";
+        private const string AuthMethodImplAttributeName = "AuthMethodImplAttribute";
+        private const string ProxyAuthInterfaceName = "IProxyAuth";
+
         private const string AttributeText = @"
 using System;
 
-namespace RyuSocks.Auth
+namespace %NAMESPACE%
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     [System.Diagnostics.Conditional(""RyuSocks_AuthEnumGenerator_DEBUG"")]
-    public sealed class AuthMethodImplAttribute : Attribute
+    public sealed class %ATTRIBUTE_NAME% : Attribute
     {
         private byte methodId;
 
@@ -27,7 +31,7 @@ namespace RyuSocks.Auth
         /// Mark this class as an authentication method. It must extend <see cref=""IProxyAuth""/>.
         /// </summary>
         /// <param name=""methodId"">The value between 0x00 and 0xFF used to identify this authentication method.</param>
-        public AuthMethodImplAttribute([System.ComponentModel.DataAnnotations.DeniedValues(0xFF)] byte methodId)
+        public %ATTRIBUTE_NAME%([System.ComponentModel.DataAnnotations.DeniedValues(0xFF)] byte methodId)
         {
             this.methodId = methodId;
         }
@@ -45,7 +49,13 @@ namespace RyuSocks.Auth
         public void Initialize(GeneratorInitializationContext context)
         {
             // Register the attribute source
-            context.RegisterForPostInitialization((i) => i.AddSource("AuthMethodImplAttribute.g.cs", AttributeText));
+            context.RegisterForPostInitialization((i) => i.AddSource(
+                    "AuthMethodImplAttribute.g.cs",
+                    AttributeText
+                            .Replace("%NAMESPACE%", Namespace)
+                            .Replace("%ATTRIBUTE_NAME%", AuthMethodImplAttributeName)
+                )
+            );
 
             // Register a syntax receiver that will be created for each generation pass
             context.RegisterForSyntaxNotifications(() => new AuthMethodSyntaxReceiver());
@@ -61,19 +71,19 @@ namespace RyuSocks.Auth
 
 
             // Get the added attribute
-            INamedTypeSymbol attributeSymbol = context.Compilation.GetTypeByMetadataName("RyuSocks.Auth.AuthMethodImplAttribute");
+            INamedTypeSymbol attributeSymbol = context.Compilation.GetTypeByMetadataName($"{Namespace}.{AuthMethodImplAttributeName}");
 
             // Begin building the generated source
             CodeBuilder source = new();
             CodeBuilder sourceExtensions = new();
-            source.EnterScope("namespace RyuSocks.Auth");
+            source.EnterScope($"namespace {Namespace}");
             source.EnterScope("public enum AuthMethod : byte");
-            sourceExtensions.AppendLine("using RyuSocks.Auth;");
+            sourceExtensions.AppendLine($"using {Namespace};");
             sourceExtensions.AppendLine("using System;");
             sourceExtensions.AppendLine();
-            sourceExtensions.EnterScope("namespace RyuSocks.Auth.Extensions");
+            sourceExtensions.EnterScope($"namespace {Namespace}.Extensions");
             sourceExtensions.EnterScope("public static class AuthMethodExtensions");
-            sourceExtensions.EnterScope("public static IProxyAuth GetAuth(this AuthMethod authMethod) => authMethod switch");
+            sourceExtensions.EnterScope($"public static {ProxyAuthInterfaceName} GetAuth(this AuthMethod authMethod) => authMethod switch");
 
             bool firstMember = true;
             byte lastMemberValue = 0;
@@ -167,24 +177,24 @@ namespace RyuSocks.Auth
             int CompareMethodId(INamedTypeSymbol a, INamedTypeSymbol b)
             {
                 return ((byte)a.GetAttributes()
-                    .Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default))
-                    .ConstructorArguments[0].Value).CompareTo((byte)b.GetAttributes()
-                    .Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default))
-                    .ConstructorArguments[0].Value);
+                    .Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default))
+                    .ConstructorArguments[0].Value!).CompareTo((byte)b.GetAttributes()
+                    .Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default))
+                    .ConstructorArguments[0].Value!);
             }
         }
 
         private static Tuple<byte, string> GetAttributeData(INamedTypeSymbol classSymbol, INamedTypeSymbol attributeSymbol)
         {
             AttributeData attributeData = classSymbol.GetAttributes().Single(ad =>
-                ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+                ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
 
             if (attributeData.ConstructorArguments.Length == 0)
             {
                 throw new ArgumentException("Attribute constructor doesn't have arguments.", nameof(attributeData));
             }
 
-            byte methodId = (byte)attributeData.ConstructorArguments[0].Value;
+            byte methodId = (byte)attributeData.ConstructorArguments[0].Value!;
             TypedConstant memberName = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MethodName").Value;
 
             if (!memberName.IsNull)
@@ -197,7 +207,7 @@ namespace RyuSocks.Auth
 
         class AuthMethodSyntaxReceiver : ISyntaxContextReceiver
         {
-            public List<INamedTypeSymbol> Classes { get; } = new();
+            public List<INamedTypeSymbol> Classes { get; } = [];
 
             /// <summary>
             /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
@@ -211,8 +221,8 @@ namespace RyuSocks.Auth
                 {
                     // Get the symbol being declared by the class, and keep it if it implements IProxyAuth and is annotated
                     INamedTypeSymbol classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
-                    if (classSymbol.AllInterfaces.Any(nts => nts.ToDisplayString() == "RyuSocks.Auth.IProxyAuth")
-                        && classSymbol.GetAttributes().Any(ad => ad.AttributeClass.ToDisplayString() == "RyuSocks.Auth.AuthMethodImplAttribute"))
+                    if (classSymbol!.AllInterfaces.Any(nts => nts.ToDisplayString() == $"{Namespace}.{ProxyAuthInterfaceName}")
+                        && classSymbol.GetAttributes().Any(ad => ad.AttributeClass!.ToDisplayString() == $"{Namespace}.{AuthMethodImplAttributeName}"))
                     {
                         Classes.Add(classSymbol);
                     }
