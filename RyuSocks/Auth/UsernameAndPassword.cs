@@ -27,6 +27,7 @@ namespace RyuSocks.Auth
     {
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
+            // Either requires a database or an authentication method given by the server
             throw new NotImplementedException();
         }
 
