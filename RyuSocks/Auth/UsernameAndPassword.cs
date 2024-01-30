@@ -32,12 +32,12 @@ namespace RyuSocks.Auth
 
         public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet)
         {
-            throw new NotImplementedException();
+            return packet;
         }
 
         public ReadOnlySpan<byte> Unwrap(ReadOnlySpan<byte> packet)
         {
-            throw new NotImplementedException();
+            return packet;
         }
     }
 }
