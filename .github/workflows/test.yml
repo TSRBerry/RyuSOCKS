@@ -1,0 +1,32 @@
+name: Run tests
+
+on:
+  pull_request:
+
+concurrency:
+  group: pr-tests-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Unit tests (${{ matrix.config }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Overwrite csc problem matcher
+        run: echo "::add-matcher::.github/csc.json"
+
+      - name: Test
+        uses: TSRBerry/unstable-commands@v1
+        with:
+          commands: dotnet test -c "${{ matrix.config }}"
+          timeout-minutes: 10
+          retry-codes: 139
