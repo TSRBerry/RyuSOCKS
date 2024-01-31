@@ -14,8 +14,8 @@ tab_width = 4
 end_of_line = lf
 insert_final_newline = true
 
-# JSON files
-[*.json]
+# JSON and YAML files
+[{*.json,*.yml,*.yaml}]
 
 # Indentation and spacing
 indent_size = 2
