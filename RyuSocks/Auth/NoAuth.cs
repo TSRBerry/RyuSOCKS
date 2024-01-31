@@ -11,9 +11,11 @@ namespace RyuSocks.Auth
     {
         public int WrapperLength => 0;
 
-        public void Authenticate()
+        public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             // Nothing to do here.
+            outgoingPacket = null;
+            return true;
         }
 
         public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet)

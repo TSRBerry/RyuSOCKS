@@ -10,7 +10,7 @@ namespace RyuSocks.Auth
     {
         public int WrapperLength { get; }
 
-        public void Authenticate()
+        public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             throw new NotImplementedException();
         }

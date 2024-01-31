@@ -11,10 +11,13 @@ namespace RyuSocks.Auth
         public int WrapperLength { get; }
 
         /// <summary>
-        /// Authenticate to the server using a method-specific sub-negotiation.
+        /// Authenticate the current session using a method-specific sub-negotiation.
         /// </summary>
+        /// <param name="incomingPacket">The incoming packet from the server/client. Could be null.</param>
+        /// <param name="outgoingPacket">The outgoing packet for the server/client. Could be null.</param>
+        /// <returns>Whether the sub-negotiation to authenticate the current session is completed.</returns>
         /// <exception cref="AuthenticationException">Authentication failed.</exception>
-        public void Authenticate();
+        public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket);
 
         /// <summary>
         /// Wrap the packet as required by the negotiated authentication method.

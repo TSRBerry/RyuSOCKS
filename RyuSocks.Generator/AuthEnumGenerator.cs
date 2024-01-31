@@ -69,7 +69,6 @@ namespace %NAMESPACE%
                 return;
             }
 
-
             // Get the added attribute
             INamedTypeSymbol attributeSymbol = context.Compilation.GetTypeByMetadataName($"{Namespace}.{AuthMethodImplAttributeName}");
 
