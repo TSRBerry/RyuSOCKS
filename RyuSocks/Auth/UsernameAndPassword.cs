@@ -14,6 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Packets;
 using System;
 
 namespace RyuSocks.Auth
@@ -27,7 +28,8 @@ namespace RyuSocks.Auth
     {
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
-            // Either requires a database or an authentication method given by the server
+            UaPPacket requestPacket  = new();
+            requestPacket.FromArray(incomingPacket.ToArray());
             throw new NotImplementedException();
         }
 
