@@ -17,6 +17,7 @@
 using RyuSocks.Packets;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
 using System;
+using System.Collections.Generic;
 
 namespace RyuSocks.Auth
 {
@@ -27,11 +28,24 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x02)]
     public class UsernameAndPassword : IProxyAuth
     {
+        private readonly Dictionary<string, string> _database;
+
+        public UsernameAndPassword(Dictionary<string, string> database)
+        {
+            _database = database;
+        }
+
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             UsernameAndPasswordRequest requestPacket  = new();
             requestPacket.FromArray(incomingPacket.ToArray());
-            throw new NotImplementedException();
+            outgoingPacket = null;
+            if (_database.TryGetValue(requestPacket.Username, out string password) && password == requestPacket.Password)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet)
