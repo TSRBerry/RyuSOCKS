@@ -31,6 +31,13 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x02)]
     public class UsernameAndPassword : IProxyAuth
     {
+        private readonly Dictionary<string, string> _database;
+
+        public UsernameAndPassword(Dictionary<string, string> database)
+        {
+            _database = database;
+        }
+
         public string Username;
         public string Password;
         public bool IsClient;
@@ -44,6 +51,13 @@ namespace RyuSocks.Auth
         {
             UsernameAndPasswordRequest requestPacket  = new();
             requestPacket.FromArray(incomingPacket.ToArray());
+            outgoingPacket = null;
+            if (_database.TryGetValue(requestPacket.Username, out string password) && password == requestPacket.Password)
+            {
+                return true;
+            }
+
+            return false;
             throw new NotImplementedException();
             if (IsClient)
             {
