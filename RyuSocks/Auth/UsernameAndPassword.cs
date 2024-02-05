@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Packets;
+using RyuSocks.Packets.Auth.UsernameAndPassword;
 using System;
 
 namespace RyuSocks.Auth
@@ -28,7 +29,7 @@ namespace RyuSocks.Auth
     {
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
-            UaPPacket requestPacket  = new();
+            UsernameAndPasswordRequest requestPacket  = new();
             requestPacket.FromArray(incomingPacket.ToArray());
             throw new NotImplementedException();
         }
