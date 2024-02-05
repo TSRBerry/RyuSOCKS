@@ -29,9 +29,9 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             Version = array[0];
             UsernameLength = array[1];
-            Username = Encoding.ASCII.GetString(array[2..(UsernameLength + 1)]);
-            PasswordLength = array[(UsernameLength + 2)];
-            Password = Encoding.ASCII.GetString(array[(UsernameLength + 2)..(PasswordLength + 3)]);
+            Username = Encoding.ASCII.GetString(array[2..(2 + UsernameLength)]);
+            PasswordLength = array[2 + UsernameLength];
+            Password = Encoding.ASCII.GetString(array[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
         }
         public byte[] ToArray() { return null;}
         public void Verify(){}
