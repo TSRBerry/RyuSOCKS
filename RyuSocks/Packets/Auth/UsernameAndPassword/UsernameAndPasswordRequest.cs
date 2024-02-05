@@ -105,7 +105,8 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             if (Version != Constants.UaPVersion)
             {
-                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
+                throw new InvalidOperationException(
+                    $"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
             }
         }
     }

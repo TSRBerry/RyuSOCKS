@@ -16,6 +16,8 @@
 
 using RyuSocks.Packets.Auth;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
+using RyuSocks.Packets;
+using RyuSocks.Packets.Auth.UsernameAndPassword;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
@@ -40,6 +42,9 @@ namespace RyuSocks.Auth
 
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
+            UsernameAndPasswordRequest requestPacket  = new();
+            requestPacket.FromArray(incomingPacket.ToArray());
+            throw new NotImplementedException();
             if (IsClient)
             {
                 if (incomingPacket == null)
