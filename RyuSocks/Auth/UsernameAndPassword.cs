@@ -52,11 +52,17 @@ namespace RyuSocks.Auth
             UsernameAndPasswordRequest requestPacket  = new();
             requestPacket.FromArray(incomingPacket.ToArray());
             outgoingPacket = null;
+
             if (_database.TryGetValue(requestPacket.Username, out string password) && password == requestPacket.Password)
             {
+                UsernameAndPasswordResponse successResponsePacket = new UsernameAndPasswordResponse(0x00);
+                outgoingPacket = new ReadOnlySpan<byte>(successResponsePacket.ToArray());
                 return true;
             }
 
+            // Status 0x05: Connection refused
+            UsernameAndPasswordResponse failureResponsePacket = new UsernameAndPasswordResponse(0x05);
+            outgoingPacket = new ReadOnlySpan<byte>(failureResponsePacket.ToArray());
             return false;
             throw new NotImplementedException();
             if (IsClient)
