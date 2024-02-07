@@ -23,7 +23,7 @@ namespace RyuSocks.Packets
                     AddressType.Ipv4Address => new IPAddress(BitConverter.GetBytes(_ipv4Address)),
                     AddressType.DomainName => null,
                     AddressType.Ipv6Address => new IPAddress(_ipv6Address),
-                    _ => throw new ArgumentOutOfRangeException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
                 };
             }
             set
@@ -39,7 +39,7 @@ namespace RyuSocks.Packets
                         value.GetAddressBytes().CopyTo(_ipv6Address.AsSpan());
                         return;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(value));
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace RyuSocks.Packets
                     AddressType.Ipv4Address => throw new InvalidOperationException(),
                     AddressType.DomainName => _domainName,
                     AddressType.Ipv6Address => throw new InvalidOperationException(),
-                    _ => throw new ArgumentOutOfRangeException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
                 };
             }
             set
@@ -72,7 +72,7 @@ namespace RyuSocks.Packets
                     case AddressType.Ipv6Address:
                         throw new InvalidOperationException();
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(value));
                 }
             }
         }
@@ -112,7 +112,7 @@ namespace RyuSocks.Packets
                     Port = BitConverter.ToUInt16(array, 21);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(array));
             }
         }
 
@@ -123,39 +123,39 @@ namespace RyuSocks.Packets
             switch (AddressType)
             {
                 case AddressType.Ipv4Address:
-                {
-                    // AddressType + Address + Port
-                    array = new byte[1 + 4 + 2];
+                    {
+                        // AddressType + Address + Port
+                        array = new byte[1 + 4 + 2];
 
-                    array[0] = (byte)AddressType;
-                    Address.GetAddressBytes().CopyTo(array, 1);
-                    BitConverter.GetBytes(_port).CopyTo(array, 5);
+                        array[0] = (byte)AddressType;
+                        Address.GetAddressBytes().CopyTo(array, 1);
+                        BitConverter.GetBytes(_port).CopyTo(array, 5);
 
-                    break;
-                }
+                        break;
+                    }
                 case AddressType.DomainName:
-                {
-                    // AddressType + DomainNameLength + DomainName + Port
-                    array = new byte[1 + 1 + DomainName.Length + 2];
+                    {
+                        // AddressType + DomainNameLength + DomainName + Port
+                        array = new byte[1 + 1 + DomainName.Length + 2];
 
-                    array[0] = (byte)AddressType;
-                    array[1] = (byte)DomainName.Length;
-                    Encoding.ASCII.GetBytes(DomainName).CopyTo(array, 2);
-                    BitConverter.GetBytes(_port).CopyTo(array, 1 + 1 + DomainName.Length);
+                        array[0] = (byte)AddressType;
+                        array[1] = (byte)DomainName.Length;
+                        Encoding.ASCII.GetBytes(DomainName).CopyTo(array, 2);
+                        BitConverter.GetBytes(_port).CopyTo(array, 1 + 1 + DomainName.Length);
 
-                    break;
-                }
+                        break;
+                    }
                 case AddressType.Ipv6Address:
-                {
-                    // AddressType + Address + Port
-                    array = new byte[1 + 16 + 2];
+                    {
+                        // AddressType + Address + Port
+                        array = new byte[1 + 16 + 2];
 
-                    array[0] = (byte)AddressType;
-                    Address.GetAddressBytes().CopyTo(array, 1);
-                    BitConverter.GetBytes(_port).CopyTo(array, 17);
+                        array[0] = (byte)AddressType;
+                        Address.GetAddressBytes().CopyTo(array, 1);
+                        BitConverter.GetBytes(_port).CopyTo(array, 17);
 
-                    break;
-                }
+                        break;
+                    }
                 default:
                     throw new InvalidOperationException();
             }

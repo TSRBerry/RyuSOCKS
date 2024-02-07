@@ -16,16 +16,10 @@ namespace RyuSocks.Packets
 
         public byte[] ToArray()
         {
-            // Version + Method
-            byte[] array = new byte[1 + 1];
-
-            array[0] = Version;
-            array[1] = (byte)Method;
-
-            return array;
+            return [Version, (byte)Method];
         }
 
-        public void Verify()
+        public readonly void Verify()
         {
             if (Version != ProxyConsts.Version)
             {
