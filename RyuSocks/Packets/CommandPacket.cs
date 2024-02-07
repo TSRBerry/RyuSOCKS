@@ -10,7 +10,7 @@ namespace RyuSocks.Packets
         // AddressType
         // Address
         // Port
-        
+
         public override void Verify()
         {
             if (Version != ProxyConsts.Version)
