@@ -14,10 +14,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using RyuSocks.Packets;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication;
 
 namespace RyuSocks.Auth
 {
@@ -39,19 +39,19 @@ namespace RyuSocks.Auth
         {
             UsernameAndPasswordRequest requestPacket  = new();
             requestPacket.FromArray(incomingPacket.ToArray());
-            outgoingPacket = null;
+
+            requestPacket.Verify();
 
             if (_database.TryGetValue(requestPacket.Username, out string password) && password == requestPacket.Password)
             {
-                UsernameAndPasswordResponse successResponsePacket = new UsernameAndPasswordResponse(0x00);
+                UsernameAndPasswordResponse successResponsePacket = new (0x01, ReplyField.Succeeded);
                 outgoingPacket = new ReadOnlySpan<byte>(successResponsePacket.ToArray());
                 return true;
             }
 
-            // Status 0x05: Connection refused
-            UsernameAndPasswordResponse failureResponsePacket = new UsernameAndPasswordResponse(0x05);
+            UsernameAndPasswordResponse failureResponsePacket = new (0x01, ReplyField.ConnectionRefused);
             outgoingPacket = new ReadOnlySpan<byte>(failureResponsePacket.ToArray());
-            return false;
+            throw new AuthenticationException("The provided credentials are invalid.");
         }
 
         public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet)
