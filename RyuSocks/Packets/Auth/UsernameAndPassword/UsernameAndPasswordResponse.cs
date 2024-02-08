@@ -34,6 +34,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             Version = array[0];
             Status = (ReplyField)array[1];
         }
+
         public byte[] ToArray()
         {
             byte[] array = new byte[2];
