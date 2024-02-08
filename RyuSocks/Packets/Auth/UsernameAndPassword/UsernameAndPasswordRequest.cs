@@ -27,13 +27,15 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         public string Username;
         public byte PasswordLength;
         public string Password;
+
         public void FromArray(byte[] array)
         {
             Version = array[0];
             UsernameLength = array[1];
             Username = Encoding.ASCII.GetString(array[2..(2 + UsernameLength)]);
             PasswordLength = array[2 + UsernameLength];
-            Password = Encoding.ASCII.GetString(array[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
+            Password = Encoding.ASCII.GetString(
+                array[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
         }
 
         public byte[] ToArray()
@@ -49,10 +51,12 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             {
                 array[2 + i] = (byte)usernameInChars[i];
             }
+
             for (int i = 0; i < PasswordLength; i++)
             {
                 array[3 + UsernameLength + i] = (byte)passwordInChars[i];
             }
+
             return array;
         }
 
