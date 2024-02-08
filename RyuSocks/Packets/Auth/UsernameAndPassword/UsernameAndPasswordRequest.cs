@@ -14,6 +14,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
+using System.Security.Authentication;
 using System.Text;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
@@ -33,7 +35,33 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             PasswordLength = array[2 + UsernameLength];
             Password = Encoding.ASCII.GetString(array[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
         }
-        public byte[] ToArray() { return null;}
-        public void Verify(){}
+
+        public byte[] ToArray()
+        {
+            byte[] array = new byte[3 + PasswordLength + UsernameLength];
+            array[0] = Version;
+            array[1] = UsernameLength;
+            char[] passwordInChars = Password.ToCharArray();
+            char[] usernameInChars = Username.ToCharArray();
+
+            // This can probably be done more proficiently, but I don't know how
+            for (int i = 0; i < UsernameLength; i++)
+            {
+                array[2 + i] = (byte)usernameInChars[i];
+            }
+            for (int i = 0; i < PasswordLength; i++)
+            {
+                array[3 + UsernameLength + i] = (byte)passwordInChars[i];
+            }
+            return array;
+        }
+
+        public void Verify()
+        {
+            if (Version != 0x01)
+            {
+                throw new AuthenticationException("The package is of the wrong type.");
+            }
+        }
     }
 }
