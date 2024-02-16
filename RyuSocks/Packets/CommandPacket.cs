@@ -4,14 +4,39 @@ namespace RyuSocks.Packets
 {
     public abstract class CommandPacket : EndpointPacket
     {
-        public byte Version;
+        public byte Version
+        {
+            get
+            {
+                return Bytes[0];
+            }
+            set
+            {
+                Bytes[0] = value;
+            }
+        }
+
         // ProxyCommand or ReplyField
-        public byte Reserved;
+
+        public byte Reserved
+        {
+            get
+            {
+                return Bytes[2];
+            }
+            set
+            {
+                Bytes[2] = value;
+            }
+        }
+
         // AddressType
+
         // Address
+
         // Port
 
-        public override void Verify()
+        public override void Validate()
         {
             if (Version != ProxyConsts.Version)
             {
