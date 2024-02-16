@@ -7,6 +7,6 @@ namespace RyuSocks.Commands
         /// <summary>
         /// Command ID used in SOCKS requests
         /// </summary>
-        public static byte Id => throw new NotImplementedException();
+        public static ProxyCommand Id => throw new NotImplementedException();
     }
 }
