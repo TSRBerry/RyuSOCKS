@@ -6,7 +6,7 @@ namespace RyuSocks.Commands.Server
 {
     public class ConnectCommand : IServerCommand
     {
-        public static byte Id => 0x01;
+        public static ProxyCommand Id => ProxyCommand.Connect;
 
         private TcpClient _client;
         private readonly SocksSession _parent;
