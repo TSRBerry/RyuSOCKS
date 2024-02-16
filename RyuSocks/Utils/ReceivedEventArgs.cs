@@ -4,8 +4,8 @@ namespace RyuSocks.Utils
 {
     public class ReceivedEventArgs : EventArgs
     {
-        public byte[] Buffer { get; set; }
-        public long Offset { get; set; }
-        public long Size { get; set; }
+        public byte[] Buffer { get; init; }
+        public long Offset { get; init; }
+        public long Size { get; init; }
     }
 }
