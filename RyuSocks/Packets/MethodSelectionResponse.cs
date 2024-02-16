@@ -3,23 +3,33 @@ using System;
 
 namespace RyuSocks.Packets
 {
-    public struct MethodSelectionResponse : IPacket
+    public class MethodSelectionResponse : Packet
     {
-        public byte Version;
-        public AuthMethod Method;
-
-        public void FromArray(byte[] array)
+        public byte Version
         {
-            Version = array[0];
-            Method = (AuthMethod)array[1];
+            get
+            {
+                return Bytes[0];
+            }
+            set
+            {
+                Bytes[0] = value;
+            }
         }
 
-        public byte[] ToArray()
+        public AuthMethod Method
         {
-            return [Version, (byte)Method];
+            get
+            {
+                return (AuthMethod)Bytes[1];
+            }
+            set
+            {
+                Bytes[1] = (byte)value;
+            }
         }
 
-        public readonly void Verify()
+        public override void Validate()
         {
             if (Version != ProxyConsts.Version)
             {

@@ -12,7 +12,7 @@ namespace RyuSocks
         public readonly List<AuthMethod> AuthPreferences = [];
         public readonly Dictionary<byte, Func<SocksSession, IServerCommand>> Commands = new()
         {
-            { ConnectCommand.Id, (session) => new ConnectCommand(session) },
+            { (byte)ConnectCommand.Id, (session) => new ConnectCommand(session) },
         };
 
         public SocksServer(IPAddress address, int port) : base(address, port)

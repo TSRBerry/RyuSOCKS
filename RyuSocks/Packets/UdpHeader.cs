@@ -5,11 +5,31 @@ namespace RyuSocks.Packets
 {
     public class UdpHeader : EndpointPacket
     {
-        public ushort Reserved;
-        public byte Fragment;
+        public ushort Reserved
+        {
+            get
+            {
+                return BitConverter.ToUInt16(Bytes.AsSpan(0, 2));
+            }
+            set
+            {
+                BitConverter.GetBytes(value).CopyTo(Bytes.AsSpan(0, 2));
+            }
+        }
+
+        public byte Fragment
+        {
+            get
+            {
+                return Bytes[2];
+            }
+            set
+            {
+                Bytes[2] = value;
+            }
+        }
+
         // AddressType
-        // DestinationAddress
-        // DestinationPort
 
         public IPAddress DestinationAddress
         {
@@ -29,31 +49,7 @@ namespace RyuSocks.Packets
             set => Port = value;
         }
 
-        public override void FromArray(byte[] array)
-        {
-            Reserved = BitConverter.ToUInt16(array, 0);
-            Fragment = array[2];
-
-            base.FromArray(array);
-        }
-
-        public override byte[] ToArray()
-        {
-            // Reserved + Fragment
-            const int BaseLength = 2 + 1;
-
-            byte[] endpointArray = base.ToArray();
-            byte[] array = new byte[BaseLength + endpointArray.Length];
-
-            BitConverter.GetBytes(Reserved).CopyTo(array, 0);
-            array[2] = Fragment;
-
-            endpointArray.CopyTo(array, BaseLength);
-
-            return array;
-        }
-
-        public override void Verify()
+        public override void Validate()
         {
             if (Reserved != 0)
             {

@@ -9,7 +9,7 @@ namespace RyuSocks
     {
         public readonly Dictionary<byte, Func<SocksClient, IClientCommand>> Commands = new()
         {
-            { ConnectCommand.Id, (client) => new ConnectCommand(client) },
+            { (byte)ConnectCommand.Id, (client) => new ConnectCommand(client) },
         };
 
         public SocksClient(IPAddress address, int port) : base(address, port)

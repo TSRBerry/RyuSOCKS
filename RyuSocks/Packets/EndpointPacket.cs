@@ -4,15 +4,19 @@ using System.Text;
 
 namespace RyuSocks.Packets
 {
-    public abstract class EndpointPacket : IPacket
+    public abstract class EndpointPacket : Packet
     {
-        public AddressType AddressType;
-
-        protected uint _ipv4Address;
-        protected string _domainName;
-        protected byte[] _ipv6Address = new byte[16];
-
-        protected ushort _port;
+        public AddressType AddressType
+        {
+            get
+            {
+                return (AddressType)Bytes[3];
+            }
+            set
+            {
+                Bytes[3] = (byte)value;
+            }
+        }
 
         protected IPAddress Address
         {
@@ -20,9 +24,9 @@ namespace RyuSocks.Packets
             {
                 return AddressType switch
                 {
-                    AddressType.Ipv4Address => new IPAddress(BitConverter.GetBytes(_ipv4Address)),
-                    AddressType.DomainName => null,
-                    AddressType.Ipv6Address => new IPAddress(_ipv6Address),
+                    AddressType.Ipv4Address => new IPAddress(Bytes[4..8]),
+                    AddressType.DomainName => throw new InvalidOperationException(),
+                    AddressType.Ipv6Address => new IPAddress(Bytes[4..20]),
                     _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
                 };
             }
@@ -31,12 +35,12 @@ namespace RyuSocks.Packets
                 switch (AddressType)
                 {
                     case AddressType.Ipv4Address:
-                        _ipv4Address = BitConverter.ToUInt32(value.GetAddressBytes());
+                        value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 4));
                         return;
                     case AddressType.DomainName:
                         throw new InvalidOperationException();
                     case AddressType.Ipv6Address:
-                        value.GetAddressBytes().CopyTo(_ipv6Address.AsSpan());
+                        value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 16));
                         return;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value));
@@ -48,13 +52,18 @@ namespace RyuSocks.Packets
         {
             get
             {
-                return AddressType switch
+                switch (AddressType)
                 {
-                    AddressType.Ipv4Address => throw new InvalidOperationException(),
-                    AddressType.DomainName => _domainName,
-                    AddressType.Ipv6Address => throw new InvalidOperationException(),
-                    _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
-                };
+                    case AddressType.Ipv4Address:
+                        throw new InvalidOperationException();
+                    case AddressType.DomainName:
+                        ArgumentOutOfRangeException.ThrowIfGreaterThan(Bytes[4], 255);
+                        return Encoding.ASCII.GetString(Bytes, 5, Bytes[4]);
+                    case AddressType.Ipv6Address:
+                        throw new InvalidOperationException();
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(AddressType));
+                }
             }
             set
             {
@@ -63,11 +72,9 @@ namespace RyuSocks.Packets
                     case AddressType.Ipv4Address:
                         throw new InvalidOperationException();
                     case AddressType.DomainName:
-                        if (value.Length > 255)
-                        {
-                            throw new ArgumentException("FQDN is too long.");
-                        }
-                        _domainName = value;
+                        ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 255);
+                        Bytes[4] = (byte)value.Length;
+                        Encoding.ASCII.GetBytes(value, Bytes.AsSpan(5, Bytes[4]));
                         return;
                     case AddressType.Ipv6Address:
                         throw new InvalidOperationException();
@@ -81,88 +88,27 @@ namespace RyuSocks.Packets
         {
             get
             {
-                byte[] portBytes = BitConverter.GetBytes(_port);
-                Array.Reverse(portBytes);
-                return BitConverter.ToUInt16(portBytes);
+                Span<byte> portSpan = GetPortSpan();
+                portSpan.Reverse();
+                return BitConverter.ToUInt16(portSpan);
             }
             set
             {
                 byte[] portBytes = BitConverter.GetBytes(value);
                 Array.Reverse(portBytes);
-                _port = BitConverter.ToUInt16(portBytes);
+                portBytes.CopyTo(GetPortSpan());
             }
         }
 
-        public virtual void FromArray(byte[] array)
+        private Span<byte> GetPortSpan()
         {
-            AddressType = (AddressType)array[3];
-
-            switch (AddressType)
+            return AddressType switch
             {
-                case AddressType.Ipv4Address:
-                    Address = new IPAddress(array[4..8]);
-                    Port = BitConverter.ToUInt16(array, 9);
-                    break;
-                case AddressType.DomainName:
-                    DomainName = Encoding.ASCII.GetString(array, 5, array[4]);
-                    Port = BitConverter.ToUInt16(array, 5 + array[4]);
-                    break;
-                case AddressType.Ipv6Address:
-                    Address = new IPAddress(array[4..20]);
-                    Port = BitConverter.ToUInt16(array, 21);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(array));
-            }
+                AddressType.Ipv4Address => Bytes.AsSpan(9, 2),
+                AddressType.DomainName => Bytes.AsSpan(5 + Bytes[4], 2),
+                AddressType.Ipv6Address => Bytes.AsSpan(21, 2),
+                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+            };
         }
-
-        public virtual byte[] ToArray()
-        {
-            byte[] array;
-
-            switch (AddressType)
-            {
-                case AddressType.Ipv4Address:
-                    {
-                        // AddressType + Address + Port
-                        array = new byte[1 + 4 + 2];
-
-                        array[0] = (byte)AddressType;
-                        Address.GetAddressBytes().CopyTo(array, 1);
-                        BitConverter.GetBytes(_port).CopyTo(array, 5);
-
-                        break;
-                    }
-                case AddressType.DomainName:
-                    {
-                        // AddressType + DomainNameLength + DomainName + Port
-                        array = new byte[1 + 1 + DomainName.Length + 2];
-
-                        array[0] = (byte)AddressType;
-                        array[1] = (byte)DomainName.Length;
-                        Encoding.ASCII.GetBytes(DomainName).CopyTo(array, 2);
-                        BitConverter.GetBytes(_port).CopyTo(array, 1 + 1 + DomainName.Length);
-
-                        break;
-                    }
-                case AddressType.Ipv6Address:
-                    {
-                        // AddressType + Address + Port
-                        array = new byte[1 + 16 + 2];
-
-                        array[0] = (byte)AddressType;
-                        Address.GetAddressBytes().CopyTo(array, 1);
-                        BitConverter.GetBytes(_port).CopyTo(array, 17);
-
-                        break;
-                    }
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            return array;
-        }
-
-        public abstract void Verify();
     }
 }

@@ -4,42 +4,48 @@ using System.Linq;
 
 namespace RyuSocks.Packets
 {
-    public class MethodSelectionRequest : IPacket
+    public class MethodSelectionRequest : Packet
     {
-        public byte Version;
-        public byte NumOfMethods;
-        private AuthMethod[] _methods = new AuthMethod[0xFF];
-
-        public AuthMethod[] Methods
+        public byte Version
         {
-            get => _methods[..NumOfMethods];
+            get
+            {
+                return Bytes[0];
+            }
             set
             {
-                _methods = value;
-                Array.Resize(ref _methods, 0xFF);
+                Bytes[0] = value;
             }
         }
 
-        public void FromArray(byte[] array)
+        public byte NumOfMethods
         {
-            Version = array[0];
-            NumOfMethods = array[1];
-            array[2..].CopyTo(_methods, 0);
+            get
+            {
+                return Bytes[1];
+            }
+            set
+            {
+                Bytes[1] = value;
+            }
         }
 
-        public byte[] ToArray()
+        public AuthMethod[] Methods
         {
-            // Version + NumOfMethods + Methods
-            byte[] array = new byte[1 + 1 + NumOfMethods];
+            get
+            {
+                return Bytes[2..(2 + NumOfMethods)].Cast<AuthMethod>().ToArray();
 
-            array[0] = Version;
-            array[1] = NumOfMethods;
-            Methods.CopyTo(array, 2);
-
-            return array;
+            }
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
+                NumOfMethods = (byte)value.Length;
+                value.Cast<byte>().ToArray().CopyTo(Bytes.AsSpan(2, value.Length));
+            }
         }
 
-        public void Verify()
+        public override void Validate()
         {
             if (Version != ProxyConsts.Version)
             {

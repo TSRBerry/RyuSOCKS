@@ -5,11 +5,22 @@ namespace RyuSocks.Packets
     public abstract class CommandRequest : CommandPacket
     {
         // Version
-        public ProxyCommand Command;
+
+        public ProxyCommand Command
+        {
+            get
+            {
+                return (ProxyCommand)Bytes[1];
+            }
+            set
+            {
+                Bytes[1] = (byte)value;
+            }
+        }
+
         // Reserved
+
         // AddressType
-        // DestinationAddress
-        // DestinationPort
 
         public IPAddress DestinationAddress
         {
@@ -27,31 +38,6 @@ namespace RyuSocks.Packets
         {
             get => Port;
             set => Port = value;
-        }
-
-        public override void FromArray(byte[] array)
-        {
-            Version = array[0];
-            Command = (ProxyCommand)array[1];
-            Reserved = array[2];
-
-            base.FromArray(array);
-        }
-
-        public override byte[] ToArray()
-        {
-            // Version + Command + Reserved
-            const int BaseLength = 1 + 1 + 1;
-            byte[] endpointArray = base.ToArray();
-            byte[] array = new byte[BaseLength + endpointArray.Length];
-
-            array[0] = Version;
-            array[1] = (byte)Command;
-            array[2] = Reserved;
-
-            endpointArray.CopyTo(array, BaseLength);
-
-            return array;
         }
     }
 }
