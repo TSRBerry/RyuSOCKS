@@ -14,6 +14,10 @@ namespace RyuSocks.Packets
             Bytes = packetBytes;
         }
 
+        /// <summary>
+        /// Validate the structure of the packet.
+        /// This method is not supposed to verify the contents of the packet in depth.
+        /// </summary>
         public abstract void Validate();
     }
 }
