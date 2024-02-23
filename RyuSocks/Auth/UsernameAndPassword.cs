@@ -37,20 +37,27 @@ namespace RyuSocks.Auth
 
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
-            UsernameAndPasswordRequest requestPacket = new();
-            requestPacket.FromArray(incomingPacket.ToArray());
+            UsernameAndPasswordRequest requestPacket = new(incomingPacket.ToArray());
 
-            requestPacket.Verify();
+            requestPacket.Validate();
 
             if (_database.TryGetValue(requestPacket.Username, out string password) &&
                 password == requestPacket.Password)
             {
-                UsernameAndPasswordResponse successResponsePacket = new(0x01, ReplyField.Succeeded);
+                UsernameAndPasswordResponse successResponsePacket = new()
+                {
+                    Version = 0x01, 
+                    Status = 0,
+                };
                 outgoingPacket = new ReadOnlySpan<byte>(successResponsePacket.ToArray());
                 return true;
             }
 
-            UsernameAndPasswordResponse failureResponsePacket = new(0x01, ReplyField.ConnectionRefused);
+            UsernameAndPasswordResponse failureResponsePacket = new()
+            {
+                Version = 0x01, 
+                Status = 1,
+            };
             outgoingPacket = new ReadOnlySpan<byte>(failureResponsePacket.ToArray());
             throw new AuthenticationException("The provided credentials are invalid.");
         }
