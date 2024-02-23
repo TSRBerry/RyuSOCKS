@@ -18,21 +18,29 @@ using System.Security.Authentication;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
 {
-    public class UsernameAndPasswordResponse : IPacket
+    public class UsernameAndPasswordResponse : Packet
     {
-        public byte Version { get; set; }
-        public ReplyField Status { get; set; }
 
-        public UsernameAndPasswordResponse(byte version, ReplyField status)
+        public UsernameAndPasswordResponse()
         {
+            Bytes = new byte[2];
+        }
+
+        public UsernameAndPasswordResponse(byte[] packetBytes, byte version, byte status)
+        {
+            Bytes = packetBytes;
+
             Version = version;
             Status = status;
         }
 
+        public byte Version { get; set; }
+        public byte Status { get; set; }
+
         public void FromArray(byte[] array)
         {
             Version = array[0];
-            Status = (ReplyField)array[1];
+            Status = array[1];
         }
 
         public byte[] ToArray()
@@ -43,7 +51,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             return array;
         }
 
-        public void Verify()
+        public override void Validate()
         {
             if (Version != 0x01)
             {
