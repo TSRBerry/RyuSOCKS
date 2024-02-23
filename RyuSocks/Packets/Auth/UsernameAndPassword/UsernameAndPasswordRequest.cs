@@ -20,47 +20,74 @@ using System.Text;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
 {
-    public class UsernameAndPasswordRequest : IPacket
+    public class UsernameAndPasswordRequest : Packet
     {
-        public byte Version { get; set; }
-        public byte UsernameLength;
-        public string Username;
-        public byte PasswordLength;
-        public string Password;
-
-        public void FromArray(byte[] array)
+        public UsernameAndPasswordRequest(byte[] packetBytes)
         {
-            Version = array[0];
-            UsernameLength = array[1];
-            Username = Encoding.ASCII.GetString(array[2..(2 + UsernameLength)]);
-            PasswordLength = array[2 + UsernameLength];
-            Password = Encoding.ASCII.GetString(
-                array[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
+            Bytes = packetBytes;
         }
 
-        public byte[] ToArray()
+        public byte Version
         {
-            byte[] array = new byte[3 + PasswordLength + UsernameLength];
-            array[0] = Version;
-            array[1] = UsernameLength;
-            char[] passwordInChars = Password.ToCharArray();
-            char[] usernameInChars = Username.ToCharArray();
-
-            // This can probably be done more proficiently, but I don't know how
-            for (int i = 0; i < UsernameLength; i++)
+            get
             {
-                array[2 + i] = (byte)usernameInChars[i];
+                return Bytes[0];
             }
-
-            for (int i = 0; i < PasswordLength; i++)
+            set
             {
-                array[3 + UsernameLength + i] = (byte)passwordInChars[i];
+                Bytes[0] = value;
             }
-
-            return array;
         }
 
-        public void Verify()
+        public byte UsernameLength
+        {
+            get
+            {
+                return Bytes[1];
+            }
+            set
+            {
+                Bytes[1] = value;
+            }
+        }
+
+        public string Username
+        {
+            get
+            {
+                return Encoding.ASCII.GetString(Bytes.AsSpan(2,UsernameLength));
+            }
+            set
+            {
+                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(2,UsernameLength));
+            }
+        }
+        
+        public byte PasswordLength
+        {
+            get
+            {
+                return Bytes[3+UsernameLength];
+            }
+            set
+            {
+                Bytes[3+UsernameLength] = value;
+            }
+        }
+
+        public string Password
+        {
+            get
+            {
+                return Encoding.ASCII.GetString(Bytes.AsSpan(4+UsernameLength,PasswordLength));
+            }
+            set
+            {
+                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(4+UsernameLength,PasswordLength));
+            }
+        }
+        
+        public override void Validate()
         {
             if (Version != 0x01)
             {
