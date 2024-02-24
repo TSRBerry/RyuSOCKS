@@ -55,23 +55,23 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             get
             {
-                return Encoding.ASCII.GetString(Bytes.AsSpan(2,UsernameLength));
+                return Encoding.ASCII.GetString(Bytes.AsSpan(2, UsernameLength));
             }
             set
             {
-                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(2,UsernameLength));
+                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(2, UsernameLength));
             }
         }
-        
+
         public byte PasswordLength
         {
             get
             {
-                return Bytes[3+UsernameLength];
+                return Bytes[3 + UsernameLength];
             }
             set
             {
-                Bytes[3+UsernameLength] = value;
+                Bytes[3 + UsernameLength] = value;
             }
         }
 
@@ -79,14 +79,14 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             get
             {
-                return Encoding.ASCII.GetString(Bytes.AsSpan(4+UsernameLength,PasswordLength));
+                return Encoding.ASCII.GetString(Bytes.AsSpan(4 + UsernameLength, PasswordLength));
             }
             set
             {
-                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(4+UsernameLength,PasswordLength));
+                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(4 + UsernameLength, PasswordLength));
             }
         }
-        
+
         public override void Validate()
         {
             if (Version != 0x01)
