@@ -45,9 +45,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public byte[] ToArray()
         {
-            byte[] array = new byte[2];
-            array[0] = Version;
-            array[1] = (byte)Status;
+            byte[] array = [Version, (byte)Status];
             return array;
         }
 

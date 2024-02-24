@@ -46,7 +46,7 @@ namespace RyuSocks.Auth
             {
                 UsernameAndPasswordResponse successResponsePacket = new()
                 {
-                    Version = 0x01, 
+                    Version = 0x01,
                     Status = 0,
                 };
                 outgoingPacket = new ReadOnlySpan<byte>(successResponsePacket.ToArray());
@@ -55,7 +55,7 @@ namespace RyuSocks.Auth
 
             UsernameAndPasswordResponse failureResponsePacket = new()
             {
-                Version = 0x01, 
+                Version = 0x01,
                 Status = 1,
             };
             outgoingPacket = new ReadOnlySpan<byte>(failureResponsePacket.ToArray());
