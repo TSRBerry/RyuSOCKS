@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Auth;
+using RyuSocks.Utils;
 using System;
 using System.Linq;
 
