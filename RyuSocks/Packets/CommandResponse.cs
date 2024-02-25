@@ -55,5 +55,9 @@ namespace RyuSocks.Packets
             get => Port;
             set => Port = value;
         }
+
+        public CommandResponse(byte[] packetBytes) : base(packetBytes) { }
+        public CommandResponse(IPEndPoint endPoint) : base(endPoint) { }
+        public CommandResponse(DnsEndPoint endPoint) : base(endPoint) { }
     }
 }

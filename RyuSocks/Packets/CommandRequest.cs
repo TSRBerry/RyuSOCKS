@@ -18,7 +18,7 @@ using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public abstract class CommandRequest : CommandPacket
+    public class CommandRequest : CommandPacket
     {
         // Version
 
@@ -55,5 +55,9 @@ namespace RyuSocks.Packets
             get => Port;
             set => Port = value;
         }
+
+        public CommandRequest(byte[] packetBytes) : base(packetBytes) { }
+        public CommandRequest(IPEndPoint endpoint) : base(endpoint) { }
+        public CommandRequest(DnsEndPoint endpoint) : base(endpoint) { }
     }
 }

@@ -18,17 +18,10 @@ namespace RyuSocks.Packets
 {
     public abstract class Packet
     {
-        public byte[] Bytes { get; }
-
-        public Packet()
-        {
-            Bytes = [];
-        }
-
-        public Packet(byte[] packetBytes)
-        {
-            Bytes = packetBytes;
-        }
+        /// <summary>
+        /// The contents of the packet.
+        /// </summary>
+        public byte[] Bytes { get; protected init; }
 
         /// <summary>
         /// Validate the structure of the packet.

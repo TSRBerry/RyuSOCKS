@@ -16,6 +16,7 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace RyuSocks.Packets
@@ -116,13 +117,56 @@ namespace RyuSocks.Packets
             }
         }
 
+        protected EndpointPacket(byte[] packetBytes)
+        {
+            Bytes = packetBytes;
+        }
+
+        protected EndpointPacket(IPEndPoint endpoint)
+        {
+            Bytes = endpoint.AddressFamily switch
+            {
+                AddressFamily.InterNetwork => new byte[10],
+                AddressFamily.InterNetworkV6 => new byte[22],
+                _ => throw new ArgumentException($"Unsupported AddressFamily: {endpoint.AddressFamily}", nameof(endpoint)),
+            };
+
+            AddressType = Bytes.Length == 10 ? AddressType.Ipv4Address : AddressType.Ipv6Address;
+            Address = endpoint.Address;
+            Port = (ushort)endpoint.Port;
+        }
+
+        protected EndpointPacket(DnsEndPoint endpoint)
+        {
+            if (endpoint.Host.Length is 0 or > 255)
+            {
+                throw new ArgumentException("Length of Host must be between 1 and 255.", nameof(endpoint));
+            }
+
+            Bytes = new byte[7 + endpoint.Host.Length];
+            AddressType = AddressType.DomainName;
+            DomainName = endpoint.Host;
+            Port = (ushort)endpoint.Port;
+        }
+
+        protected int GetEndpointPacketLength()
+        {
+            return AddressType switch
+            {
+                AddressType.Ipv4Address => 10,
+                AddressType.DomainName => 7 + DomainName.Length,
+                AddressType.Ipv6Address => 22,
+                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+            };
+        }
+
         private Span<byte> GetPortSpan()
         {
             return AddressType switch
             {
-                AddressType.Ipv4Address => Bytes.AsSpan(9, 2),
+                AddressType.Ipv4Address => Bytes.AsSpan(8, 2),
                 AddressType.DomainName => Bytes.AsSpan(5 + Bytes[4], 2),
-                AddressType.Ipv6Address => Bytes.AsSpan(21, 2),
+                AddressType.Ipv6Address => Bytes.AsSpan(20, 2),
                 _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
             };
         }
