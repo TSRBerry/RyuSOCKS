@@ -14,29 +14,41 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Packets;
 using System;
+using System.Net;
 
 namespace RyuSocks.Commands.Client
 {
-    public class ConnectCommand : IClientCommand
+    [ProxyCommandImpl(0x01)]
+    public partial class ConnectCommand : ClientCommand
     {
-        public static ProxyCommand Id => ProxyCommand.Connect;
-
-        private readonly SocksClient _parent;
-
-        public ConnectCommand(SocksClient parent)
+        public ConnectCommand(SocksClient client, EndPoint destination) : base(client, destination)
         {
-            _parent = parent;
-        }
+            CommandRequest request;
 
-        public void SendAsync(Span<byte> buffer)
-        {
-            _parent.SendAsync(buffer);
-        }
+            switch (destination)
+            {
+                case IPEndPoint ipDestination:
+                    request = new CommandRequest(ipDestination)
+                    {
+                        Version = ProxyConsts.Version,
+                        Command = ProxyCommand.Connect,
+                    };
+                    break;
+                case DnsEndPoint dnsDestination:
+                    request = new CommandRequest(dnsDestination)
+                    {
+                        Version = ProxyConsts.Version,
+                        Command = ProxyCommand.Connect,
+                    };
+                    break;
+                default:
+                    throw new ArgumentException("Invalid EndPoint type provided.", nameof(destination));
+            }
 
-        public byte[] Receive(byte[] buffer, long offset, long size)
-        {
-            return buffer;
+            request.Validate();
+            Client.SendAsync(request.Bytes);
         }
     }
 }

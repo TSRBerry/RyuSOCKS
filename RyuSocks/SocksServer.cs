@@ -25,11 +25,6 @@ namespace RyuSocks
 {
     public class SocksServer : TcpServer
     {
-        public readonly List<AuthMethod> AuthPreferences = [];
-        public readonly Dictionary<byte, Func<SocksSession, IServerCommand>> Commands = new()
-        {
-            { (byte)ConnectCommand.Id, (session) => new ConnectCommand(session) },
-        };
 
         public SocksServer(IPAddress address, int port) : base(address, port)
         {

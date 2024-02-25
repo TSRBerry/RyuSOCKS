@@ -23,10 +23,6 @@ namespace RyuSocks
 {
     public class SocksClient : TcpClient
     {
-        public readonly Dictionary<byte, Func<SocksClient, IClientCommand>> Commands = new()
-        {
-            { (byte)ConnectCommand.Id, (client) => new ConnectCommand(client) },
-        };
 
         public SocksClient(IPAddress address, int port) : base(address, port)
         {
