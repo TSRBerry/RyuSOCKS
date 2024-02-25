@@ -25,8 +25,6 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x01)]
     public class GSSAPI : IProxyAuth
     {
-        public int WrapperLength { get; }
-
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             throw new NotImplementedException();

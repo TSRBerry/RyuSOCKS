@@ -25,8 +25,6 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x06)]
     public class SSL : IProxyAuth
     {
-        public int WrapperLength { get; }
-
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             throw new NotImplementedException();
