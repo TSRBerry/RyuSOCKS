@@ -16,21 +16,21 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
+using System.Threading;
 
 namespace RyuSocks.Generator
 {
-    // Based on: https://github.com/dotnet/roslyn-sdk/blob/8c5ae6fcf79914d0671b15c562db22b014c9c00e/samples/CSharp/SourceGenerators/SourceGeneratorSamples/AutoNotifyGenerator.cs
     [Generator]
-    public class AuthEnumGenerator : ISourceGenerator
+    public class AuthEnumGenerator : IIncrementalGenerator
     {
         private const string Namespace = "RyuSocks.Auth";
         private const string AuthMethodImplAttributeName = "AuthMethodImplAttribute";
         private const string ProxyAuthInterfaceName = "IProxyAuth";
+        private const string AuthMethodEnumName = "AuthMethod";
+        private const string AuthMethodExtensionsClassName = "AuthMethodExtensions";
 
         private const string AttributeText = @"
 using System;
@@ -44,7 +44,7 @@ namespace %NAMESPACE%
         private byte methodId;
 
         /// <summary>
-        /// Mark this class as an authentication method. It must extend <see cref=""IProxyAuth""/>.
+        /// Marks this class as an authentication method. It must have a parameterless constructor and extend <see cref=""%INTERFACE_NAME%""/>.
         /// </summary>
         /// <param name=""methodId"">The value between 0x00 and 0xFF used to identify this authentication method.</param>
         public %ATTRIBUTE_NAME%([System.ComponentModel.DataAnnotations.DeniedValues(0xFF)] byte methodId)
@@ -53,7 +53,7 @@ namespace %NAMESPACE%
         }
 
         /// <summary>
-        /// The name for this authentication method used in the AuthMethod enum.
+        /// The name for this authentication method used in the %ENUM_NAME% enum.
         /// </summary>
         public string MethodName { get; set; }
 
@@ -62,92 +62,130 @@ namespace %NAMESPACE%
 }
 ";
 
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // Register the attribute source
-            context.RegisterForPostInitialization((i) => i.AddSource(
-                    "AuthMethodImplAttribute.g.cs",
+            context.RegisterPostInitializationOutput(static postContext => postContext.AddSource(
+                    $"{AuthMethodImplAttributeName}.g.cs",
                     AttributeText
                             .Replace("%NAMESPACE%", Namespace)
                             .Replace("%ATTRIBUTE_NAME%", AuthMethodImplAttributeName)
+                            .Replace("%INTERFACE_NAME%", ProxyAuthInterfaceName)
+                            .Replace("%ENUM_NAME%", AuthMethodEnumName)
                 )
             );
 
-            // Register a syntax receiver that will be created for each generation pass
-            context.RegisterForSyntaxNotifications(() => new AuthMethodSyntaxReceiver());
+            // Create an incremental value provider using the generated attribute
+            var authMethodProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
+                $"{Namespace}.{AuthMethodImplAttributeName}",
+                IsAuthMethodClass,
+                TransformAuthMethodClass
+            );
+
+            context.RegisterSourceOutput(authMethodProvider.Collect(), ProduceSourceCode);
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        /// <summary>
+        /// Check whether the provided <paramref name="syntaxNode"/> implements the proxy auth interface.
+        /// </summary>
+        /// <param name="syntaxNode">The syntax node to check.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>True</c> if <paramref name="syntaxNode"/> implements the proxy auth interface.</returns>
+        private static bool IsAuthMethodClass(SyntaxNode syntaxNode, CancellationToken cancellationToken) =>
+            syntaxNode is ClassDeclarationSyntax { BaseList.Types.Count: > 0 } classDeclaration
+                   && classDeclaration.BaseList.Types.Any(type => type.Type.ToString() == ProxyAuthInterfaceName);
+
+        private static AuthMethodModel TransformAuthMethodClass(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
         {
-            // Retrieve the populated receiver
-            if (context.SyntaxContextReceiver is not AuthMethodSyntaxReceiver receiver)
+            var classSymbol = context.TargetSymbol;
+            var attributeData = context.Attributes[0];
+
+            if (attributeData.ConstructorArguments.Length == 0)
             {
-                return;
+                throw new InvalidOperationException($"Attribute constructor doesn't have arguments: {attributeData.AttributeClass?.Name}");
             }
 
-            // Get the added attribute
-            INamedTypeSymbol attributeSymbol = context.Compilation.GetTypeByMetadataName($"{Namespace}.{AuthMethodImplAttributeName}");
+            byte methodId = (byte)attributeData.ConstructorArguments[0].Value!;
+            TypedConstant memberName = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MethodName").Value;
 
+            if (!memberName.IsNull)
+            {
+                return new AuthMethodModel(
+                    methodId,
+                    (string)memberName.Value,
+                    classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                );
+            }
+
+            return new AuthMethodModel(
+                methodId,
+                classSymbol.Name,
+                classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            );
+        }
+
+        private static void ProduceSourceCode(SourceProductionContext context, ImmutableArray<AuthMethodModel> authMethods)
+        {
             // Begin building the generated source
             CodeBuilder source = new();
             CodeBuilder sourceExtensions = new();
             source.EnterScope($"namespace {Namespace}");
-            source.EnterScope("public enum AuthMethod : byte");
+            source.EnterScope($"public enum {AuthMethodEnumName} : byte");
             sourceExtensions.AppendLine($"using {Namespace};");
             sourceExtensions.AppendLine("using System;");
             sourceExtensions.AppendLine();
             sourceExtensions.EnterScope($"namespace {Namespace}.Extensions");
-            sourceExtensions.EnterScope("public static class AuthMethodExtensions");
-            sourceExtensions.EnterScope($"public static {ProxyAuthInterfaceName} GetAuth(this AuthMethod authMethod) => authMethod switch");
+            sourceExtensions.EnterScope($"public static class {AuthMethodExtensionsClassName}");
+            sourceExtensions.EnterScope($"public static {ProxyAuthInterfaceName} GetAuth(this {AuthMethodEnumName} authMethod) => authMethod switch");
 
             bool firstMember = true;
             byte lastMemberValue = 0;
 
-            receiver.Classes.Sort(CompareMethodId);
+            // TODO: Filter duplicates and report diagnostics using an analyzer
 
-            // Sort the classes by MethodId, and generate the source
-            foreach (INamedTypeSymbol classSymbol in receiver.Classes)
+            // Sort the models by ID and generate the source
+            foreach (var authMethod in authMethods.Sort((model, methodModel) => model.Id.CompareTo(methodModel.Id)))
             {
-                var attributeData = GetAttributeData(classSymbol, attributeSymbol);
+                context.CancellationToken.ThrowIfCancellationRequested();
 
                 if (firstMember)
                 {
                     firstMember = false;
 
-                    if (attributeData.Item1 == 0)
+                    if (authMethod.Id == 0)
                     {
-                        source.AppendLine($"{attributeData.Item2},");
+                        source.AppendLine($"{authMethod.MemberName},");
                     }
                     else
                     {
-                        source.AppendLine($"{attributeData.Item2} = 0x{attributeData.Item1:X2},");
+                        source.AppendLine($"{authMethod.MemberName} = 0x{authMethod.Id:X2},");
                     }
 
-                    sourceExtensions.AppendLine($"AuthMethod.{attributeData.Item2} => new {classSymbol.ToDisplayString()}(),");
-                    lastMemberValue = attributeData.Item1;
+                    sourceExtensions.AppendLine($"{AuthMethodEnumName}.{authMethod.MemberName} => new {authMethod.ClassName}(),");
+                    lastMemberValue = authMethod.Id;
 
                     continue;
                 }
 
                 // Add a comment for IANA assigned methods
-                if (lastMemberValue <= 0x02 && attributeData.Item1 >= 0x03)
+                if (lastMemberValue <= 0x02 && authMethod.Id >= 0x03)
                 {
                     source.AppendLine();
                     source.AppendLine("// 0x03 - 0x7F: IANA assigned (https://www.iana.org/assignments/socks-methods/socks-methods.xhtml)");
                 }
 
                 // Add a comment for private methods
-                if (lastMemberValue <= 0x7F && attributeData.Item1 >= 0x80)
+                if (lastMemberValue <= 0x7F && authMethod.Id >= 0x80)
                 {
                     source.AppendLine();
                     source.AppendLine("// 0x80 - 0xFE: Reserved for private methods");
                 }
 
                 // Add comments for unassigned values in between
-                if (lastMemberValue < attributeData.Item1 - 1)
+                if (lastMemberValue < authMethod.Id - 1)
                 {
                     int firstUnassigned = lastMemberValue + 1;
-                    int lastUnassigned = attributeData.Item1 - 1;
+                    int lastUnassigned = authMethod.Id - 1;
 
                     if (firstUnassigned == lastUnassigned)
                     {
@@ -159,17 +197,24 @@ namespace %NAMESPACE%
                     }
                 }
 
-                if (attributeData.Item1 == lastMemberValue + 1)
+                if (authMethod.Id == lastMemberValue + 1)
                 {
-                    source.AppendLine($"{attributeData.Item2},");
+                    source.AppendLine($"{authMethod.MemberName},");
                 }
                 else
                 {
-                    source.AppendLine($"{attributeData.Item2} = 0x{attributeData.Item1:X2},");
+                    source.AppendLine($"{authMethod.MemberName} = 0x{authMethod.Id:X2},");
                 }
 
-                sourceExtensions.AppendLine($"AuthMethod.{attributeData.Item2} => new {classSymbol.ToDisplayString()}(),");
-                lastMemberValue = attributeData.Item1;
+                sourceExtensions.AppendLine($"{AuthMethodEnumName}.{authMethod.MemberName} => new {authMethod.ClassName}(),");
+                lastMemberValue = authMethod.Id;
+            }
+
+            // Add a comment for private methods if missing
+            if (lastMemberValue <= 0x7F)
+            {
+                source.AppendLine();
+                source.AppendLine("// 0x80 - 0xFE: Reserved for private methods");
             }
 
             // Finish building the generated source
@@ -183,66 +228,10 @@ namespace %NAMESPACE%
             sourceExtensions.LeaveScope();
 
             // Add the source
-            context.AddSource("AuthMethod.g.cs", SourceText.From(source.ToString(), Encoding.UTF8));
-            context.AddSource("AuthMethodExtensions.g.cs", SourceText.From(sourceExtensions
-                .ToString(), Encoding.UTF8));
-
-            return;
-
-            int CompareMethodId(INamedTypeSymbol a, INamedTypeSymbol b)
-            {
-                return ((byte)a.GetAttributes()
-                    .Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default))
-                    .ConstructorArguments[0].Value!).CompareTo((byte)b.GetAttributes()
-                    .Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default))
-                    .ConstructorArguments[0].Value!);
-            }
+            context.AddSource($"{AuthMethodEnumName}.g.cs", source.ToString());
+            context.AddSource($"{AuthMethodExtensionsClassName}.g.cs", sourceExtensions.ToString());
         }
 
-        private static Tuple<byte, string> GetAttributeData(INamedTypeSymbol classSymbol, INamedTypeSymbol attributeSymbol)
-        {
-            AttributeData attributeData = classSymbol.GetAttributes().Single(ad =>
-                ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
-
-            if (attributeData.ConstructorArguments.Length == 0)
-            {
-                throw new ArgumentException("Attribute constructor doesn't have arguments.", nameof(attributeData));
-            }
-
-            byte methodId = (byte)attributeData.ConstructorArguments[0].Value!;
-            TypedConstant memberName = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MethodName").Value;
-
-            if (!memberName.IsNull)
-            {
-                return new Tuple<byte, string>(methodId, (string)memberName.Value);
-            }
-
-            return new Tuple<byte, string>(methodId, classSymbol.Name);
-        }
-
-        class AuthMethodSyntaxReceiver : ISyntaxContextReceiver
-        {
-            public List<INamedTypeSymbol> Classes { get; } = [];
-
-            /// <summary>
-            /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
-            /// </summary>
-            public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-            {
-                // Any class with at least one base type and at least one attribute is a candidate for enum member generation
-                if (context.Node is ClassDeclarationSyntax classDeclarationSyntax
-                    && classDeclarationSyntax.AttributeLists.Count > 0
-                    && classDeclarationSyntax.BaseList?.Types.Count > 0)
-                {
-                    // Get the symbol being declared by the class, and keep it if it implements IProxyAuth and is annotated
-                    INamedTypeSymbol classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
-                    if (classSymbol!.AllInterfaces.Any(nts => nts.ToDisplayString() == $"{Namespace}.{ProxyAuthInterfaceName}")
-                        && classSymbol.GetAttributes().Any(ad => ad.AttributeClass!.ToDisplayString() == $"{Namespace}.{AuthMethodImplAttributeName}"))
-                    {
-                        Classes.Add(classSymbol);
-                    }
-                }
-            }
-        }
+        private record struct AuthMethodModel(byte Id, string MemberName, string ClassName);
     }
 }
