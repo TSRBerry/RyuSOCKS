@@ -14,7 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace RyuSocks
+namespace RyuSocks.Types
 {
     public enum ReplyField : byte
     {

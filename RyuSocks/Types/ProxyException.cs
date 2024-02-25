@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RyuSocks
+namespace RyuSocks.Types
 {
     public class ProxyException : Exception
     {
