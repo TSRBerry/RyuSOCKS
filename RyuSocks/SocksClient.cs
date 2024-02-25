@@ -14,16 +14,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using RyuSocks.Commands.Client;
-using System;
-using System.Collections.Generic;
+using NetCoreServer;
 using System.Net;
 
 namespace RyuSocks
 {
-    public class SocksClient : TcpClient
+    public partial class SocksClient : TcpClient
     {
+        // TODO: Add (generated) properties for auth methods and commands
+        // TODO: Keep track of the connection state
+        // TODO: Expose events and methods to work with this client
 
+        // TODO: Put the constructors in a source generator
         public SocksClient(IPAddress address, int port) : base(address, port)
         {
         }
