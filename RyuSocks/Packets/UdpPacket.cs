@@ -19,7 +19,7 @@ using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public class UdpHeader : EndpointPacket
+    public class UdpPacket : EndpointPacket
     {
         public ushort Reserved
         {
@@ -53,23 +53,41 @@ namespace RyuSocks.Packets
             set => Address = value;
         }
 
-        protected string DestinationDomainName
+        public string DestinationDomainName
         {
             get => DomainName;
             set => DomainName = value;
         }
 
-        protected ushort DestinationPort
+        public ushort DestinationPort
         {
             get => Port;
             set => Port = value;
+        }
+
+        public Span<byte> UserData => Bytes.AsSpan(GetEndpointPacketLength());
+
+        public UdpPacket(byte[] packetBytes) : base(packetBytes) { }
+
+        public UdpPacket(IPEndPoint endpoint, int payloadLength) : base(endpoint)
+        {
+            byte[] baseBytes = Bytes;
+            Array.Resize(ref baseBytes, Bytes.Length + payloadLength);
+            Bytes = baseBytes;
+        }
+
+        public UdpPacket(DnsEndPoint endpoint, int payloadLength) : base(endpoint)
+        {
+            byte[] baseBytes = Bytes;
+            Array.Resize(ref baseBytes, Bytes.Length + payloadLength);
+            Bytes = baseBytes;
         }
 
         public override void Validate()
         {
             if (Reserved != 0)
             {
-                throw new InvalidOperationException($"Reserved field is not 0: {Reserved}");
+                throw new InvalidOperationException($"${nameof(Reserved)} must be 0.");
             }
         }
     }

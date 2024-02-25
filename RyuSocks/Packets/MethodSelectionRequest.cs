@@ -61,11 +61,22 @@ namespace RyuSocks.Packets
             }
         }
 
+        public MethodSelectionRequest(byte[] packetBytes)
+        {
+            Bytes = packetBytes;
+        }
+
+        public MethodSelectionRequest(AuthMethod[] methods)
+        {
+            Bytes = new byte[2 + methods.Length];
+            Methods = methods;
+        }
+
         public override void Validate()
         {
             if (Version != ProxyConsts.Version)
             {
-                throw new InvalidOperationException($"Version field is invalid: {Version:X} (Expected: {ProxyConsts.Version:X})");
+                throw new InvalidOperationException($"{nameof(Version)} is invalid: {Version:X} (Expected: {ProxyConsts.Version:X})");
             }
 
             if (NumOfMethods > 1 && Methods.Contains(AuthMethod.NoAcceptableMethods))

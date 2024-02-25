@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Net;
 
 namespace RyuSocks.Packets
 {
@@ -52,17 +53,21 @@ namespace RyuSocks.Packets
 
         // Port
 
+        protected CommandPacket(byte[] packetBytes) : base(packetBytes) { }
+        protected CommandPacket(IPEndPoint endpoint) : base(endpoint) { }
+        protected CommandPacket(DnsEndPoint endpoint) : base(endpoint) { }
+
         public override void Validate()
         {
             if (Version != ProxyConsts.Version)
             {
                 throw new InvalidOperationException(
-                    $"Version field is invalid: {Version:X} (Expected: {ProxyConsts.Version:X})");
+                    $"{nameof(Version)} is invalid: {Version:X} (Expected: {ProxyConsts.Version:X})");
             }
 
             if (Reserved != 0)
             {
-                throw new InvalidOperationException($"{nameof(Reserved)} field is not 0: {Reserved}");
+                throw new InvalidOperationException($"{nameof(Reserved)} must be 0.");
             }
         }
     }
