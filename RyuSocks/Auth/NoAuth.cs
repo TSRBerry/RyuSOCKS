@@ -25,8 +25,6 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x00)]
     public class NoAuth : IProxyAuth
     {
-        public int WrapperLength => 0;
-
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             // Nothing to do here.

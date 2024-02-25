@@ -25,8 +25,6 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x03)]
     public class CHAP : IProxyAuth
     {
-        public int WrapperLength { get; }
-
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
             throw new NotImplementedException();

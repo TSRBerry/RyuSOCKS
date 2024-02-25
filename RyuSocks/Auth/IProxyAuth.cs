@@ -22,11 +22,6 @@ namespace RyuSocks.Auth
     public interface IProxyAuth
     {
         /// <summary>
-        /// The amount of additional bytes required for a wrapped packet.
-        /// </summary>
-        public int WrapperLength { get; }
-
-        /// <summary>
         /// Authenticate the current session using a method-specific sub-negotiation.
         /// </summary>
         /// <param name="incomingPacket">The incoming packet from the server/client. Could be null.</param>
