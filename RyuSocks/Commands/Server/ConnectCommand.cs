@@ -14,52 +14,66 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Packets;
+using RyuSocks.Types;
 using RyuSocks.Utils;
 using System;
 using System.Net;
+using System.Net.Sockets;
 
 namespace RyuSocks.Commands.Server
 {
-    public class ConnectCommand : IServerCommand
+    [ProxyCommandImpl(0x01)]
+    public partial class ConnectCommand : ServerCommand, IDisposable
     {
-        public static ProxyCommand Id => ProxyCommand.Connect;
+        private static readonly IPEndPoint _nullEndPoint = new(0, 0);
 
         private TcpClient _client;
-        private readonly SocksSession _parent;
 
-        public ConnectCommand(SocksSession parent)
+        public ConnectCommand(SocksSession session, EndPoint destination) : base(session, destination)
         {
-            _parent = parent;
-        }
-
-        public ReplyField Initialize(EndPoint destEndpoint, out EndPoint boundEndpoint)
-        {
-            boundEndpoint = null;
-
-            _client = destEndpoint switch
+            _client = destination switch
             {
-                IPEndPoint ipEndpoint => new TcpClient(ipEndpoint),
-                DnsEndPoint dnsEndpoint => new TcpClient(dnsEndpoint),
+                IPEndPoint ipEndpoint => new TcpClient(this, ipEndpoint),
+                DnsEndPoint dnsEndpoint => new TcpClient(this, dnsEndpoint),
                 _ => throw new ArgumentException(
-                    $"Endpoint must be of type {typeof(DnsEndPoint)} or {typeof(IPEndPoint)}.", nameof(destEndpoint)),
+                    "Invalid EndPoint type provided.", nameof(destination)),
             };
 
             if (!_client.Connect())
             {
-                ReplyField reply = _client.Error.ToReplyField();
-                _client.ResetError();
+                Session.SendAsync(new CommandResponse(_nullEndPoint)
+                {
+                    Version = ProxyConsts.Version,
+                    ReplyField = _client.Error.ToReplyField(),
+                }.Bytes);
 
-                return reply;
+                _client.ResetError();
+                session.Disconnect();
+
+                return;
             }
 
-            boundEndpoint = _client.Socket.LocalEndPoint;
+            CommandResponse response = _client.Socket.LocalEndPoint switch
+            {
+                IPEndPoint ipEndPoint => new CommandResponse(ipEndPoint)
+                {
+                    Version = ProxyConsts.Version,
+                    ReplyField = ReplyField.Succeeded,
+                },
+                DnsEndPoint dnsEndPoint => new CommandResponse(dnsEndPoint)
+                {
+                    Version = ProxyConsts.Version,
+                    ReplyField = ReplyField.Succeeded,
+                },
+                _ => throw new InvalidOperationException(
+                    $"The type of LocalEndPoint is not supported: {_client.Socket.LocalEndPoint}"),
+            };
 
-            _client.Received += OnReceived;
-
-            return ReplyField.Succeeded;
+            Session.SendAsync(response.Bytes);
         }
 
-        public void SendAsync(Span<byte> buffer)
+        public override void OnReceived(ReadOnlySpan<byte> buffer)
         {
             if (_client is not { IsConnected: true })
             {
@@ -69,23 +83,12 @@ namespace RyuSocks.Commands.Server
             _client.SendAsync(buffer);
         }
 
-        public void OnReceived(object sender, ReceivedEventArgs args)
-        {
-            _parent.SendAsync(args.Buffer, args.Offset, args.Size);
-        }
-
-        public void Disconnect()
-        {
-            _client.Disconnect();
-        }
-
         private void Dispose(bool disposing)
         {
             if (disposing)
             {
                 if (_client != null)
                 {
-                    _client.Received -= OnReceived;
                     _client.Disconnect();
                     _client.Dispose();
                     _client = null;
@@ -97,6 +100,56 @@ namespace RyuSocks.Commands.Server
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        class TcpClient : NetCoreServer.TcpClient
+        {
+            private readonly ConnectCommand _command;
+
+            public SocketError Error = SocketError.Success;
+
+            public TcpClient(ConnectCommand command, DnsEndPoint endpoint) : base(endpoint)
+            {
+                _command = command;
+            }
+
+            public TcpClient(ConnectCommand command, IPEndPoint endpoint) : base(endpoint)
+            {
+                _command = command;
+            }
+
+            public void ResetError()
+            {
+                Error = SocketError.Success;
+            }
+
+            public override bool Connect()
+            {
+                ResetError();
+                bool result = base.Connect();
+
+                if (!result && Error == SocketError.Success)
+                {
+                    Error = SocketError.ConnectionRefused;
+                }
+
+                return result;
+            }
+
+            protected override void OnError(SocketError error)
+            {
+                Error = error;
+            }
+
+            protected override void OnConnected()
+            {
+                ReceiveAsync();
+            }
+
+            protected override void OnReceived(byte[] buffer, long offset, long size)
+            {
+                _command.Session.SendAsync(buffer.AsSpan((int)offset, (int)size));
+            }
         }
     }
 }

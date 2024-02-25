@@ -15,7 +15,6 @@
  */
 
 using NetCoreServer;
-using RyuSocks.Utils;
 using System;
 
 namespace RyuSocks
