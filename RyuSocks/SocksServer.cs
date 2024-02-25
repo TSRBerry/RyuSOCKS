@@ -23,9 +23,13 @@ using System.Net;
 
 namespace RyuSocks
 {
-    public class SocksServer : TcpServer
+    public partial class SocksServer : TcpServer
     {
+        // TODO: Add (generated) properties for auth methods and commands
+        // TODO: Add methods to customize auth method and command behavior
+        // TODO: Generate CreateSession() method
 
+        // TODO: Put the constructors in a source generator
         public SocksServer(IPAddress address, int port) : base(address, port)
         {
         }
