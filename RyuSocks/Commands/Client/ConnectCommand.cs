@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Packets;
+using RyuSocks.Utils;
 using System;
 using System.Net;
 
