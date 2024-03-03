@@ -14,6 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Packets.Auth;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
 using System;
 using System.Collections.Generic;
@@ -28,37 +29,59 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x02)]
     public class UsernameAndPassword : IProxyAuth
     {
-        private readonly Dictionary<string, string> _database;
-
-        public UsernameAndPassword(Dictionary<string, string> database)
+        public string Username;
+        public string Password;
+        public bool IsClient;
+        public Dictionary<string, string> Database
         {
-            _database = database;
+            get;
+            set;
         }
 
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
+
+            if (IsClient)
+            {
+                if (incomingPacket == null)
+                {
+                    outgoingPacket = new UsernameAndPasswordRequest(Username, Password).Bytes;
+                    return false;
+                }
+
+                UsernameAndPasswordResponse incomingResponsePacket = new(incomingPacket.ToArray());
+                incomingResponsePacket.Validate();
+                if (incomingResponsePacket.Status == 0)
+                {
+                    outgoingPacket = null;
+                    return true;
+                }
+
+                throw new AuthenticationException($"The provided credentials are invalid. {incomingResponsePacket.Status}");
+            }
+
             UsernameAndPasswordRequest requestPacket = new(incomingPacket.ToArray());
 
             requestPacket.Validate();
 
-            if (_database.TryGetValue(requestPacket.Username, out string password) &&
+            if (Database.TryGetValue(requestPacket.Username, out string password) &&
                 password == requestPacket.Password)
             {
                 UsernameAndPasswordResponse successResponsePacket = new()
                 {
-                    Version = 0x01,
+                    Version = Constants.UaPVersion,
                     Status = 0,
                 };
-                outgoingPacket = new ReadOnlySpan<byte>(successResponsePacket.ToArray());
+                outgoingPacket = successResponsePacket.Bytes;
                 return true;
             }
 
             UsernameAndPasswordResponse failureResponsePacket = new()
             {
-                Version = 0x01,
+                Version = Constants.UaPVersion,
                 Status = 1,
             };
-            outgoingPacket = new ReadOnlySpan<byte>(failureResponsePacket.ToArray());
+            outgoingPacket = failureResponsePacket.Bytes;
             throw new AuthenticationException("The provided credentials are invalid.");
         }
 

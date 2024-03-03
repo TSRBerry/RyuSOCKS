@@ -14,6 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
 using System.Security.Authentication;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
@@ -21,9 +22,36 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
     public class UsernameAndPasswordResponse : Packet
     {
 
+        public byte Version
+        {
+            get
+            {
+                return Bytes[0];
+            }
+            set
+            {
+                Bytes[0] = value;
+            }
+        }
+        public byte Status
+        {
+            get
+            {
+                return Bytes[1];
+            }
+            set
+            {
+                Bytes[1] = value;
+            }
+        }
+
         public UsernameAndPasswordResponse()
         {
             Bytes = new byte[2];
+        }
+        public UsernameAndPasswordResponse(byte[] packetBytes)
+        {
+            Bytes = packetBytes;
         }
 
         public UsernameAndPasswordResponse(byte[] packetBytes, byte version, byte status)
@@ -34,26 +62,11 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             Status = status;
         }
 
-        public byte Version { get; set; }
-        public byte Status { get; set; }
-
-        public void FromArray(byte[] array)
-        {
-            Version = array[0];
-            Status = array[1];
-        }
-
-        public byte[] ToArray()
-        {
-            byte[] array = [Version, (byte)Status];
-            return array;
-        }
-
         public override void Validate()
         {
-            if (Version != 0x01)
+            if (Version != Constants.UaPVersion)
             {
-                throw new AuthenticationException("The package is of the wrong type.");
+                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
             }
         }
     }
