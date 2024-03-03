@@ -14,18 +14,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Packets.Auth;
 using System;
-using System.Security.Authentication;
 using System.Text;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
 {
     public class UsernameAndPasswordRequest : Packet
     {
-        public UsernameAndPasswordRequest(byte[] packetBytes)
-        {
-            Bytes = packetBytes;
-        }
 
         public byte Version
         {
@@ -87,11 +83,25 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             }
         }
 
+        public UsernameAndPasswordRequest(byte[] packetBytes)
+        {
+            Bytes = packetBytes;
+        }
+
+        public UsernameAndPasswordRequest(string username, string password)
+        {
+            Version = Constants.UaPVersion;
+            UsernameLength = (byte)username.Length;
+            Username = username;
+            PasswordLength = (byte)password.Length;
+            Password = password;
+        }
+
         public override void Validate()
         {
-            if (Version != 0x01)
+            if (Version != Constants.UaPVersion)
             {
-                throw new AuthenticationException("The package is of the wrong type.");
+                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
             }
         }
     }
