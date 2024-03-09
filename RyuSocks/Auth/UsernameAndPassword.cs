@@ -40,7 +40,6 @@ namespace RyuSocks.Auth
 
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
-
             if (IsClient)
             {
                 if (incomingPacket == null)
@@ -51,6 +50,7 @@ namespace RyuSocks.Auth
 
                 UsernameAndPasswordResponse incomingResponsePacket = new(incomingPacket.ToArray());
                 incomingResponsePacket.Validate();
+
                 if (incomingResponsePacket.Status == 0)
                 {
                     outgoingPacket = null;
@@ -72,7 +72,9 @@ namespace RyuSocks.Auth
                     Version = Constants.UaPVersion,
                     Status = 0,
                 };
+
                 outgoingPacket = successResponsePacket.Bytes;
+
                 return true;
             }
 
@@ -81,7 +83,9 @@ namespace RyuSocks.Auth
                 Version = Constants.UaPVersion,
                 Status = 1,
             };
+
             outgoingPacket = failureResponsePacket.Bytes;
+
             throw new AuthenticationException("The provided credentials are invalid.");
         }
 

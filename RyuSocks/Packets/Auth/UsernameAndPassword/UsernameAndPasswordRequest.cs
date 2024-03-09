@@ -16,13 +16,13 @@
 
 using RyuSocks.Packets.Auth;
 using System;
+using System.Security.Authentication;
 using System.Text;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
 {
     public class UsernameAndPasswordRequest : Packet
     {
-
         public byte Version
         {
             get
@@ -55,6 +55,8 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             }
             set
             {
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
+                UsernameLength = (byte)value.Length;
                 Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(2, UsernameLength));
             }
         }
@@ -79,6 +81,8 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             }
             set
             {
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
+                PasswordLength = (byte)value.Length;
                 Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(4 + UsernameLength, PasswordLength));
             }
         }
