@@ -23,7 +23,6 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 {
     public class UsernameAndPasswordRequest : Packet
     {
-
         public byte Version
         {
             get
@@ -56,6 +55,8 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             }
             set
             {
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
+                UsernameLength = (byte)value.Length;
                 Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(2, UsernameLength));
             }
         }
