@@ -10,6 +10,7 @@ Added UsernameAndPasswordRequest and UsernameAndPasswordResponse, aswell as the 
 
 ## [Unreleased]
 
+
 ### Added
 
 - Username and password authentication according to RFC1929 ([#2](https://github.com/TSRBerry/RyuSOCKS/pull/2))

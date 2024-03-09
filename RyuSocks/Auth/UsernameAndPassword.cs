@@ -16,8 +16,6 @@
 
 using RyuSocks.Packets.Auth;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
-using RyuSocks.Packets;
-using RyuSocks.Packets.Auth.UsernameAndPassword;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
@@ -31,13 +29,6 @@ namespace RyuSocks.Auth
     [AuthMethodImpl(0x02)]
     public class UsernameAndPassword : IProxyAuth
     {
-        private readonly Dictionary<string, string> _database;
-
-        public UsernameAndPassword(Dictionary<string, string> database)
-        {
-            _database = database;
-        }
-
         public string Username;
         public string Password;
         public bool IsClient;
@@ -49,22 +40,7 @@ namespace RyuSocks.Auth
 
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
-            UsernameAndPasswordRequest requestPacket  = new();
-            requestPacket.FromArray(incomingPacket.ToArray());
-            outgoingPacket = null;
 
-            if (_database.TryGetValue(requestPacket.Username, out string password) && password == requestPacket.Password)
-            {
-                UsernameAndPasswordResponse successResponsePacket = new UsernameAndPasswordResponse(0x00);
-                outgoingPacket = new ReadOnlySpan<byte>(successResponsePacket.ToArray());
-                return true;
-            }
-
-            // Status 0x05: Connection refused
-            UsernameAndPasswordResponse failureResponsePacket = new UsernameAndPasswordResponse(0x05);
-            outgoingPacket = new ReadOnlySpan<byte>(failureResponsePacket.ToArray());
-            return false;
-            throw new NotImplementedException();
             if (IsClient)
             {
                 if (incomingPacket == null)
