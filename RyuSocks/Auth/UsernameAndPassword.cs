@@ -40,7 +40,6 @@ namespace RyuSocks.Auth
 
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket)
         {
-
             if (IsClient)
             {
                 if (incomingPacket == null)
