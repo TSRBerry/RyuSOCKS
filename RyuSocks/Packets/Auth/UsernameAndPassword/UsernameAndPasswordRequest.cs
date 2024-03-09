@@ -16,6 +16,7 @@
 
 using RyuSocks.Packets.Auth;
 using System;
+using System.Security.Authentication;
 using System.Text;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
@@ -79,6 +80,8 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             }
             set
             {
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
+                PasswordLength = (byte)value.Length;
                 Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(4 + UsernameLength, PasswordLength));
             }
         }
