@@ -21,7 +21,6 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 {
     public class UsernameAndPasswordResponse : Packet
     {
-
         public byte Version
         {
             get
@@ -33,6 +32,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
                 Bytes[0] = value;
             }
         }
+
         public byte Status
         {
             get
@@ -49,17 +49,10 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             Bytes = new byte[2];
         }
+
         public UsernameAndPasswordResponse(byte[] packetBytes)
         {
             Bytes = packetBytes;
-        }
-
-        public UsernameAndPasswordResponse(byte[] packetBytes, byte version, byte status)
-        {
-            Bytes = packetBytes;
-
-            Version = version;
-            Status = status;
         }
 
         public override void Validate()
