@@ -80,10 +80,9 @@ namespace RyuSocks.Packets
                 throw new InvalidOperationException($"{nameof(Version)} is invalid: {Version:X} (Expected: {ProxyConsts.Version:X})");
             }
 
-            if (NumOfMethods > 1 && Methods.Contains(AuthMethod.NoAcceptableMethods))
+            if (Methods.Contains(AuthMethod.NoAcceptableMethods))
             {
-                throw new InvalidOperationException(
-                    $"{AuthMethod.NoAcceptableMethods} can't be offered with other auth methods.");
+                throw new InvalidOperationException($"{AuthMethod.NoAcceptableMethods} can't be requested.");
             }
         }
     }
