@@ -14,9 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using RyuSocks.Packets.Auth;
 using System;
-using System.Security.Authentication;
 using System.Text;
 
 namespace RyuSocks.Packets.Auth.UsernameAndPassword
