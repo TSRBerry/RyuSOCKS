@@ -15,35 +15,13 @@
  */
 
 using NetCoreServer;
-using RyuSocks.Auth;
-using RyuSocks.Commands.Server;
-using System;
-using System.Collections.Generic;
-using System.Net;
 
 namespace RyuSocks
 {
+    [SocksClass]
     public partial class SocksServer : TcpServer
     {
         // TODO: Add (generated) properties for auth methods and commands
         // TODO: Add methods to customize auth method and command behavior
-        // TODO: Generate CreateSession() method
-
-        // TODO: Put the constructors in a source generator
-        public SocksServer(IPAddress address, int port) : base(address, port)
-        {
-        }
-
-        public SocksServer(string address, int port) : base(address, port)
-        {
-        }
-
-        public SocksServer(DnsEndPoint endpoint) : base(endpoint)
-        {
-        }
-
-        public SocksServer(IPEndPoint endpoint) : base(endpoint)
-        {
-        }
     }
 }

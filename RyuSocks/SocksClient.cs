@@ -15,31 +15,14 @@
  */
 
 using NetCoreServer;
-using System.Net;
 
 namespace RyuSocks
 {
+    [SocksClass]
     public partial class SocksClient : TcpClient
     {
         // TODO: Add (generated) properties for auth methods and commands
         // TODO: Keep track of the connection state
         // TODO: Expose events and methods to work with this client
-
-        // TODO: Put the constructors in a source generator
-        public SocksClient(IPAddress address, int port) : base(address, port)
-        {
-        }
-
-        public SocksClient(string address, int port) : base(address, port)
-        {
-        }
-
-        public SocksClient(DnsEndPoint endpoint) : base(endpoint)
-        {
-        }
-
-        public SocksClient(IPEndPoint endpoint) : base(endpoint)
-        {
-        }
     }
 }

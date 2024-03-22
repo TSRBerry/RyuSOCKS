@@ -19,15 +19,11 @@ using System;
 
 namespace RyuSocks
 {
+    [SocksClass]
     public partial class SocksSession : TcpSession
     {
         // TODO: Keep track of connection state
         // TODO: Perform authentication first, switch state and then check the other TODOs
-
-        // TODO: Put this in a source generator
-        public SocksSession(TcpServer server) : base(server)
-        {
-        }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
