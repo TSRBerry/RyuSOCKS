@@ -23,7 +23,7 @@ namespace RyuSocks.Test.Auth
     public class NoAuthTests
     {
         [Theory]
-        [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB})]
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB })]
         public void Wrap_DoesNotModifyPaket(byte[] packet)
         {
             byte[] originalPacket = (byte[])packet.Clone();
@@ -38,7 +38,7 @@ namespace RyuSocks.Test.Auth
         }
 
         [Theory]
-        [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB})]
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB })]
         public void Unwrap_DoesNotModifyPacket(byte[] packet)
         {
             byte[] originalPacket = (byte[])packet.Clone();
@@ -54,7 +54,7 @@ namespace RyuSocks.Test.Auth
 
         [Theory]
         [InlineData(null)]
-        [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB})]
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB })]
         public void Authenticate_DoesNothing(byte[] incomingPacket)
         {
             NoAuth noAuth = new();
