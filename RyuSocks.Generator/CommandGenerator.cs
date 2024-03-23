@@ -255,14 +255,20 @@ namespace %NAMESPACE%
                 context.CancellationToken.ThrowIfCancellationRequested();
                 var commandType = entry.Key;
                 var socksClassName = commandType == ClientCommandClassName ? "SocksClient" : "SocksSession";
+                var typeParams = commandType == ClientCommandClassName
+                    ? $"{socksClassName}, EndPoint, {commandType}"
+                    : $"{socksClassName}, IPEndPoint, EndPoint, {commandType}";
+                var constructorArgs = commandType == ClientCommandClassName
+                    ? "(parent, endpoint)"
+                    : "(parent, endpoint, destination)";
 
                 // Generate the source
-                sourceExtensions.EnterScope($"public static Func<{socksClassName}, EndPoint, {commandType}> Get{commandType}(this {ProxyCommandEnumName} command) => command switch");
+                sourceExtensions.EnterScope($"public static Func<{typeParams}> Get{commandType}(this {ProxyCommandEnumName} command) => command switch");
 
                 foreach (var command in entry.Value.Values.ToImmutableSortedSet(Comparer<ProxyCommandModel>.Create(CompareModel)))
                 {
                     context.CancellationToken.ThrowIfCancellationRequested();
-                    sourceExtensions.AppendLine($"{ProxyCommandEnumName}.{command.MemberName} => (parent, endpoint) => new {command.ClassName}(parent, endpoint),");
+                    sourceExtensions.AppendLine($"{ProxyCommandEnumName}.{command.MemberName} => {constructorArgs} => new {command.ClassName}{constructorArgs},");
                 }
 
                 sourceExtensions.AppendLine("_ => throw new ArgumentException($\"Invalid proxy command provided: {command}\", nameof(command)),");

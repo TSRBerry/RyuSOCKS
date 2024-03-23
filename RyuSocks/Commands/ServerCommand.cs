@@ -5,11 +5,15 @@ namespace RyuSocks.Commands
 {
     public abstract class ServerCommand : Command
     {
-        protected readonly SocksSession Session;
+        protected static readonly IPEndPoint NullEndPoint = new(0, 0);
 
-        protected ServerCommand(SocksSession session, EndPoint destination) : base(destination)
+        protected readonly SocksSession Session;
+        protected readonly IPEndPoint BoundEndpoint;
+
+        protected ServerCommand(SocksSession session, IPEndPoint boundEndpoint, EndPoint destination) : base(destination)
         {
             Session = session;
+            BoundEndpoint = boundEndpoint;
         }
 
         /// <summary>
