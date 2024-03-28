@@ -108,10 +108,26 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public override void Validate()
         {
+            const int MinLength = 5;
+            const int MaxLength = 513;
+            if (Bytes.Length is < MinLength or > MaxLength)
+            {
+                throw new InvalidOperationException($"$Package has wrong Length: {Bytes.Length:X} (Expected: >= {MinLength} || <= {MaxLength})");
+            }
             if (Version != Constants.UaPVersion)
             {
                 throw new InvalidOperationException(
                     $"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
+            }
+
+            if (Username == null)
+            {
+                throw new InvalidOperationException($"$Username is invalid: {Username} (Expected: Literally Anything but null)");
+            }
+
+            if(Password == null)
+            {
+                throw new InvalidOperationException($"Password is invalid: {Password} (No Password is not allowed)");
             }
         }
     }
