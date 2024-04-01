@@ -99,6 +99,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public UsernameAndPasswordRequest(string username, string password)
         {
+            Bytes = new byte[4 + username.Length + password.Length];
             Version = Constants.UaPVersion;
             UsernameLength = (byte)username.Length;
             Username = username;

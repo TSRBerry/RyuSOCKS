@@ -20,19 +20,25 @@ using Xunit.Sdk;
 
 namespace RyuSocks.Test.Utils
 {
-    public abstract class UsernameAndPasswordRandomUsernameAndPasswords : DataAttribute
+    public class UsernameAndPasswordRandomUsernameAndPasswords : DataAttribute
     {
-
+        private readonly int _amount;
+        public UsernameAndPasswordRandomUsernameAndPasswords(int amount)
+        {
+            _amount = amount;
+        }
         public override IEnumerable<object[]> GetData(MethodInfo testMethod)
         {
-            const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var rand = new Random();
-            var username = new string(Enumerable.Repeat(Chars, rand.Next(1, 20))
-                    .Select(s => s[rand.Next(s.Length)]).ToArray());
-            var password = new string(Enumerable.Repeat(Chars, rand.Next(1, 20))
-                    .Select(s => s[rand.Next(s.Length)]).ToArray());
-                yield return [username,password];
-
+            const string CharsUsername = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            const string CharsPassword = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,";
+            for (int i = 0; i < _amount; i++)
+            {
+                var username = new string(Enumerable.Repeat(CharsUsername, Random.Shared.Next(1, 20))
+                    .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
+                var password = new string(Enumerable.Repeat(CharsPassword, Random.Shared.Next(1, 20))
+                    .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
+                yield return [username, password];
+            }
         }
     }
 }
