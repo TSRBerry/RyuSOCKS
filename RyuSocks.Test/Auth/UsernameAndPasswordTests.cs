@@ -18,6 +18,7 @@ using RyuSocks.Auth;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
 using RyuSocks.Test.Utils;
 using System;
+using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Text;
 using Xunit;
@@ -45,14 +46,15 @@ namespace RyuSocks.Test.Auth
         }
 
         [Theory]
-        [InlineData(UsernameAndPasswordRandomUsernameAndPasswords.GetData(),UsernameAndPasswordRandomUsernameAndPasswords.GetData(10))]
+        [UsernameAndPasswordRandomUsernameAndPasswords(20)]
         public void Authenticate_FullExchange(string username, string password)
         {
-            UsernameAndPassword usernameAndPassword = new ();
-            usernameAndPassword.Database = new();
-            usernameAndPassword.Database.Add(username, password);
-            usernameAndPassword.Username = username;
-            usernameAndPassword.Password = password;
+            UsernameAndPassword usernameAndPassword = new ()
+            {
+                Database = new Dictionary<string, string> { { username, password } },
+                Username = username,
+                Password = password
+            };
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
             usernameAndPassword.IsClient = false;
             usernameAndPassword.Authenticate(outgoingPacket, out _);

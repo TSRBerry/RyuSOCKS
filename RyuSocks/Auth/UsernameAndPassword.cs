@@ -31,7 +31,7 @@ namespace RyuSocks.Auth
     {
         public string Username;
         public string Password;
-        public bool IsClient;
+        public bool IsClient = true;
         public Dictionary<string, string> Database
         {
             get;
