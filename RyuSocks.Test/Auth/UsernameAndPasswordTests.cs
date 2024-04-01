@@ -44,8 +44,8 @@ namespace RyuSocks.Test.Auth
             }
         }
 
-        /*[Theory]
-        [InlineData(new byte[] {0x01, (byte)'a', 0x01, (byte)'a', 0x01})]
+        [Theory]
+        [InlineData(UsernameAndPasswordRandomUsernameAndPasswords.GetData(),UsernameAndPasswordRandomUsernameAndPasswords.GetData(10))]
         public void Authenticate_FullExchange(string username, string password)
         {
             UsernameAndPassword usernameAndPassword = new ();
@@ -56,7 +56,7 @@ namespace RyuSocks.Test.Auth
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
             usernameAndPassword.IsClient = false;
             usernameAndPassword.Authenticate(outgoingPacket, out _);
-        }*/
+        }
 
         [Theory]
         [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB})]
