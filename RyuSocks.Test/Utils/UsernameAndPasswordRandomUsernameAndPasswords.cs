@@ -14,31 +14,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Xunit.Sdk;
 
 namespace RyuSocks.Test.Utils
 {
-    public class UsernameAndPasswordUsernameAndPassword : DataAttribute
+    public abstract class UsernameAndPasswordRandomUsernameAndPasswords : DataAttribute
     {
-        private readonly int _amount;
-        public UsernameAndPasswordUsernameAndPassword(int amount)
-        {
-            _amount = amount;
-        }
 
         public override IEnumerable<object[]> GetData(MethodInfo testMethod)
         {
+            const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var rand = new Random();
-            var username = "";
-            var password = "";
+            var username = new string(Enumerable.Repeat(Chars, rand.Next(1, 20))
+                    .Select(s => s[rand.Next(s.Length)]).ToArray());
+            var password = new string(Enumerable.Repeat(Chars, rand.Next(1, 20))
+                    .Select(s => s[rand.Next(s.Length)]).ToArray());
+                yield return [username,password];
 
-            for (int i = 0; i < _amount; i++)
-            {
-                int usernamelen = rand.Next(1, 20);
-                int passwordlen = rand.Next(1, 20);
-                yield return [];
-            }
         }
     }
 }
