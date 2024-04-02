@@ -28,14 +28,16 @@ namespace RyuSocks.Test.Auth
     public class UsernameAndPasswordTests
     {
         [Theory]
-        [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC}, false)]
-        [InlineData(new byte[] {0x01, 0x00, 0x00, 0x00, 0x00}, true)]
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC }, false)]
+        [InlineData(new byte[] { 0x01, 0x00, 0x00, 0x00, 0x00 }, true)]
         public void Authenticate_RandomPackages(byte[] incomingPacket, bool isValidInput)
         {
-            UsernameAndPassword usernameAndPassword = new ();
-            usernameAndPassword.Database = new();
-            usernameAndPassword.IsClient = false;
-            if(!isValidInput)
+            UsernameAndPassword usernameAndPassword = new()
+            {
+                Database = [],
+                IsClient = false
+            };
+            if (!isValidInput)
             {
                 Assert.Throws<InvalidOperationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
             }
@@ -49,7 +51,7 @@ namespace RyuSocks.Test.Auth
         [UsernameAndPasswordRandomUsernameAndPasswords(20)]
         public void Authenticate_FullExchange(string username, string password)
         {
-            UsernameAndPassword usernameAndPassword = new ()
+            UsernameAndPassword usernameAndPassword = new()
             {
                 Database = new Dictionary<string, string> { { username, password } },
                 Username = username,
@@ -61,7 +63,7 @@ namespace RyuSocks.Test.Auth
         }
 
         [Theory]
-        [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB})]
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB })]
         public void Wrap_DoesNotModifyPaket(byte[] packet)
         {
             byte[] originalPacket = (byte[])packet.Clone();
@@ -76,7 +78,7 @@ namespace RyuSocks.Test.Auth
         }
 
         [Theory]
-        [InlineData(new byte[] {0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB})]
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC, 0xBB })]
         public void Unwrap_DoesNotModifyPacket(byte[] packet)
         {
             byte[] originalPacket = (byte[])packet.Clone();

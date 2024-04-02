@@ -126,7 +126,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
                 throw new InvalidOperationException($"$Username is invalid: {Username} (Expected: Literally Anything but null)");
             }
 
-            if(Password == null)
+            if (Password == null)
             {
                 throw new InvalidOperationException($"Password is invalid: {Password} (No Password is not allowed)");
             }
