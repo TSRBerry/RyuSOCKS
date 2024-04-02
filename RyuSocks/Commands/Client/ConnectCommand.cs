@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Packets;
+using RyuSocks.Types;
 using RyuSocks.Utils;
 using System;
 using System.Net;
@@ -24,11 +25,11 @@ namespace RyuSocks.Commands.Client
     [ProxyCommandImpl(0x01)]
     public partial class ConnectCommand : ClientCommand
     {
-        public ConnectCommand(SocksClient client, EndPoint destination) : base(client, destination)
+        public ConnectCommand(SocksClient client, Destination destination) : base(client, destination)
         {
             CommandRequest request;
 
-            switch (destination)
+            switch (destination.ToEndPoint())
             {
                 case IPEndPoint ipDestination:
                     request = new CommandRequest(ipDestination)
@@ -45,7 +46,7 @@ namespace RyuSocks.Commands.Client
                     };
                     break;
                 default:
-                    throw new ArgumentException("Invalid EndPoint type provided.", nameof(destination));
+                    throw new ArgumentException($"Invalid {nameof(EndPoint)} provided.", nameof(destination));
             }
 
             request.Validate();

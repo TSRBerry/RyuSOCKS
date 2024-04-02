@@ -28,9 +28,9 @@ namespace RyuSocks.Commands.Server
     {
         private TcpClient _client;
 
-        public ConnectCommand(SocksSession session, IPEndPoint boundEndpoint, EndPoint destination) : base(session, boundEndpoint, destination)
+        public ConnectCommand(SocksSession session, IPEndPoint boundEndpoint, Destination destination) : base(session, boundEndpoint, destination)
         {
-            _client = destination switch
+            _client = destination.ToEndPoint() switch
             {
                 IPEndPoint ipEndpoint => new TcpClient(this, ipEndpoint),
                 DnsEndPoint dnsEndpoint => new TcpClient(this, dnsEndpoint),
@@ -40,7 +40,7 @@ namespace RyuSocks.Commands.Server
 
             if (!_client.Connect())
             {
-                Session.SendAsync(new CommandResponse(NullEndPoint)
+                Session.SendAsync(new CommandResponse
                 {
                     Version = ProxyConsts.Version,
                     ReplyField = _client.Error.ToReplyField(),

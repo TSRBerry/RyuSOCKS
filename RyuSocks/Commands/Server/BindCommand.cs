@@ -28,15 +28,9 @@ namespace RyuSocks.Commands.Server
         private TcpServer _server;
         private TcpSession _serverSession;
 
-        public BindCommand(SocksSession session, IPEndPoint boundEndpoint, EndPoint source) : base(session, boundEndpoint, source)
+        public BindCommand(SocksSession session, IPEndPoint boundEndpoint, Destination source) : base(session, boundEndpoint, source)
         {
-            _server = source switch
-            {
-                IPEndPoint ipSource => new TcpServer(this, boundEndpoint, ipSource),
-                DnsEndPoint dnsSource => new TcpServer(this, boundEndpoint, dnsSource),
-                _ => throw new ArgumentException(
-                    "Invalid EndPoint type provided.", nameof(source)),
-            };
+            _server = new TcpServer(this, boundEndpoint, source);
 
             _server.Start();
         }
@@ -58,7 +52,7 @@ namespace RyuSocks.Commands.Server
 
         private void SendErrorReply(SocketError error)
         {
-            Session.SendAsync(new CommandResponse(NullEndPoint)
+            Session.SendAsync(new CommandResponse
             {
                 Version = ProxyConsts.Version,
                 ReplyField = error.ToReplyField(),
@@ -87,16 +81,9 @@ namespace RyuSocks.Commands.Server
         class TcpServer : NetCoreServer.TcpServer
         {
             private readonly BindCommand _command;
-            private readonly IPEndPoint _sourceEndpoint;
+            private readonly Destination _sourceEndpoint;
 
-            public TcpServer(BindCommand command, IPEndPoint endpoint, DnsEndPoint source) : base(endpoint)
-            {
-                OptionAcceptorBacklog = 1;
-                _command = command;
-                _sourceEndpoint = new IPEndPoint(Dns.GetHostAddresses(source.Host, source.AddressFamily).First(), source.Port);
-            }
-
-            public TcpServer(BindCommand command, IPEndPoint endpoint, IPEndPoint source) : base(endpoint)
+            public TcpServer(BindCommand command, IPEndPoint endpoint, Destination source) : base(endpoint)
             {
                 OptionAcceptorBacklog = 1;
                 _command = command;
@@ -115,7 +102,7 @@ namespace RyuSocks.Commands.Server
 
             protected override void OnConnected(NetCoreServer.TcpSession session)
             {
-                if ((!Equals(_sourceEndpoint, NullEndPoint) && !_sourceEndpoint.Equals(session.Socket.RemoteEndPoint)) || ConnectedSessions > 1)
+                if ((!Equals(_sourceEndpoint, Destination.Null) && !_sourceEndpoint.Contains((IPEndPoint)session.Socket.RemoteEndPoint)) || ConnectedSessions > 1)
                 {
                     session.Disconnect();
                     return;

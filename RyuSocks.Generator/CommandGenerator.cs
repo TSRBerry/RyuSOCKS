@@ -256,8 +256,8 @@ namespace %NAMESPACE%
                 var commandType = entry.Key;
                 var socksClassName = commandType == ClientCommandClassName ? "SocksClient" : "SocksSession";
                 var typeParams = commandType == ClientCommandClassName
-                    ? $"{socksClassName}, EndPoint, {commandType}"
-                    : $"{socksClassName}, IPEndPoint, EndPoint, {commandType}";
+                    ? $"{socksClassName}, RyuSocks.Types.Destination, {commandType}"
+                    : $"{socksClassName}, IPEndPoint, RyuSocks.Types.Destination, {commandType}";
                 var constructorArgs = commandType == ClientCommandClassName
                     ? "(parent, endpoint)"
                     : "(parent, endpoint, destination)";

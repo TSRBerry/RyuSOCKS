@@ -1,13 +1,13 @@
+using RyuSocks.Types;
 using System;
-using System.Net;
 
 namespace RyuSocks.Commands
 {
     public abstract class Command
     {
-        protected readonly EndPoint Destination;
+        protected readonly Destination Destination;
 
-        protected Command(EndPoint destination)
+        protected Command(Destination destination)
         {
             Destination = destination;
         }

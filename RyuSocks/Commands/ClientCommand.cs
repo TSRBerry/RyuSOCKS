@@ -1,4 +1,4 @@
-using System.Net;
+using RyuSocks.Types;
 
 namespace RyuSocks.Commands
 {
@@ -6,7 +6,7 @@ namespace RyuSocks.Commands
     {
         protected readonly SocksClient Client;
 
-        protected ClientCommand(SocksClient client, EndPoint destination) : base(destination)
+        protected ClientCommand(SocksClient client, Destination destination) : base(destination)
         {
             Client = client;
         }

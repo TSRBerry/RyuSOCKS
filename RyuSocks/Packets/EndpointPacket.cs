@@ -118,6 +118,10 @@ namespace RyuSocks.Packets
             }
         }
 
+        public Destination Destination => AddressType == AddressType.DomainName
+            ? new Destination(new DnsEndPoint(DomainName, Port))
+            : new Destination(new IPEndPoint(Address, Port));
+
         protected EndpointPacket(byte[] packetBytes)
         {
             Bytes = packetBytes;
@@ -148,6 +152,12 @@ namespace RyuSocks.Packets
             AddressType = AddressType.DomainName;
             DomainName = endpoint.Host;
             Port = (ushort)endpoint.Port;
+        }
+
+        protected EndpointPacket()
+        {
+            Bytes = new byte[10];
+            AddressType = AddressType.Ipv4Address;
         }
 
         protected int GetEndpointPacketLength()

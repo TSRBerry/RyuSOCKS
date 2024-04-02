@@ -57,6 +57,7 @@ namespace RyuSocks.Packets
         protected CommandPacket(byte[] packetBytes) : base(packetBytes) { }
         protected CommandPacket(IPEndPoint endpoint) : base(endpoint) { }
         protected CommandPacket(DnsEndPoint endpoint) : base(endpoint) { }
+        protected CommandPacket() { }
 
         public override void Validate()
         {
