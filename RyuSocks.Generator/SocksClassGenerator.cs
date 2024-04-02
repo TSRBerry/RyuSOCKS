@@ -35,8 +35,8 @@ namespace RyuSocks.Generator
         private static readonly HashSet<string> _netCoreServerClassNames = [$"Tcp{ClientSuffix}", $"Tcp{ServerSuffix}", $"Tcp{SessionSuffix}"];
         private static readonly Dictionary<string, string> _serverClientConstructors = new()
         {
-            {"System.Net.IPAddress address, int port", "address, port"},
-            {"string address, int port", "address, port"},
+            {"System.Net.IPAddress address, ushort port = RyuSocks.Utils.ProxyConsts.DefaultPort", "address, port"},
+            {"string address, ushort port = RyuSocks.Utils.ProxyConsts.DefaultPort", "address, port"},
             {"System.Net.DnsEndPoint endpoint", "endpoint"},
             {"System.Net.IPEndPoint endpoint", "endpoint"},
         };
