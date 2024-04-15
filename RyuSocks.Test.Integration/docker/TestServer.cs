@@ -12,12 +12,43 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-namespace RyuSocks
+using System;
+using System.Collections.Generic;
+using System.Net;
+using RyuSocks;
+using RyuSocks.Auth;
+using RyuSocks.Commands;
+
+namespace TestProject
 {
     public static class Program
     {
+        private static readonly SocksServer _server = new SocksServer(IPAddress.Any)
+        {
+            AcceptableAuthMethods = new HashSet<AuthMethod>() { AuthMethod.NoAuth },
+            OfferedCommands = new HashSet<ProxyCommand>() { ProxyCommand.Connect, ProxyCommand.Bind, ProxyCommand.UdpAssociate },
+        };
+
         public static int Main(string[] args)
         {
+            Console.WriteLine("Starting SOCKS5 proxy server...");
+
+            if (!_server.Start())
+            {
+                Console.WriteLine("Failed to start SOCKS5 proxy server.");
+                return 1;
+            }
+
+            Console.WriteLine($"SOCKS5 proxy server started: {_server.Endpoint}");
+
+            while (_server.IsStarted)
+            {
+
+            }
+
+            Console.WriteLine($"SOCKS5 proxy server stopped.");
+
+            _server.Dispose();
             return 0;
         }
     }

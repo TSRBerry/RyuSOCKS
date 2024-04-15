@@ -19,13 +19,16 @@ using System.Collections.Generic;
 using System.Formats.Tar;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RyuSocks.Test.Integration
 {
-    public class ServerEnvironment : IAsyncDisposable, IDisposable
+    public class FTPServerEnvironment : IAsyncDisposable, IDisposable
     {
-        private const string FTPServerImage = "delfer/alpine-ftp-server";
+        private const string FTPBaseServerImage = "delfer/alpine-ftp-server";
+        private const string FTPServerImage = "ryusocks-test-ftpserver";
         private const string FTPServerTag = "latest";
         private const string FTPMountPath = "/test";
         private const string NetworkName = "ryusocks-test-network";
@@ -38,14 +41,25 @@ namespace RyuSocks.Test.Integration
         private static readonly string _assetsPath = Path.Combine(ProjectPath, "assets");
         public static readonly DirectoryInfo FTPServerFiles = new(_assetsPath);
 
-        private static readonly Dictionary<string, string> _buildContext = new()
+        private static readonly Dictionary<string, string> _ryuSocksBuildContext = new()
         {
-            { "RyuSocks.Test.Integration/docker/Dockerfile", "Dockerfile" },
+            { "RyuSocks.Test.Integration/docker/server.Dockerfile", "Dockerfile" },
             { "RyuSocks.Generator", "RyuSocks.Generator" },
             { "RyuSocks", "RyuSocks" },
-            { "RyuSocks.Test.Integration/docker/TestServer.cs", "RyuSocks/Program.cs" },
+            { "RyuSocks.Test.Integration/docker/TestProject.csproj", "TestProject/TestProject.csproj" },
+            { "RyuSocks.Test.Integration/docker/TestServer.cs", "TestProject/Program.cs" },
         };
 
+        private static readonly Dictionary<string, string> _ftpBuildContext = new()
+        {
+            { "RyuSocks.Test.Integration/docker/ftp.Dockerfile", "Dockerfile" },
+            { "RyuSocks.Test.Integration/docker/vsftpd.conf", "vsftpd.conf" },
+            { "RyuSocks.Test.Integration/assets", "assets" },
+        };
+
+        private static readonly DockerClientConfiguration _dockerConfig;
+        private readonly List<Thread> _threads = [];
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private DockerClient _docker;
 
         private string _networkId;
@@ -55,24 +69,31 @@ namespace RyuSocks.Test.Integration
         public string RyuSocksIPAddress { get; private set; }
         public string FTPServerIPAddress { get; private set; }
 
-        public ServerEnvironment()
+        static FTPServerEnvironment()
+        {
+            var dockerEndpoint = Environment.GetEnvironmentVariable("DOCKER_HOST");
+            _dockerConfig = dockerEndpoint != null ? new DockerClientConfiguration(new Uri(dockerEndpoint)) : new DockerClientConfiguration();
+        }
+
+        public FTPServerEnvironment()
         {
             CreateEnvironment().Wait();
         }
 
         private async Task CreateEnvironment()
         {
-            _docker = new DockerClientConfiguration().CreateClient();
+            _docker = _dockerConfig.CreateClient();
 
             try
             {
                 await _docker.Images.CreateImageAsync(
-                    new ImagesCreateParameters { FromImage = FTPServerImage, Tag = FTPServerTag, },
+                    new ImagesCreateParameters { FromImage = FTPBaseServerImage, Tag = FTPServerTag, },
                     null,
                     new Progress<JSONMessage>()
                 );
 
-                await BuildTestServer();
+                await BuildDockerImage(_ftpBuildContext, FTPServerImage);
+                await BuildDockerImage(_ryuSocksBuildContext, TestServerImage);
 
                 _networkId = (await _docker.Networks.CreateNetworkAsync(
                     new NetworksCreateParameters
@@ -98,16 +119,8 @@ namespace RyuSocks.Test.Integration
                         Image = FTPServerImage,
                         Env =
                         [
-                            $"USERS=\"{FTPUsername}|{FTPPassword}|{FTPMountPath}|1000\"",
+                            $"USERS={FTPUsername}|{FTPPassword}|{FTPMountPath}|1000",
                         ],
-                        HostConfig = new HostConfig
-                        {
-                            AutoRemove = true,
-                            Mounts =
-                            [
-                                new Mount { Type = "bind", Source = _assetsPath, Target = FTPMountPath },
-                            ],
-                        },
                         Name = "ryusocks-ftpserver",
                         Hostname = "ftpserver",
                         NetworkingConfig = containerNetwork,
@@ -118,10 +131,6 @@ namespace RyuSocks.Test.Integration
                     new CreateContainerParameters
                     {
                         Image = TestServerImage,
-                        HostConfig = new HostConfig
-                        {
-                            AutoRemove = true,
-                        },
                         Name = "ryusocks-server",
                         Hostname = "ryusocks-server",
                         NetworkingConfig = containerNetwork,
@@ -135,6 +144,14 @@ namespace RyuSocks.Test.Integration
                     .Networks[NetworkName].IPAddress;
                 RyuSocksIPAddress = (await _docker.Containers.InspectContainerAsync(_ryuSocksContainerId)).NetworkSettings
                     .Networks[NetworkName].IPAddress;
+
+                _threads.Add(new Thread(() => _ = PrintContainerLogs(_ryuSocksContainerId, "RyuSocks", _cancellationTokenSource.Token)));
+                _threads.Add(new Thread(() => _ = PrintContainerLogs(_ftpContainerId, "FTPServer", _cancellationTokenSource.Token)));
+
+                foreach (var thread in _threads)
+                {
+                    thread.Start();
+                }
             }
             catch (DockerApiException)
             {
@@ -143,14 +160,56 @@ namespace RyuSocks.Test.Integration
             }
         }
 
-        private async Task BuildTestServer()
+        private async Task PrintContainerLogs(string containerId, string name, CancellationToken token)
+        {
+            var logStream = await _docker.Containers.GetContainerLogsAsync(
+                containerId,
+                false,
+                new ContainerLogsParameters
+                {
+                    ShowStderr = true,
+                    ShowStdout = true,
+                    Follow = true,
+                },
+                token
+            );
+
+            var stdout = Console.OpenStandardOutput();
+            var stderr = Console.OpenStandardError();
+
+            var buffer = new byte[1024 * 1024];
+            MultiplexedStream.ReadResult readResult = await logStream.ReadOutputAsync(buffer, 0, buffer.Length, token);
+
+            while (!readResult.EOF && !token.IsCancellationRequested)
+            {
+                var stream = readResult.Target == MultiplexedStream.TargetStream.StandardError
+                    ? stderr
+                    : stdout;
+
+                await stream.WriteAsync(Encoding.Default.GetBytes($"<{name}>: "), token);
+                await stream.WriteAsync(buffer.AsMemory(0, readResult.Count), token);
+
+                if (readResult.Count < buffer.Length)
+                {
+                    await stream.FlushAsync(token);
+                }
+
+                Array.Clear(buffer);
+                readResult = await logStream.ReadOutputAsync(buffer, 0, buffer.Length, token);
+            }
+
+            stderr.Close();
+            stdout.Close();
+        }
+
+        private async Task BuildDockerImage(Dictionary<string, string> buildContext, string imageName)
         {
             MemoryStream tarMemory = new();
             TarWriter tarWriter = new(tarMemory, true);
 
             string solutionPath = Path.GetFullPath(Path.Combine(ProjectPath, ".."));
 
-            foreach ((string hostPath, string tarPath) in _buildContext)
+            foreach ((string hostPath, string tarPath) in buildContext)
             {
                 string fullHostPath = Path.GetFullPath(Path.Combine(solutionPath, hostPath));
 
@@ -185,7 +244,7 @@ namespace RyuSocks.Test.Integration
             await _docker.Images.BuildImageFromDockerfileAsync(
                 new ImageBuildParameters
                 {
-                    Tags = [$"{TestServerImage}:latest"],
+                    Tags = [$"{imageName}:latest"],
                     Remove = true,
                     ForceRemove = true,
                     Pull = "always",
@@ -201,6 +260,12 @@ namespace RyuSocks.Test.Integration
 
         private async Task DestroyEnvironment()
         {
+            await _cancellationTokenSource.CancelAsync();
+            foreach (var thread in _threads)
+            {
+                thread.Join();
+            }
+
             if (_ftpContainerId != null)
             {
                 try
@@ -243,6 +308,15 @@ namespace RyuSocks.Test.Integration
             try
             {
                 await _docker.Images.DeleteImageAsync(TestServerImage, new ImageDeleteParameters { Force = true });
+            }
+            catch (DockerImageNotFoundException)
+            {
+                // Ignored.
+            }
+
+            try
+            {
+                await _docker.Images.DeleteImageAsync(FTPBaseServerImage, new ImageDeleteParameters { Force = true });
             }
             catch (DockerImageNotFoundException)
             {
