@@ -30,7 +30,9 @@ namespace RyuSocks.Test.Packets
         [InlineData(new[] { AuthMethod.NoAuth })]
         [RangeData<byte>(Byte.MinValue, Byte.MaxValue)]
         [RangeData<byte>(Byte.MinValue, Byte.MaxValue, [0x0, 0xFF, 0xAA, 0xBB])]
+#pragma warning disable CA1861
         [InlineData(new AuthMethod[] { })]
+#pragma warning restore CA1861
         public void Bytes_Size(AuthMethod[] methods)
         {
             // Version: 1 byte
