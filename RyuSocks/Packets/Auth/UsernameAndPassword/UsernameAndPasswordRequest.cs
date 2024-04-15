@@ -90,11 +90,11 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         public UsernameAndPasswordRequest(byte[] packetBytes)
         {
             Bytes = packetBytes;
-            Version = array[0];
-            UsernameLength = array[1];
-            Username = Encoding.ASCII.GetString(array[2..(2 + UsernameLength)]);
-            PasswordLength = array[2 + UsernameLength];
-            Password = Encoding.ASCII.GetString(array[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
+            Version = Bytes[0];
+            UsernameLength = Bytes[1];
+            Username = Encoding.ASCII.GetString(Bytes[2..(2 + UsernameLength)]);
+            PasswordLength = Bytes[2 + UsernameLength];
+            Password = Encoding.ASCII.GetString(Bytes[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
         }
 
         public UsernameAndPasswordRequest(string username, string password)

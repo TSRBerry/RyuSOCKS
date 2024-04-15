@@ -51,7 +51,7 @@ namespace RyuSocks.Commands.Server
             _server.SendAsync(endpoint, buffer);
         }
 
-        private ReadOnlySpan<byte> AddUdpHeader(IPEndPoint endpoint, ReadOnlySpan<byte> buffer)
+        private static ReadOnlySpan<byte> AddUdpHeader(IPEndPoint endpoint, ReadOnlySpan<byte> buffer)
         {
             UdpPacket packet = new(endpoint, buffer.Length);
             buffer.CopyTo(packet.UserData);
@@ -60,7 +60,7 @@ namespace RyuSocks.Commands.Server
             return packet.Bytes;
         }
 
-        private ReadOnlySpan<byte> RemoveUdpHeader(ReadOnlySpan<byte> buffer, out IPEndPoint endpoint)
+        private static ReadOnlySpan<byte> RemoveUdpHeader(ReadOnlySpan<byte> buffer, out IPEndPoint endpoint)
         {
             UdpPacket packet = new(buffer.ToArray());
             packet.Validate();
@@ -134,7 +134,7 @@ namespace RyuSocks.Commands.Server
                     return;
                 }
 
-                _command.Session.SendAsync(_command.AddUdpHeader((IPEndPoint)endpoint, buffer.AsSpan((int)offset, (int)size)));
+                _command.Session.SendAsync(AddUdpHeader((IPEndPoint)endpoint, buffer.AsSpan((int)offset, (int)size)));
             }
         }
     }
