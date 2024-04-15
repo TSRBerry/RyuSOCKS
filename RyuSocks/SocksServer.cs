@@ -15,6 +15,10 @@
  */
 
 using NetCoreServer;
+using RyuSocks.Auth;
+using RyuSocks.Commands;
+using System.Collections.Generic;
+using System.Net;
 
 namespace RyuSocks
 {
@@ -22,6 +26,11 @@ namespace RyuSocks
     public partial class SocksServer : TcpServer
     {
         // TODO: Add (generated) properties for auth methods and commands
-        // TODO: Add methods to customize auth method and command behavior
+        public IReadOnlySet<AuthMethod> AcceptableAuthMethods { get; set; } = new HashSet<AuthMethod>();
+        public IReadOnlySet<ProxyCommand> OfferedCommands { get; set; } = new HashSet<ProxyCommand>();
+        public bool UseAllowList { get; set; }
+        public bool UseBlockList { get; set; }
+        public IReadOnlyDictionary<IPAddress, ushort[]> AllowedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
+        public IReadOnlyDictionary<IPAddress, ushort[]> BlockedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
     }
 }
