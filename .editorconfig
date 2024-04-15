@@ -237,4 +237,9 @@ dotnet_naming_style.IPascalCase.required_suffix =
 dotnet_naming_style.IPascalCase.word_separator =
 dotnet_naming_style.IPascalCase.capitalization = pascal_case
 
+### Rule exceptions ###
 
+[RyuSocks.Test/**.cs]
+
+# Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = none
