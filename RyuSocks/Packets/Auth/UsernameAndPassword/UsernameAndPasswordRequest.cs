@@ -16,6 +16,7 @@
 
 using RyuSocks.Packets.Auth;
 using System;
+using System.Linq;
 using System.Security.Authentication;
 using System.Text;
 
@@ -92,9 +93,21 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             Bytes = packetBytes;
             Version = Bytes[0];
             UsernameLength = Bytes[1];
-            Username = Encoding.ASCII.GetString(Bytes[2..(2 + UsernameLength)]);
+            try { Username = Encoding.ASCII.GetString(Bytes[2..(2 + UsernameLength)]); }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"UsernameLength and actual Username length do not match: {Bytes[1]:X} (throws {e})");
+            }
             PasswordLength = Bytes[2 + UsernameLength];
-            Password = Encoding.ASCII.GetString(Bytes[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
+            try
+            {
+                Password = Encoding.ASCII.GetString(
+                    Bytes[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"PasswordLength and actual Password length do not match: {Bytes[1]:X} (throws {e})");
+            }
         }
 
         public UsernameAndPasswordRequest(string username, string password)
