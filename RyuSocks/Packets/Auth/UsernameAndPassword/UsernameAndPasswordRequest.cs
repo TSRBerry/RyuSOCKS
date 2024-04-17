@@ -66,11 +66,11 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             get
             {
-                return Bytes[3 + UsernameLength];
+                return Bytes[2 + UsernameLength];
             }
             set
             {
-                Bytes[3 + UsernameLength] = value;
+                Bytes[2 + UsernameLength] = value;
             }
         }
 
@@ -78,13 +78,13 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         {
             get
             {
-                return Encoding.ASCII.GetString(Bytes.AsSpan(4 + UsernameLength, PasswordLength));
+                return Encoding.ASCII.GetString(Bytes.AsSpan(3 + UsernameLength, PasswordLength));
             }
             set
             {
                 ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
                 PasswordLength = (byte)value.Length;
-                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(4 + UsernameLength, PasswordLength));
+                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(3 + UsernameLength, PasswordLength));
             }
         }
 
@@ -122,7 +122,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public override void Validate()
         {
-            const int MinLength = 5;
+            const int MinLength = 4;
             const int MaxLength = 513;
             if (Bytes.Length is < MinLength or > MaxLength)
             {

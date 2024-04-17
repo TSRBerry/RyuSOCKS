@@ -73,8 +73,10 @@ namespace RyuSocks.Test.Auth
                 Password = password
             };
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
+            // Since a ByRef variable (of type ReadOnlySpan) is not accepted by a lambda expression, it is converted to a byte array
+            byte[] outgoingPacketByte = outgoingPacket.ToArray();
             usernameAndPassword.IsClient = false;
-            Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacket, out _));
+            Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
         }
 
         [Theory]
@@ -88,8 +90,10 @@ namespace RyuSocks.Test.Auth
                 Password = password
             };
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
+            // Since a ByRef variable (of type ReadOnlySpan) is not accepted by a lambda expression, it is converted to a byte array
+            byte[] outgoingPacketByte = outgoingPacket.ToArray();
             usernameAndPassword.IsClient = false;
-            Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacket, out _));
+            Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
         }
 
         [Theory]
