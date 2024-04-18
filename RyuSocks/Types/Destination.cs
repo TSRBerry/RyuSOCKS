@@ -69,5 +69,10 @@ namespace RyuSocks.Types
         {
             return endpoint.Port == Port && Addresses.Contains(endpoint.Address);
         }
+
+        public override string ToString()
+        {
+            return ToEndPoint().ToString();
+        }
     }
 }
