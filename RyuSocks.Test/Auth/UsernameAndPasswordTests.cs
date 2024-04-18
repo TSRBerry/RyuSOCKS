@@ -51,15 +51,17 @@ namespace RyuSocks.Test.Auth
             };
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
             usernameAndPassword.IsClient = false;
-            usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
+
+            usernameAndPassword.Authenticate(outgoingPacket, out _);
         }
 
         [Theory]
         [UsernameAndPasswordRandomUsernameAndPasswords(1)]
         public void Authenticate_NotRegisteredUserAuthentication(string username, string password)
         {
-            UsernameAndPassword usernameAndPassword = new(){
-                Database = new Dictionary<string, string>(),
+            UsernameAndPassword usernameAndPassword = new()
+            {
+                Database = [],
                 Username = username,
                 Password = password
             };
@@ -71,7 +73,7 @@ namespace RyuSocks.Test.Auth
         }
 
         [Theory]
-        [InlineData("RegisteredUser","WrongPassword")]
+        [InlineData("RegisteredUser", "WrongPassword")]
         public void Authenticate_RegisteredUserWrongPasswordAuthentication(string username, string password)
         {
             UsernameAndPassword usernameAndPassword = new()
@@ -106,9 +108,9 @@ namespace RyuSocks.Test.Auth
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
             usernameAndPassword.IsClient = false;
             usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
-            
+
             byte[] responsePacketBytes = responsePacket.ToArray();
-            Assert.Equal(usernameAndPasswordResponseBytes,responsePacketBytes );
+            Assert.Equal(usernameAndPasswordResponseBytes, responsePacketBytes);
         }
 
         [Theory]
