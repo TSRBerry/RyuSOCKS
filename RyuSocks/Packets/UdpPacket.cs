@@ -85,6 +85,11 @@ namespace RyuSocks.Packets
 
         public override void Validate()
         {
+            if (Bytes.Length < 8)
+            {
+                throw new InvalidOperationException($"Packet length is too short: {Bytes.Length} (Expected: >= 8)");
+            }
+
             if (Reserved != 0)
             {
                 throw new InvalidOperationException($"${nameof(Reserved)} must be 0.");

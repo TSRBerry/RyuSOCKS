@@ -16,7 +16,6 @@ using RyuSocks.Packets;
 using RyuSocks.Types;
 using RyuSocks.Utils;
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 

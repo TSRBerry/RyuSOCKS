@@ -75,6 +75,11 @@ namespace RyuSocks.Packets
 
         public override void Validate()
         {
+            if (Bytes.Length < 3)
+            {
+                throw new InvalidOperationException($"Packet length is too short: {Bytes.Length} (Expected: >= 3)");
+            }
+
             if (Version != ProxyConsts.Version)
             {
                 throw new InvalidOperationException($"{nameof(Version)} is invalid: {Version:X} (Expected: {ProxyConsts.Version:X})");
