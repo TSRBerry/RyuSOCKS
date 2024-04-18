@@ -140,7 +140,7 @@ namespace RyuSocks
             // Choose the authentication method.
             if (_authMethod == AuthMethod.NoAcceptableMethods)
             {
-                ProcessAuthMethodSelection(buffer);
+                ProcessAuthMethodSelection(buffer[(int)offset..(int)size]);
 
                 _isAuthenticated = _authMethod == AuthMethod.NoAuth;
 
@@ -167,7 +167,7 @@ namespace RyuSocks
             // Attempt to process a command request.
             if (_command == 0)
             {
-                ProcessCommandRequest(buffer);
+                ProcessCommandRequest(buffer[(int)offset..(int)size]);
                 return;
             }
 
