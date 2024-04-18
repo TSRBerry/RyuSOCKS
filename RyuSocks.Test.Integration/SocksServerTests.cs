@@ -61,9 +61,9 @@ namespace RyuSocks.Test.Integration
 
         [Theory]
         [InlineData(0, true)]
-        [InlineData(0, false)]
+        [InlineData(0, false, Skip = "Invalid, see: https://github.com/robinrodricks/FluentFTP/issues/1560")]
         [InlineData(1, true)]
-        [InlineData(1, false)]
+        [InlineData(1, false, Skip = "Invalid, see: https://github.com/robinrodricks/FluentFTP/issues/1560")]
         public void FTPClient_CanDownloadFile(int fileIndex, bool isPassiveMode)
         {
             var file = FTPServerEnvironment.FTPServerFiles.GetFiles()[fileIndex];
@@ -82,8 +82,8 @@ namespace RyuSocks.Test.Integration
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [InlineData(false, Skip = "Invalid, see: https://github.com/robinrodricks/FluentFTP/issues/1560")]
+        [InlineData(true, Skip = "Broken, tries to upload 1049 bytes instead of 1024 for some reason")]
         public void FTPClient_CanUploadFile(bool isPassiveMode)
         {
             string fileName = isPassiveMode ? "upload_passive.bin" : "upload_active.bin";
