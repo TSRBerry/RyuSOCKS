@@ -316,7 +316,7 @@ namespace RyuSocks.Test.Integration
 
             try
             {
-                await _docker.Images.DeleteImageAsync(FTPBaseServerImage, new ImageDeleteParameters { Force = true });
+                await _docker.Images.DeleteImageAsync(FTPServerImage, new ImageDeleteParameters { Force = true });
             }
             catch (DockerImageNotFoundException)
             {

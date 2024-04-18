@@ -23,6 +23,7 @@ namespace RyuSocks.Test.Integration
 {
     public class SocksServerTests : IClassFixture<FTPServerEnvironment>, IDisposable
     {
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly FTPServerEnvironment _fixture;
         private readonly FtpClientSocks5Proxy _ftp;
 
