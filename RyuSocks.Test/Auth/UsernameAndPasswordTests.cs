@@ -15,13 +15,12 @@
  */
 
 using RyuSocks.Auth;
+using RyuSocks.Packets.Auth;
 using RyuSocks.Packets.Auth.UsernameAndPassword;
 using RyuSocks.Test.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Authentication;
-using System.Text;
 using Xunit;
 
 namespace RyuSocks.Test.Auth
@@ -29,23 +28,15 @@ namespace RyuSocks.Test.Auth
     public class UsernameAndPasswordTests
     {
         [Theory]
-        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC }, false)]
-        [InlineData(new byte[] { 0x01, 0x00, 0x00, 0x00, 0x00 }, true)]
-        public void Authenticate_RandomPackages(byte[] incomingPacket, bool isValidInput)
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC })]
+        public void Authenticate_PackageWithWrongVersion(byte[] incomingPacket)
         {
             UsernameAndPassword usernameAndPassword = new()
             {
                 Database = [],
                 IsClient = false
             };
-            if (!isValidInput)
-            {
-                Assert.Throws<InvalidOperationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
-            }
-            else
-            {
-                Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
-            }
+            Assert.Throws<InvalidOperationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
         }
 
         [Theory]
@@ -60,7 +51,7 @@ namespace RyuSocks.Test.Auth
             };
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
             usernameAndPassword.IsClient = false;
-            usernameAndPassword.Authenticate(outgoingPacket, out _);
+            usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
         }
 
         [Theory]
@@ -94,6 +85,30 @@ namespace RyuSocks.Test.Auth
             byte[] outgoingPacketByte = outgoingPacket.ToArray();
             usernameAndPassword.IsClient = false;
             Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
+        }
+
+        [Theory]
+        [InlineData("a", "b")]
+        public void Authenticate_RightResponsePacket(string username, string password)
+        {
+            UsernameAndPassword usernameAndPassword = new()
+            {
+                Database = new Dictionary<string, string> { { username, password } },
+                Username = username,
+                Password = password
+            };
+            UsernameAndPasswordResponse usernameAndPasswordResponse = new()
+            {
+                Version = Constants.UaPVersion,
+                Status = 0,
+            };
+            byte[] usernameAndPasswordResponseBytes = usernameAndPasswordResponse.Bytes;
+            usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
+            usernameAndPassword.IsClient = false;
+            usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
+            
+            byte[] responsePacketBytes = responsePacket.ToArray();
+            Assert.Equal(usernameAndPasswordResponseBytes,responsePacketBytes );
         }
 
         [Theory]
