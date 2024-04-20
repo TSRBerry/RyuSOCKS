@@ -2,18 +2,39 @@
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <TargetFramework>net8.0</TargetFramework>
+        <Version>0.0.0</Version>
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <IsAotCompatible>true</IsAotCompatible>
+        <PublishAot>true</PublishAot>
+        <PublishTrimmed>true</PublishTrimmed>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <PropertyGroup>
-        <IsAotCompatible>true</IsAotCompatible>
-        <PublishAot>true</PublishAot>
+        <PackageId>RyuSocks</PackageId>
+        <Title>RyuSOCKS: SOCKS5 proxy library</Title>
+        <Description>An extensible SOCKS5 proxy library.</Description>
+        <RepositoryUrl>https://github.com/TSRBerry/RyuSOCKS</RepositoryUrl>
+        <PackageTags>socks;socks5;proxy;client;server</PackageTags>
+        <Authors>TSRBerry</Authors>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>The changelog is available at: https://github.com/TSRBerry/RyuSOCKS/blob/master/CHANGELOG.md</PackageReleaseNotes>
+        <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\LICENSE" Pack="true" PackagePath="" />
+        <None Include="..\README.md" Pack="true" PackagePath="" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="NetCoreServer" Version="8.0.7" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\RyuSocks.Generator\RyuSocks.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\RyuSocks.Generator\RyuSocks.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>
