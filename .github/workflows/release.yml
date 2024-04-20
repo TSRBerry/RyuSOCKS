@@ -1,0 +1,38 @@
+name: Release NuGet package
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: nuget-release
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+    permissions:
+      pull-requests: write
+      checks: write
+
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  publish:
+    needs: [checks, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Package
+        working-directory: RyuSocks
+        run: dotnet pack
+
+      - name: Publish to NuGet.org
+        working-directory: RyuSocks
+        run: dotnet nuget push "bin/Release/RyuSocks.*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
