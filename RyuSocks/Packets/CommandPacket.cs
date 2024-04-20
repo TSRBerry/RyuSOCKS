@@ -65,7 +65,7 @@ namespace RyuSocks.Packets
             {
                 throw new InvalidOperationException($"Packet length is too short: {Bytes.Length} (Expected: >= 8)");
             }
-            
+
             if (Version != ProxyConsts.Version)
             {
                 throw new InvalidOperationException(
