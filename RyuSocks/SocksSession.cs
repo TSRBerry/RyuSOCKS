@@ -37,6 +37,8 @@ namespace RyuSocks
         protected IProxyAuth Auth;
         protected ServerCommand Command;
 
+        public new SocksServer Server => base.Server as SocksServer;
+
         private void ProcessAuthMethodSelection(byte[] buffer)
         {
             var request = new MethodSelectionRequest(buffer);
@@ -44,7 +46,7 @@ namespace RyuSocks
 
             foreach (var requestedAuthMethod in request.Methods)
             {
-                if (((SocksServer)this.Server).AcceptableAuthMethods.Contains(requestedAuthMethod))
+                if (Server.AcceptableAuthMethods.Contains(requestedAuthMethod))
                 {
                     var reply = new MethodSelectionResponse(requestedAuthMethod)
                     {
@@ -69,7 +71,7 @@ namespace RyuSocks
 
         private bool IsDestinationValid(CommandRequest request)
         {
-            if (!((SocksServer)Server).UseAllowList && !((SocksServer)Server).UseBlockList)
+            if (!Server.UseAllowList && !Server.UseBlockList)
             {
                 return true;
             }
@@ -79,16 +81,16 @@ namespace RyuSocks
             // Check whether the client is allowed to connect to the requested destination.
             foreach (IPAddress destinationAddress in request.ProxyEndpoint.Addresses)
             {
-                if (((SocksServer)Server).UseAllowList
-                    && ((SocksServer)Server).AllowedDestinations.TryGetValue(destinationAddress, out ushort[] allowedPorts)
+                if (Server.UseAllowList
+                    && Server.AllowedDestinations.TryGetValue(destinationAddress, out ushort[] allowedPorts)
                     && allowedPorts.Contains(request.DestinationPort))
                 {
                     isDestinationValid = true;
                     break;
                 }
 
-                if (((SocksServer)Server).UseBlockList
-                    && (!((SocksServer)Server).BlockedDestinations.TryGetValue(destinationAddress, out allowedPorts)
+                if (Server.UseBlockList
+                    && (!Server.BlockedDestinations.TryGetValue(destinationAddress, out allowedPorts)
                         || !allowedPorts.Contains(request.DestinationPort)))
                 {
                     isDestinationValid = true;
@@ -110,7 +112,7 @@ namespace RyuSocks
             };
 
             // Check whether the client requested a valid command.
-            if (((SocksServer)this.Server).OfferedCommands.Contains(request.Command))
+            if (Server.OfferedCommands.Contains(request.Command))
             {
                 if (IsDestinationValid(request))
                 {
