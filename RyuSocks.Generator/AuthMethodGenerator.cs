@@ -24,7 +24,7 @@ using System.Threading;
 namespace RyuSocks.Generator
 {
     [Generator]
-    public class AuthEnumGenerator : IIncrementalGenerator
+    public class AuthMethodGenerator : IIncrementalGenerator
     {
         private const string Namespace = "RyuSocks.Auth";
         private const string AuthMethodImplAttributeName = "AuthMethodImplAttribute";
@@ -38,7 +38,7 @@ using System;
 namespace %NAMESPACE%
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    [System.Diagnostics.Conditional(""RyuSocks_AuthEnumGenerator_DEBUG"")]
+    [System.Diagnostics.Conditional(""RyuSocks_AuthMethodGenerator_DEBUG"")]
     public sealed class %ATTRIBUTE_NAME% : Attribute
     {
         private byte methodId;
@@ -129,6 +129,7 @@ namespace %NAMESPACE%
             // Begin building the generated source
             CodeBuilder source = new();
             CodeBuilder sourceExtensions = new();
+            BlockBuilder implToEnumBlock = new();
             source.EnterScope($"namespace {Namespace}");
             source.EnterScope($"public enum {AuthMethodEnumName} : byte");
             sourceExtensions.AppendLine($"using {Namespace};");
@@ -137,6 +138,7 @@ namespace %NAMESPACE%
             sourceExtensions.EnterScope($"namespace {Namespace}.Extensions");
             sourceExtensions.EnterScope($"public static class {AuthMethodExtensionsClassName}");
             sourceExtensions.EnterScope($"public static {ProxyAuthInterfaceName} GetAuth(this {AuthMethodEnumName} authMethod) => authMethod switch");
+            implToEnumBlock.EnterScope($"public static {AuthMethodEnumName} GetAuth(this {ProxyAuthInterfaceName} authImpl) => authImpl switch");
 
             bool firstMember = true;
             byte lastMemberValue = 0;
@@ -162,6 +164,7 @@ namespace %NAMESPACE%
                     }
 
                     sourceExtensions.AppendLine($"{AuthMethodEnumName}.{authMethod.MemberName} => new {authMethod.ClassName}(),");
+                    implToEnumBlock.AppendLine($"{authMethod.ClassName} => {AuthMethodEnumName}.{authMethod.MemberName},");
                     lastMemberValue = authMethod.Id;
 
                     continue;
@@ -207,6 +210,7 @@ namespace %NAMESPACE%
                 }
 
                 sourceExtensions.AppendLine($"{AuthMethodEnumName}.{authMethod.MemberName} => new {authMethod.ClassName}(),");
+                implToEnumBlock.AppendLine($"{authMethod.ClassName} => {AuthMethodEnumName}.{authMethod.MemberName},");
                 lastMemberValue = authMethod.Id;
             }
 
@@ -224,6 +228,9 @@ namespace %NAMESPACE%
             source.LeaveScope();
             sourceExtensions.AppendLine("_ => throw new ArgumentException($\"Invalid authentication method provided: {authMethod}\", nameof(authMethod)),");
             sourceExtensions.LeaveScope(";");
+            implToEnumBlock.AppendLine("_ => throw new ArgumentException($\"Unknown authentication implementation provided: {authImpl}\", nameof(authImpl)),");
+            implToEnumBlock.LeaveScope(";");
+            sourceExtensions.AppendBlock(implToEnumBlock.GetLines());
             sourceExtensions.LeaveScope();
             sourceExtensions.LeaveScope();
 
