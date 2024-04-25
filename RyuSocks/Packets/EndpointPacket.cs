@@ -16,6 +16,7 @@
 
 using RyuSocks.Types;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -152,6 +153,29 @@ namespace RyuSocks.Packets
             AddressType = AddressType.DomainName;
             DomainName = endpoint.Host;
             Port = (ushort)endpoint.Port;
+        }
+
+        protected EndpointPacket(ProxyEndpoint endpoint)
+        {
+            Bytes = endpoint.Type switch
+            {
+                AddressType.Ipv4Address => new byte[10],
+                AddressType.DomainName => Bytes = new byte[7 + endpoint.DomainName.Length],
+                AddressType.Ipv6Address => new byte[22],
+                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+            };
+
+            AddressType = endpoint.Type;
+            if (endpoint.Type == AddressType.DomainName)
+            {
+                DomainName = endpoint.DomainName;
+                Port = endpoint.Port;
+            }
+            else
+            {
+                Address = endpoint.Addresses.Single();
+                Port = endpoint.Port;
+            }
         }
 
         protected EndpointPacket()

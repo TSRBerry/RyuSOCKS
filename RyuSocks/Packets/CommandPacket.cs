@@ -14,6 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Types;
 using RyuSocks.Utils;
 using System;
 using System.Net;
@@ -57,6 +58,7 @@ namespace RyuSocks.Packets
         protected CommandPacket(byte[] packetBytes) : base(packetBytes) { }
         protected CommandPacket(IPEndPoint endpoint) : base(endpoint) { }
         protected CommandPacket(DnsEndPoint endpoint) : base(endpoint) { }
+        protected CommandPacket(ProxyEndpoint endpoint) : base(endpoint) { }
         protected CommandPacket() { }
 
         public override void Validate()

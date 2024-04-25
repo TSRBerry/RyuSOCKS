@@ -14,6 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Types;
 using System;
 using System.Net;
 
@@ -77,6 +78,13 @@ namespace RyuSocks.Packets
         }
 
         public UdpPacket(DnsEndPoint endpoint, int payloadLength) : base(endpoint)
+        {
+            byte[] baseBytes = Bytes;
+            Array.Resize(ref baseBytes, Bytes.Length + payloadLength);
+            Bytes = baseBytes;
+        }
+
+        public UdpPacket(ProxyEndpoint endpoint, int payloadLength) : base(endpoint)
         {
             byte[] baseBytes = Bytes;
             Array.Resize(ref baseBytes, Bytes.Length + payloadLength);

@@ -60,6 +60,7 @@ namespace RyuSocks.Packets
         public CommandResponse(byte[] packetBytes) : base(packetBytes) { }
         public CommandResponse(IPEndPoint endpoint) : base(endpoint) { }
         public CommandResponse(DnsEndPoint endpoint) : base(endpoint) { }
+        public CommandResponse(ProxyEndpoint endpoint) : base(endpoint) { }
         public CommandResponse() { }
     }
 }

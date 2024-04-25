@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Commands;
+using RyuSocks.Types;
 using System.Net;
 
 namespace RyuSocks.Packets
@@ -60,5 +61,6 @@ namespace RyuSocks.Packets
         public CommandRequest(byte[] packetBytes) : base(packetBytes) { }
         public CommandRequest(IPEndPoint endpoint) : base(endpoint) { }
         public CommandRequest(DnsEndPoint endpoint) : base(endpoint) { }
+        public CommandRequest(ProxyEndpoint endpoint) : base(endpoint) { }
     }
 }
