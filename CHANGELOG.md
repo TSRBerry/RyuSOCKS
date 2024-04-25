@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A logo made by [Justin de Haas](https://onemuri.nl/)
+
 ## [0.1.0-alpha] - 2024-04-21
 
 ### Added

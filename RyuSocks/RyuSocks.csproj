@@ -18,6 +18,7 @@
         <PackageTags>socks;socks5;proxy;client;server</PackageTags>
         <Authors>TSRBerry</Authors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>icon.png</PackageIcon>
         <PackageReleaseNotes>The changelog is available at: https://github.com/TSRBerry/RyuSOCKS/blob/master/CHANGELOG.md</PackageReleaseNotes>
         <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
         <IncludeSymbols>true</IncludeSymbols>
@@ -28,6 +29,7 @@
     <ItemGroup>
         <None Include="..\LICENSE" Pack="true" PackagePath="" />
         <None Include="..\README.md" Pack="true" PackagePath="" />
+        <None Include="icon.png" Pack="true" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
