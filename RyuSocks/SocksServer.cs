@@ -17,6 +17,7 @@
 using NetCoreServer;
 using RyuSocks.Auth;
 using RyuSocks.Commands;
+using System;
 using System.Collections.Generic;
 using System.Net;
 
@@ -26,11 +27,41 @@ namespace RyuSocks
     public partial class SocksServer : TcpServer
     {
         // TODO: Add (generated) properties for auth methods and commands
+
         public IReadOnlySet<AuthMethod> AcceptableAuthMethods { get; set; } = new HashSet<AuthMethod>();
         public IReadOnlySet<ProxyCommand> OfferedCommands { get; set; } = new HashSet<ProxyCommand>();
         public bool UseAllowList { get; set; }
         public bool UseBlockList { get; set; }
         public IReadOnlyDictionary<IPAddress, ushort[]> AllowedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
         public IReadOnlyDictionary<IPAddress, ushort[]> BlockedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
+
+        #region Multicasting
+
+        public override bool Multicast(ReadOnlySpan<byte> buffer)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool Multicast(byte[] buffer)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool Multicast(ReadOnlySpan<char> text)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool Multicast(byte[] buffer, long offset, long size)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool Multicast(string text)
+        {
+            throw new NotSupportedException();
+        }
+
+        #endregion
     }
 }
