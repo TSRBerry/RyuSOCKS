@@ -14,6 +14,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
+
 namespace RyuSocks.Packets
 {
     public abstract class Packet
@@ -28,5 +30,8 @@ namespace RyuSocks.Packets
         /// This method is not supposed to verify the contents of the packet in depth.
         /// </summary>
         public abstract void Validate();
+
+        /// <inheritdoc cref="Bytes"/>
+        public ReadOnlySpan<byte> AsSpan() => Bytes;
     }
 }

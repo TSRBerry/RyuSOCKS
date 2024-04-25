@@ -55,7 +55,7 @@ namespace RyuSocks.Commands.Server
             {
                 Version = ProxyConsts.Version,
                 ReplyField = error.ToReplyField(),
-            }.Bytes);
+            }.AsSpan());
         }
 
         private void Dispose(bool disposing)
@@ -123,7 +123,7 @@ namespace RyuSocks.Commands.Server
                         $"The type of RemoteEndPoint is not supported: {session.Socket.RemoteEndPoint}"),
                 };
 
-                _command.Session.SendAsync(response.Bytes);
+                _command.Session.SendAsync(response.AsSpan());
                 _command._serverSession = (TcpSession)session;
             }
 
@@ -145,7 +145,7 @@ namespace RyuSocks.Commands.Server
                         $"The type of EndPoint is not supported: {Endpoint}"),
                 };
 
-                _command.Session.SendAsync(response.Bytes);
+                _command.Session.SendAsync(response.AsSpan());
             }
         }
 

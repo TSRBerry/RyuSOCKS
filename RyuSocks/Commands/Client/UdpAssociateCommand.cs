@@ -48,7 +48,7 @@ namespace RyuSocks.Commands.Client
             }
 
             request.Validate();
-            Client.SendAsync(request.Bytes);
+            Client.SendAsync(request.AsSpan());
         }
     }
 }

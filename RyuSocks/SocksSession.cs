@@ -32,12 +32,10 @@ namespace RyuSocks
     [SocksClass]
     public partial class SocksSession : TcpSession
     {
-        private bool _isClosing;
-        private bool _isAuthenticated;
-        private AuthMethod _authMethod = AuthMethod.NoAcceptableMethods;
-        private ProxyCommand _command = 0;
-        private IProxyAuth _auth;
-        private ServerCommand _server;
+        protected bool IsClosing;
+        protected bool IsAuthenticated;
+        protected IProxyAuth Auth;
+        protected ServerCommand Command;
 
         private void ProcessAuthMethodSelection(byte[] buffer)
         {
@@ -54,8 +52,7 @@ namespace RyuSocks
                     };
 
                     SendAsync(reply.Bytes);
-                    _auth = requestedAuthMethod.GetAuth();
-                    _authMethod = requestedAuthMethod;
+                    Auth = requestedAuthMethod.GetAuth();
 
                     return;
                 }
@@ -67,7 +64,7 @@ namespace RyuSocks
             };
 
             SendAsync(errorReply.Bytes);
-            _isClosing = true;
+            IsClosing = true;
         }
 
         private bool IsDestinationValid(CommandRequest request)
@@ -117,75 +114,75 @@ namespace RyuSocks
             {
                 if (IsDestinationValid(request))
                 {
-                    _server = request.Command.GetServerCommand()(this, (IPEndPoint)Server.Endpoint, request.Destination);
-                    _command = request.Command;
-
+                    Command = request.Command.GetServerCommand()(this, (IPEndPoint)Server.Endpoint, request.Destination);
                     return;
                 }
 
                 errorReply.ReplyField = ReplyField.ConnectionNotAllowed;
-                SendAsync(errorReply.Bytes);
-                _isClosing = true;
+                SendAsync(errorReply.AsSpan());
+                IsClosing = true;
 
                 return;
             }
 
             errorReply.ReplyField = ReplyField.CommandNotSupported;
-            SendAsync(errorReply.Bytes);
-            _isClosing = true;
+            SendAsync(errorReply.AsSpan());
+            IsClosing = true;
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
+            ReadOnlySpan<byte> bufferSpan = buffer.AsSpan((int)offset, (int)size);
+            
             // Choose the authentication method.
-            if (_authMethod == AuthMethod.NoAcceptableMethods)
+            if (Auth == null)
             {
-                ProcessAuthMethodSelection(buffer[(int)offset..(int)size]);
-
-                _isAuthenticated = _authMethod == AuthMethod.NoAuth;
+                ProcessAuthMethodSelection(bufferSpan.ToArray());
+                IsAuthenticated = Auth.GetAuth() == AuthMethod.NoAuth;
 
                 return;
             }
 
             // Authenticate the client.
-            if (!_isAuthenticated)
+            if (!IsAuthenticated)
             {
                 try
                 {
-                    _isAuthenticated = _auth.Authenticate(buffer.AsSpan((int)offset, (int)size), out ReadOnlySpan<byte> sendBuffer);
+                    IsAuthenticated = Auth.Authenticate(bufferSpan, out ReadOnlySpan<byte> sendBuffer);
                     SendAsync(sendBuffer);
                 }
                 catch (AuthenticationException)
                 {
                     // TODO: Log the exception here.
-                    _isClosing = true;
+                    IsClosing = true;
                 }
 
                 return;
             }
+            
+            bufferSpan = Auth.Unwrap(bufferSpan);
 
             // Attempt to process a command request.
-            if (_command == 0)
+            if (Command == null)
             {
-                ProcessCommandRequest(buffer[(int)offset..(int)size]);
+                ProcessCommandRequest(bufferSpan.ToArray());
                 return;
             }
 
             // Don't process packets for clients we are disconnecting soon.
-            if (_isClosing)
+            if (IsClosing)
             {
                 return;
             }
+            
+            bufferSpan = Command.Unwrap(bufferSpan);
 
-            var bufferSpan = _auth.Unwrap(buffer.AsSpan((int)offset, (int)size));
-            bufferSpan = _server.Unwrap(bufferSpan);
-
-            _server.OnReceived(bufferSpan);
+            Command.OnReceived(bufferSpan);
         }
 
         protected override void OnEmpty()
         {
-            if (_isClosing)
+            if (IsClosing)
             {
                 Disconnect();
             }
@@ -193,14 +190,14 @@ namespace RyuSocks
 
         public override bool SendAsync(ReadOnlySpan<byte> buffer)
         {
-            if (_command != 0)
+            if (Command != null)
             {
-                buffer = _server.Wrap(buffer);
+                buffer = Command.Wrap(buffer);
             }
 
-            if (_isAuthenticated)
+            if (IsAuthenticated)
             {
-                buffer = _auth.Wrap(buffer);
+                buffer = Auth.Wrap(buffer);
             }
 
             return base.SendAsync(buffer);

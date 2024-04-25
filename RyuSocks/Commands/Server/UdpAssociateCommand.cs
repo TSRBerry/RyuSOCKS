@@ -49,7 +49,7 @@ namespace RyuSocks.Commands.Server
             buffer.CopyTo(packet.UserData);
             packet.Validate();
 
-            return packet.Bytes;
+            return packet.AsSpan();
         }
 
         private static ReadOnlySpan<byte> RemoveUdpHeader(ReadOnlySpan<byte> buffer, out IPEndPoint endpoint)
@@ -110,7 +110,7 @@ namespace RyuSocks.Commands.Server
                         $"The type of EndPoint is not supported: {Endpoint}"),
                 };
 
-                _command.Session.SendAsync(response.Bytes);
+                _command.Session.SendAsync(response.AsSpan());
             }
 
             protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)

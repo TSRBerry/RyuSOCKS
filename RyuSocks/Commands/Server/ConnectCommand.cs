@@ -44,7 +44,7 @@ namespace RyuSocks.Commands.Server
                 {
                     Version = ProxyConsts.Version,
                     ReplyField = _client.Error.ToReplyField(),
-                }.Bytes);
+                }.AsSpan());
 
                 _client.ResetError();
                 session.Disconnect();
@@ -68,7 +68,7 @@ namespace RyuSocks.Commands.Server
                     $"The type of LocalEndPoint is not supported: {_client.Socket.LocalEndPoint}"),
             };
 
-            Session.SendAsync(response.Bytes);
+            Session.SendAsync(response.AsSpan());
         }
 
         public override void OnReceived(ReadOnlySpan<byte> buffer)
