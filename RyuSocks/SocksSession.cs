@@ -39,36 +39,6 @@ namespace RyuSocks
 
         public new SocksServer Server => base.Server as SocksServer;
 
-        private void ProcessAuthMethodSelection(byte[] buffer)
-        {
-            var request = new MethodSelectionRequest(buffer);
-            request.Validate();
-
-            foreach (var requestedAuthMethod in request.Methods)
-            {
-                if (Server.AcceptableAuthMethods.Contains(requestedAuthMethod))
-                {
-                    var reply = new MethodSelectionResponse(requestedAuthMethod)
-                    {
-                        Version = ProxyConsts.Version,
-                    };
-
-                    SendAsync(reply.Bytes);
-                    Auth = requestedAuthMethod.GetAuth();
-
-                    return;
-                }
-            }
-
-            var errorReply = new MethodSelectionResponse(AuthMethod.NoAcceptableMethods)
-            {
-                Version = ProxyConsts.Version,
-            };
-
-            SendAsync(errorReply.Bytes);
-            IsClosing = true;
-        }
-
         private bool IsDestinationValid(CommandRequest request)
         {
             if (!Server.UseAllowList && !Server.UseBlockList)
@@ -101,9 +71,39 @@ namespace RyuSocks
             return isDestinationValid;
         }
 
-        private void ProcessCommandRequest(byte[] buffer)
+        protected virtual void ProcessAuthMethodSelection(ReadOnlySpan<byte> buffer)
         {
-            var request = new CommandRequest(buffer);
+            var request = new MethodSelectionRequest(buffer.ToArray());
+            request.Validate();
+
+            foreach (var requestedAuthMethod in request.Methods)
+            {
+                if (Server.AcceptableAuthMethods.Contains(requestedAuthMethod))
+                {
+                    var reply = new MethodSelectionResponse(requestedAuthMethod)
+                    {
+                        Version = ProxyConsts.Version,
+                    };
+
+                    SendAsync(reply.AsSpan());
+                    Auth = requestedAuthMethod.GetAuth();
+
+                    return;
+                }
+            }
+
+            var errorReply = new MethodSelectionResponse(AuthMethod.NoAcceptableMethods)
+            {
+                Version = ProxyConsts.Version,
+            };
+
+            SendAsync(errorReply.AsSpan());
+            IsClosing = true;
+        }
+
+        protected virtual void ProcessCommandRequest(ReadOnlySpan<byte> buffer)
+        {
+            var request = new CommandRequest(buffer.ToArray());
             request.Validate();
 
             var errorReply = new CommandResponse(new IPEndPoint(0, 0))
@@ -139,7 +139,7 @@ namespace RyuSocks
             // Choose the authentication method.
             if (Auth == null)
             {
-                ProcessAuthMethodSelection(bufferSpan.ToArray());
+                ProcessAuthMethodSelection(bufferSpan);
                 IsAuthenticated = Auth.GetAuth() == AuthMethod.NoAuth;
 
                 return;
@@ -167,7 +167,7 @@ namespace RyuSocks
             // Attempt to process a command request.
             if (Command == null)
             {
-                ProcessCommandRequest(bufferSpan.ToArray());
+                ProcessCommandRequest(bufferSpan);
                 return;
             }
 
