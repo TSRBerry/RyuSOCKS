@@ -27,7 +27,7 @@ namespace RyuSocks.Commands.Server
         private TcpServer _server;
         private TcpSession _serverSession;
 
-        public BindCommand(SocksSession session, IPEndPoint boundEndpoint, Destination source) : base(session, boundEndpoint, source)
+        public BindCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint source) : base(session, boundEndpoint, source)
         {
             _server = new TcpServer(this, boundEndpoint, source);
 
@@ -80,9 +80,9 @@ namespace RyuSocks.Commands.Server
         class TcpServer : NetCoreServer.TcpServer
         {
             private readonly BindCommand _command;
-            private readonly Destination _sourceEndpoint;
+            private readonly ProxyEndpoint _sourceEndpoint;
 
-            public TcpServer(BindCommand command, IPEndPoint endpoint, Destination source) : base(endpoint)
+            public TcpServer(BindCommand command, IPEndPoint endpoint, ProxyEndpoint source) : base(endpoint)
             {
                 OptionAcceptorBacklog = 1;
                 _command = command;
@@ -101,7 +101,7 @@ namespace RyuSocks.Commands.Server
 
             protected override void OnConnected(NetCoreServer.TcpSession session)
             {
-                if ((!Equals(_sourceEndpoint, Destination.Null) && !_sourceEndpoint.Contains((IPEndPoint)session.Socket.RemoteEndPoint)) || ConnectedSessions > 1)
+                if ((!Equals(_sourceEndpoint, ProxyEndpoint.Null) && !_sourceEndpoint.Contains((IPEndPoint)session.Socket.RemoteEndPoint)) || ConnectedSessions > 1)
                 {
                     session.Disconnect();
                     return;

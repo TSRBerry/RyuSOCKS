@@ -256,11 +256,11 @@ namespace %NAMESPACE%
                 var commandType = entry.Key;
                 var socksClassName = commandType == ClientCommandClassName ? "SocksClient" : "SocksSession";
                 var typeParams = commandType == ClientCommandClassName
-                    ? $"{socksClassName}, RyuSocks.Types.Destination, {commandType}"
-                    : $"{socksClassName}, IPEndPoint, RyuSocks.Types.Destination, {commandType}";
+                    ? $"{socksClassName}, RyuSocks.Types.ProxyEndpoint, {commandType}"
+                    : $"{socksClassName}, IPEndPoint, RyuSocks.Types.ProxyEndpoint, {commandType}";
                 var constructorArgs = commandType == ClientCommandClassName
                     ? "(parent, endpoint)"
-                    : "(parent, endpoint, destination)";
+                    : "(parent, endpoint, proxyEndpoint)";
 
                 // Generate the source
                 sourceExtensions.EnterScope($"public static Func<{typeParams}> Get{commandType}(this {ProxyCommandEnumName} command) => command switch");

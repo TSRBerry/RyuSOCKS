@@ -23,7 +23,7 @@ namespace RyuSocks.Commands.Client
     [ProxyCommandImpl(0x03)]
     public partial class UdpAssociateCommand : ClientCommand
     {
-        public UdpAssociateCommand(SocksClient client, Destination source) : base(client, source)
+        public UdpAssociateCommand(SocksClient client, ProxyEndpoint source) : base(client, source)
         {
             CommandRequest request;
 

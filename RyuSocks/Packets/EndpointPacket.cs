@@ -118,9 +118,9 @@ namespace RyuSocks.Packets
             }
         }
 
-        public Destination Destination => AddressType == AddressType.DomainName
-            ? new Destination(new DnsEndPoint(DomainName, Port))
-            : new Destination(new IPEndPoint(Address, Port));
+        public ProxyEndpoint ProxyEndpoint => AddressType == AddressType.DomainName
+            ? new ProxyEndpoint(new DnsEndPoint(DomainName, Port))
+            : new ProxyEndpoint(new IPEndPoint(Address, Port));
 
         protected EndpointPacket(byte[] packetBytes)
         {

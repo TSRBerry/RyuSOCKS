@@ -77,7 +77,7 @@ namespace RyuSocks
             bool isDestinationValid = false;
 
             // Check whether the client is allowed to connect to the requested destination.
-            foreach (IPAddress destinationAddress in request.Destination.Addresses)
+            foreach (IPAddress destinationAddress in request.ProxyEndpoint.Addresses)
             {
                 if (((SocksServer)Server).UseAllowList
                     && ((SocksServer)Server).AllowedDestinations.TryGetValue(destinationAddress, out ushort[] allowedPorts)
@@ -114,7 +114,7 @@ namespace RyuSocks
             {
                 if (IsDestinationValid(request))
                 {
-                    Command = request.Command.GetServerCommand()(this, (IPEndPoint)Server.Endpoint, request.Destination);
+                    Command = request.Command.GetServerCommand()(this, (IPEndPoint)Server.Endpoint, request.ProxyEndpoint);
                     return;
                 }
 

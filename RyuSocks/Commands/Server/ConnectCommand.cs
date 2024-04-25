@@ -28,14 +28,14 @@ namespace RyuSocks.Commands.Server
     {
         private TcpClient _client;
 
-        public ConnectCommand(SocksSession session, IPEndPoint boundEndpoint, Destination destination) : base(session, boundEndpoint, destination)
+        public ConnectCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint proxyEndpoint) : base(session, boundEndpoint, proxyEndpoint)
         {
-            _client = destination.ToEndPoint() switch
+            _client = proxyEndpoint.ToEndPoint() switch
             {
                 IPEndPoint ipEndpoint => new TcpClient(this, ipEndpoint),
                 DnsEndPoint dnsEndpoint => new TcpClient(this, dnsEndpoint),
                 _ => throw new ArgumentException(
-                    "Invalid EndPoint type provided.", nameof(destination)),
+                    "Invalid EndPoint type provided.", nameof(proxyEndpoint)),
             };
 
             if (!_client.Connect())

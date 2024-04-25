@@ -9,7 +9,7 @@ namespace RyuSocks.Commands
         protected readonly SocksSession Session;
         protected readonly IPEndPoint BoundEndpoint;
 
-        protected ServerCommand(SocksSession session, IPEndPoint boundEndpoint, Destination destination) : base(destination)
+        protected ServerCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint proxyEndpoint) : base(proxyEndpoint)
         {
             Session = session;
             BoundEndpoint = boundEndpoint;

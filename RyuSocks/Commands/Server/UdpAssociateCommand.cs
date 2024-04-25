@@ -25,7 +25,7 @@ namespace RyuSocks.Commands.Server
     {
         private UdpServer _server;
 
-        public UdpAssociateCommand(SocksSession session, IPEndPoint boundEndpoint, Destination source) : base(session, boundEndpoint, source)
+        public UdpAssociateCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint source) : base(session, boundEndpoint, source)
         {
             _server = new UdpServer(this, boundEndpoint, source);
 
@@ -84,9 +84,9 @@ namespace RyuSocks.Commands.Server
         class UdpServer : NetCoreServer.UdpServer
         {
             private readonly UdpAssociateCommand _command;
-            private readonly Destination _sourceEndpoint;
+            private readonly ProxyEndpoint _sourceEndpoint;
 
-            public UdpServer(UdpAssociateCommand command, IPEndPoint endpoint, Destination source) : base(endpoint)
+            public UdpServer(UdpAssociateCommand command, IPEndPoint endpoint, ProxyEndpoint source) : base(endpoint)
             {
                 _command = command;
                 _sourceEndpoint = source;
@@ -115,7 +115,7 @@ namespace RyuSocks.Commands.Server
 
             protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
             {
-                if ((!Equals(_sourceEndpoint, Destination.Null) && !_sourceEndpoint.Contains((IPEndPoint)endpoint)))
+                if ((!Equals(_sourceEndpoint, ProxyEndpoint.Null) && !_sourceEndpoint.Contains((IPEndPoint)endpoint)))
                 {
                     return;
                 }

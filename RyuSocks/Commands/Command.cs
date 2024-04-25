@@ -5,11 +5,11 @@ namespace RyuSocks.Commands
 {
     public abstract class Command
     {
-        protected readonly Destination Destination;
+        protected readonly ProxyEndpoint ProxyEndpoint;
 
-        protected Command(Destination destination)
+        protected Command(ProxyEndpoint proxyEndpoint)
         {
-            Destination = destination;
+            ProxyEndpoint = proxyEndpoint;
         }
 
         /// <summary>

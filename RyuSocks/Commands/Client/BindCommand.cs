@@ -23,7 +23,7 @@ namespace RyuSocks.Commands.Client
     [ProxyCommandImpl(0x02)]
     public partial class BindCommand : ClientCommand
     {
-        public BindCommand(SocksClient client, Destination source) : base(client, source)
+        public BindCommand(SocksClient client, ProxyEndpoint source) : base(client, source)
         {
             CommandRequest request;
 

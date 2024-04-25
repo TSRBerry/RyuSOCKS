@@ -6,7 +6,7 @@ namespace RyuSocks.Commands
     {
         protected readonly SocksClient Client;
 
-        protected ClientCommand(SocksClient client, Destination destination) : base(destination)
+        protected ClientCommand(SocksClient client, ProxyEndpoint proxyEndpoint) : base(proxyEndpoint)
         {
             Client = client;
         }

@@ -20,16 +20,16 @@ using System.Net.Sockets;
 
 namespace RyuSocks.Types
 {
-    public class Destination
+    public class ProxyEndpoint
     {
-        public static Destination Null => new(new IPEndPoint(0, 0));
+        public static ProxyEndpoint Null => new(new IPEndPoint(0, 0));
 
         public AddressType Type { get; private init; }
         public ushort Port { get; private init; }
         public IReadOnlySet<IPAddress> Addresses { get; private init; }
         public string DomainName { get; private init; }
 
-        public Destination(IPEndPoint endpoint)
+        public ProxyEndpoint(IPEndPoint endpoint)
         {
             Type = endpoint.AddressFamily switch
             {
@@ -42,7 +42,7 @@ namespace RyuSocks.Types
             Port = (ushort)endpoint.Port;
         }
 
-        public Destination(DnsEndPoint endpoint)
+        public ProxyEndpoint(DnsEndPoint endpoint)
         {
             if (endpoint.Host.Length is 0 or > 255)
             {
@@ -61,7 +61,7 @@ namespace RyuSocks.Types
             {
                 AddressType.Ipv4Address or AddressType.Ipv6Address => new IPEndPoint(Addresses.First(), Port),
                 AddressType.DomainName => new DnsEndPoint(DomainName, Port),
-                _ => throw new InvalidOperationException($"{nameof(Destination)} is not initialized."),
+                _ => throw new InvalidOperationException($"{nameof(ProxyEndpoint)} is not initialized."),
             };
         }
 
