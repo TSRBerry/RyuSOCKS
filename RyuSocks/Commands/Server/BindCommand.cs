@@ -27,9 +27,9 @@ namespace RyuSocks.Commands.Server
         private TcpServer _server;
         private TcpSession _serverSession;
 
-        public BindCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint source) : base(session, boundEndpoint, source)
+        public BindCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint proxyEndpoint) : base(session, boundEndpoint, proxyEndpoint)
         {
-            _server = new TcpServer(this, boundEndpoint, source);
+            _server = new TcpServer(this, boundEndpoint, proxyEndpoint);
 
             _server.Start();
         }
