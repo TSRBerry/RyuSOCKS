@@ -204,5 +204,20 @@ namespace RyuSocks
 
             return base.SendAsync(buffer);
         }
+
+        public override long Send(ReadOnlySpan<byte> buffer)
+        {
+            if (Command != null)
+            {
+                buffer = Command.Wrap(buffer);
+            }
+
+            if (IsAuthenticated)
+            {
+                buffer = Auth.Wrap(buffer);
+            }
+
+            return base.Send(buffer);
+        }
     }
 }
