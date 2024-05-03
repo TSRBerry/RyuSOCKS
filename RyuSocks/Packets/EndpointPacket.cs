@@ -134,7 +134,7 @@ namespace RyuSocks.Packets
             {
                 AddressFamily.InterNetwork => new byte[10],
                 AddressFamily.InterNetworkV6 => new byte[22],
-                _ => throw new ArgumentException($"Unsupported AddressFamily: {endpoint.AddressFamily}", nameof(endpoint)),
+                _ => throw new ArgumentException($"Unsupported {nameof(AddressFamily)}: {endpoint.AddressFamily}", nameof(endpoint)),
             };
 
             AddressType = Bytes.Length == 10 ? AddressType.Ipv4Address : AddressType.Ipv6Address;
@@ -162,7 +162,7 @@ namespace RyuSocks.Packets
                 AddressType.Ipv4Address => new byte[10],
                 AddressType.DomainName => Bytes = new byte[7 + endpoint.DomainName.Length],
                 AddressType.Ipv6Address => new byte[22],
-                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+                _ => throw new ArgumentException($"Invalid {nameof(Types.AddressType)}: {endpoint.Type}", nameof(endpoint)),
             };
 
             AddressType = endpoint.Type;
