@@ -15,37 +15,19 @@
 using RyuSocks.Packets;
 using RyuSocks.Types;
 using RyuSocks.Utils;
-using System;
-using System.Net;
 
 namespace RyuSocks.Commands.Client
 {
     [ProxyCommandImpl(0x02)]
     public partial class BindCommand : ClientCommand
     {
-        public BindCommand(SocksClient client, ProxyEndpoint source) : base(client, source)
+        public BindCommand(SocksClient client, ProxyEndpoint proxyEndpoint) : base(client, proxyEndpoint)
         {
-            CommandRequest request;
-
-            switch (source.ToEndPoint())
+            CommandRequest request = new(proxyEndpoint)
             {
-                case IPEndPoint ipSource:
-                    request = new CommandRequest(ipSource)
-                    {
-                        Version = ProxyConsts.Version,
-                        Command = ProxyCommand.Bind,
-                    };
-                    break;
-                case DnsEndPoint dnsSource:
-                    request = new CommandRequest(dnsSource)
-                    {
-                        Version = ProxyConsts.Version,
-                        Command = ProxyCommand.Bind,
-                    };
-                    break;
-                default:
-                    throw new ArgumentException($"Invalid {nameof(EndPoint)} provided.", nameof(source));
-            }
+                Version = ProxyConsts.Version,
+                Command = ProxyCommand.Bind,
+            };
 
             request.Validate();
             Client.SendAsync(request.AsSpan());

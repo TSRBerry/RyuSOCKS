@@ -15,8 +15,6 @@
 using RyuSocks.Packets;
 using RyuSocks.Types;
 using RyuSocks.Utils;
-using System;
-using System.Net;
 
 namespace RyuSocks.Commands.Client
 {
@@ -25,27 +23,11 @@ namespace RyuSocks.Commands.Client
     {
         public UdpAssociateCommand(SocksClient client, ProxyEndpoint source) : base(client, source)
         {
-            CommandRequest request;
-
-            switch (source.ToEndPoint())
+            CommandRequest request = new(source)
             {
-                case IPEndPoint ipSource:
-                    request = new CommandRequest(ipSource)
-                    {
-                        Version = ProxyConsts.Version,
-                        Command = ProxyCommand.UdpAssociate,
-                    };
-                    break;
-                case DnsEndPoint dnsSource:
-                    request = new CommandRequest(dnsSource)
-                    {
-                        Version = ProxyConsts.Version,
-                        Command = ProxyCommand.UdpAssociate,
-                    };
-                    break;
-                default:
-                    throw new ArgumentException($"Invalid {nameof(EndPoint)} provided.", nameof(source));
-            }
+                Version = ProxyConsts.Version,
+                Command = ProxyCommand.UdpAssociate,
+            };
 
             request.Validate();
             Client.SendAsync(request.AsSpan());
