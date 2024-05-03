@@ -18,7 +18,7 @@ namespace RyuSocks.Generator
 
         public string[] GetLines()
         {
-            return _block.ToArray();
+            return [.. _block];
         }
 
         private string GetIndentedString(string text = "")
