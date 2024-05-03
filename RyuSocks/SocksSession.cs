@@ -135,7 +135,7 @@ namespace RyuSocks
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
             ReadOnlySpan<byte> bufferSpan = buffer.AsSpan((int)offset, (int)size);
-            
+
             // Choose the authentication method.
             if (Auth == null)
             {
@@ -161,7 +161,7 @@ namespace RyuSocks
 
                 return;
             }
-            
+
             bufferSpan = Auth.Unwrap(bufferSpan);
 
             // Attempt to process a command request.
@@ -176,7 +176,7 @@ namespace RyuSocks
             {
                 return;
             }
-            
+
             bufferSpan = Command.Unwrap(bufferSpan);
 
             Command.OnReceived(bufferSpan);
