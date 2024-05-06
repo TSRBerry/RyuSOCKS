@@ -57,9 +57,9 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public override void Validate()
         {
-            if (Version != Constants.UaPVersion)
+            if (Version != Constants.UsernameAndPasswordVersion)
             {
-                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
+                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UsernameAndPasswordVersion})");
             }
         }
     }

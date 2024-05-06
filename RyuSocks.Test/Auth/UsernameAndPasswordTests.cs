@@ -22,42 +22,48 @@ using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
 using Xunit;
-
 namespace RyuSocks.Test.Auth
 {
     public class UsernameAndPasswordTests
     {
+        private static readonly UsernameAndPasswordResponse _expectedUsernameAndPasswordResponse = new()
+        {
+            Version = Constants.UsernameAndPasswordVersion,
+            Status = 0,
+        };
+
+        private static readonly byte[] _expectedUsernameAndPasswordResponseBytes = _expectedUsernameAndPasswordResponse.Bytes;
+
         [Theory]
-        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC })]
-        public void Authenticate_PackageWithWrongVersion(byte[] incomingPacket)
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC }, false)]
+        [InlineData(new byte[] { 0x01, 0x01, 0x01, 0x01, 0x01 }, true)]
+        [InlineData(new byte[] { 0x01 }, false)]
+        [InlineData(new byte[] { }, false)]
+        [InlineData(new byte[] { 0x74 }, false)]
+        public void Authenticate_ThrowsOnWrongVersion(byte[] incomingPacket, bool isValidInput)
         {
             UsernameAndPassword usernameAndPassword = new()
             {
                 Database = [],
                 IsClient = false
             };
-            Assert.Throws<InvalidOperationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
-        }
-
-        [Theory]
-        [UsernameAndPasswordRandomUsernameAndPasswords(1)]
-        public void Authenticate_RegisteredUserAuthentication(string username, string password)
-        {
-            UsernameAndPassword usernameAndPassword = new()
+            if (!isValidInput)
             {
-                Database = new Dictionary<string, string> { { username, password } },
-                Username = username,
-                Password = password
-            };
-            usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
-            usernameAndPassword.IsClient = false;
+                Assert.Throws<InvalidOperationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
+            }
 
-            usernameAndPassword.Authenticate(outgoingPacket, out _);
+            else
+            {
+
+                Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
+            }
         }
 
         [Theory]
-        [UsernameAndPasswordRandomUsernameAndPasswords(1)]
-        public void Authenticate_NotRegisteredUserAuthentication(string username, string password)
+        [InlineData("RegisteredUsername", "RegisteredPassword", 0)]
+        [InlineData("NotRegisteredUsername", "NotRegisteredPassword", 1)]
+        [InlineData("RegisteredUsername", "WrongPassword", 2)]
+        public void Authenticate_WorksOnRegisteredUserAuthentication(string username, string password, int inputTypes)
         {
             UsernameAndPassword usernameAndPassword = new()
             {
@@ -65,52 +71,29 @@ namespace RyuSocks.Test.Auth
                 Username = username,
                 Password = password
             };
-            usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
-            // Since a ByRef variable (of type ReadOnlySpan) is not accepted by a lambda expression, it is converted to a byte array
-            byte[] outgoingPacketByte = outgoingPacket.ToArray();
-            usernameAndPassword.IsClient = false;
-            Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
-        }
 
-        [Theory]
-        [InlineData("RegisteredUser", "WrongPassword")]
-        public void Authenticate_RegisteredUserWrongPasswordAuthentication(string username, string password)
-        {
-            UsernameAndPassword usernameAndPassword = new()
+            usernameAndPassword.Database = inputTypes switch
             {
-                Database = new Dictionary<string, string> { { username, "RightPassword" } },
-                Username = username,
-                Password = password
+                0 => new Dictionary<string, string> { { username, password } },
+                2 => new Dictionary<string, string> { { username, "RegisteredPassword" } },
+                _ => usernameAndPassword.Database
             };
-            usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
-            // Since a ByRef variable (of type ReadOnlySpan) is not accepted by a lambda expression, it is converted to a byte array
-            byte[] outgoingPacketByte = outgoingPacket.ToArray();
-            usernameAndPassword.IsClient = false;
-            Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
-        }
 
-        [Theory]
-        [InlineData("a", "b")]
-        public void Authenticate_RightResponsePacket(string username, string password)
-        {
-            UsernameAndPassword usernameAndPassword = new()
-            {
-                Database = new Dictionary<string, string> { { username, password } },
-                Username = username,
-                Password = password
-            };
-            UsernameAndPasswordResponse usernameAndPasswordResponse = new()
-            {
-                Version = Constants.UaPVersion,
-                Status = 0,
-            };
-            byte[] usernameAndPasswordResponseBytes = usernameAndPasswordResponse.Bytes;
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
-            usernameAndPassword.IsClient = false;
-            usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
 
-            byte[] responsePacketBytes = responsePacket.ToArray();
-            Assert.Equal(usernameAndPasswordResponseBytes, responsePacketBytes);
+            if (inputTypes is 1 or 2)
+            {
+                // Since a ByRef variable (of type ReadOnlySpan) is not accepted by a lambda expression, it is converted to a byte array
+                byte[] outgoingPacketByte = outgoingPacket.ToArray();
+                Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
+            }
+
+            else
+            {
+                usernameAndPassword.IsClient = false;
+                usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
+                Assert.Equal(_expectedUsernameAndPasswordResponseBytes, responsePacket);
+            }
         }
 
         [Theory]

@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
 ### Added
 
-- Username and password authentication according to RFC1929 ([#2](https://github.com/TSRBerry/RyuSOCKS/pull/2))
+- Username and password authentication according to [RFC 1929](https://datatracker.ietf.org/doc/html/rfc1929) ([#16](https://github.com/TSRBerry/RyuSOCKS/pull/16))
 
 ### Added
 

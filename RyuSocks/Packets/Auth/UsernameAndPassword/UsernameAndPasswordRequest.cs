@@ -90,6 +90,10 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public UsernameAndPasswordRequest(byte[] packetBytes)
         {
+            if (packetBytes.Length is < 4 or > 513)
+            {
+                throw new InvalidOperationException($"IncomingPacket is of wrong length: Expected: > 4 || < 513; Actual {packetBytes.Length}");
+            }
             Bytes = packetBytes;
             Version = Bytes[0];
             UsernameLength = Bytes[1];
@@ -114,7 +118,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         public UsernameAndPasswordRequest(string username, string password)
         {
             Bytes = new byte[4 + username.Length + password.Length];
-            Version = Constants.UaPVersion;
+            Version = Constants.UsernameAndPasswordVersion;
             UsernameLength = (byte)username.Length;
             Username = username;
             PasswordLength = (byte)password.Length;
@@ -129,10 +133,10 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             {
                 throw new InvalidOperationException($"$Package has wrong Length: {Bytes.Length:X} (Expected: >= {MinLength} || <= {MaxLength})");
             }
-            if (Version != Constants.UaPVersion)
+            if (Version != Constants.UsernameAndPasswordVersion)
             {
                 throw new InvalidOperationException(
-                    $"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UaPVersion})");
+                    $"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UsernameAndPasswordVersion})");
             }
 
             if (Username == null)

@@ -70,7 +70,7 @@ namespace RyuSocks.Auth
             {
                 UsernameAndPasswordResponse successResponsePacket = new()
                 {
-                    Version = Constants.UaPVersion,
+                    Version = Constants.UsernameAndPasswordVersion,
                     Status = 0,
                 };
 
@@ -81,7 +81,7 @@ namespace RyuSocks.Auth
 
             UsernameAndPasswordResponse failureResponsePacket = new()
             {
-                Version = Constants.UaPVersion,
+                Version = Constants.UsernameAndPasswordVersion,
                 Status = 1,
             };
 
