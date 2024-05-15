@@ -29,7 +29,6 @@ using System.Security.Authentication;
 
 namespace RyuSocks
 {
-    [SocksClass]
     public partial class SocksSession : TcpSession
     {
         protected bool IsClosing;
@@ -38,6 +37,8 @@ namespace RyuSocks
         protected ServerCommand Command;
 
         public new SocksServer Server => base.Server as SocksServer;
+
+        public SocksSession(TcpServer server) : base(server) { }
 
         private bool IsDestinationValid(CommandRequest request)
         {
