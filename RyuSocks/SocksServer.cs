@@ -17,13 +17,13 @@
 using NetCoreServer;
 using RyuSocks.Auth;
 using RyuSocks.Commands;
+using RyuSocks.Utils;
 using System;
 using System.Collections.Generic;
 using System.Net;
 
 namespace RyuSocks
 {
-    [SocksClass]
     public partial class SocksServer : TcpServer
     {
         // TODO: Add (generated) properties for auth methods and commands
@@ -34,6 +34,16 @@ namespace RyuSocks
         public bool UseBlockList { get; set; }
         public IReadOnlyDictionary<IPAddress, ushort[]> AllowedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
         public IReadOnlyDictionary<IPAddress, ushort[]> BlockedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
+
+        public SocksServer(IPAddress address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
+        public SocksServer(string address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
+        public SocksServer(DnsEndPoint endpoint) : base(endpoint) { }
+        public SocksServer(IPEndPoint endpoint) : base(endpoint) { }
+
+        protected override TcpSession CreateSession()
+        {
+            return new SocksSession(this);
+        }
 
         public override bool Multicast(ReadOnlySpan<byte> buffer)
         {

@@ -25,11 +25,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 
 namespace RyuSocks
 {
-    [SocksClass]
     public partial class SocksClient : TcpClient
     {
         // TODO: Add (generated) properties for auth methods and commands
@@ -42,6 +42,11 @@ namespace RyuSocks
         protected IProxyAuth Auth;
 
         public IReadOnlyDictionary<AuthMethod, IProxyAuth> OfferedAuthMethods { get; set; } = new Dictionary<AuthMethod, IProxyAuth>();
+
+        public SocksClient(IPAddress address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
+        public SocksClient(string address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
+        public SocksClient(DnsEndPoint endpoint) : base(endpoint) { }
+        public SocksClient(IPEndPoint endpoint) : base(endpoint) { }
 
         protected override void OnConnected()
         {
