@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Username and password authentication according to [RFC 1929](https://datatracker.ietf.org/doc/html/rfc1929) ([#16](https://github.com/TSRBerry/RyuSOCKS/pull/16))
+
 - A logo made by [Justin de Haas](https://onemuri.nl/)
 
 ## [0.1.0-alpha] - 2024-04-21
