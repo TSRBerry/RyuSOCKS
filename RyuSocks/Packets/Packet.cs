@@ -33,5 +33,12 @@ namespace RyuSocks.Packets
 
         /// <inheritdoc cref="Bytes"/>
         public ReadOnlySpan<byte> AsSpan() => Bytes;
+
+        protected Packet() { }
+
+        protected Packet(byte[] bytes)
+        {
+            Bytes = bytes;
+        }
     }
 }

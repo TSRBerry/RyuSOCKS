@@ -55,7 +55,7 @@ namespace RyuSocks.Packets
 
         // Port
 
-        protected CommandPacket(byte[] packetBytes) : base(packetBytes) { }
+        protected CommandPacket(byte[] bytes) : base(bytes) { }
         protected CommandPacket(IPEndPoint endpoint) : base(endpoint) { }
         protected CommandPacket(DnsEndPoint endpoint) : base(endpoint) { }
         protected CommandPacket(ProxyEndpoint endpoint) : base(endpoint) { }

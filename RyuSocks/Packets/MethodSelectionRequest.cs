@@ -62,10 +62,7 @@ namespace RyuSocks.Packets
             }
         }
 
-        public MethodSelectionRequest(byte[] packetBytes)
-        {
-            Bytes = packetBytes;
-        }
+        public MethodSelectionRequest(byte[] bytes) : base(bytes) { }
 
         public MethodSelectionRequest(AuthMethod[] methods)
         {

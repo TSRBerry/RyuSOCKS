@@ -68,7 +68,7 @@ namespace RyuSocks.Packets
 
         public Span<byte> UserData => Bytes.AsSpan(GetEndpointPacketLength());
 
-        public UdpPacket(byte[] packetBytes) : base(packetBytes) { }
+        public UdpPacket(byte[] bytes) : base(bytes) { }
 
         public UdpPacket(IPEndPoint endpoint, int payloadLength) : base(endpoint)
         {
