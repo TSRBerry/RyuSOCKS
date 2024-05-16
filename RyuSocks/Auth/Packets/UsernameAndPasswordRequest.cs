@@ -14,13 +14,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using RyuSocks.Packets.Auth;
+using RyuSocks.Packets;
 using System;
-using System.Linq;
-using System.Security.Authentication;
 using System.Text;
 
-namespace RyuSocks.Packets.Auth.UsernameAndPassword
+namespace RyuSocks.Auth.Packets
 {
     public class UsernameAndPasswordRequest : Packet
     {
@@ -118,7 +116,7 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
         public UsernameAndPasswordRequest(string username, string password)
         {
             Bytes = new byte[4 + username.Length + password.Length];
-            Version = Constants.UsernameAndPasswordVersion;
+            Version = AuthConsts.UsernameAndPasswordVersion;
             UsernameLength = (byte)username.Length;
             Username = username;
             PasswordLength = (byte)password.Length;
@@ -133,10 +131,10 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
             {
                 throw new InvalidOperationException($"$Package has wrong Length: {Bytes.Length:X} (Expected: >= {MinLength} || <= {MaxLength})");
             }
-            if (Version != Constants.UsernameAndPasswordVersion)
+            if (Version != AuthConsts.UsernameAndPasswordVersion)
             {
                 throw new InvalidOperationException(
-                    $"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UsernameAndPasswordVersion})");
+                    $"${nameof(Version)} is invalid: {Version:X} (Expected: {AuthConsts.UsernameAndPasswordVersion})");
             }
 
             if (Username == null)

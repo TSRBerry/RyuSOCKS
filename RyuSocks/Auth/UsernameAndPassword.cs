@@ -14,8 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using RyuSocks.Packets.Auth;
-using RyuSocks.Packets.Auth.UsernameAndPassword;
+using RyuSocks.Auth.Packets;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
@@ -70,7 +69,7 @@ namespace RyuSocks.Auth
             {
                 UsernameAndPasswordResponse successResponsePacket = new()
                 {
-                    Version = Constants.UsernameAndPasswordVersion,
+                    Version = AuthConsts.UsernameAndPasswordVersion,
                     Status = 0,
                 };
 
@@ -81,7 +80,7 @@ namespace RyuSocks.Auth
 
             UsernameAndPasswordResponse failureResponsePacket = new()
             {
-                Version = Constants.UsernameAndPasswordVersion,
+                Version = AuthConsts.UsernameAndPasswordVersion,
                 Status = 1,
             };
 

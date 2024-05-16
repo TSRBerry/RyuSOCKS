@@ -14,10 +14,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Packets;
 using System;
-using System.Security.Authentication;
 
-namespace RyuSocks.Packets.Auth.UsernameAndPassword
+namespace RyuSocks.Auth.Packets
 {
     public class UsernameAndPasswordResponse : Packet
     {
@@ -57,9 +57,9 @@ namespace RyuSocks.Packets.Auth.UsernameAndPassword
 
         public override void Validate()
         {
-            if (Version != Constants.UsernameAndPasswordVersion)
+            if (Version != AuthConsts.UsernameAndPasswordVersion)
             {
-                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {Constants.UsernameAndPasswordVersion})");
+                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {AuthConsts.UsernameAndPasswordVersion})");
             }
         }
     }

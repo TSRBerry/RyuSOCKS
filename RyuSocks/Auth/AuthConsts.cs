@@ -14,9 +14,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace RyuSocks.Packets.Auth
+namespace RyuSocks.Auth
 {
-    public static class Constants
+    public static class AuthConsts
     {
         public const byte UsernameAndPasswordVersion = 0x01;
     }

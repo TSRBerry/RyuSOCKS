@@ -15,20 +15,19 @@
  */
 
 using RyuSocks.Auth;
-using RyuSocks.Packets.Auth;
-using RyuSocks.Packets.Auth.UsernameAndPassword;
-using RyuSocks.Test.Utils;
+using RyuSocks.Auth.Packets;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
 using Xunit;
+
 namespace RyuSocks.Test.Auth
 {
     public class UsernameAndPasswordTests
     {
         private static readonly UsernameAndPasswordResponse _expectedUsernameAndPasswordResponse = new()
         {
-            Version = Constants.UsernameAndPasswordVersion,
+            Version = AuthConsts.UsernameAndPasswordVersion,
             Status = 0,
         };
 
