@@ -123,10 +123,7 @@ namespace RyuSocks.Packets
             ? new ProxyEndpoint(new DnsEndPoint(DomainName, Port))
             : new ProxyEndpoint(new IPEndPoint(Address, Port));
 
-        protected EndpointPacket(byte[] packetBytes)
-        {
-            Bytes = packetBytes;
-        }
+        protected EndpointPacket(byte[] bytes) : base(bytes) { }
 
         protected EndpointPacket(IPEndPoint endpoint)
         {

@@ -46,14 +46,12 @@ namespace RyuSocks.Packets
             }
         }
 
-        public MethodSelectionResponse(byte[] packetBytes)
-        {
-            Bytes = packetBytes;
-        }
+        public MethodSelectionResponse(byte[] bytes) : base(bytes) { }
 
-        public MethodSelectionResponse(AuthMethod method)
+        public MethodSelectionResponse() : base(new byte[2]) { }
+
+        public MethodSelectionResponse(AuthMethod method) : this()
         {
-            Bytes = new byte[2];
             Method = method;
         }
 
