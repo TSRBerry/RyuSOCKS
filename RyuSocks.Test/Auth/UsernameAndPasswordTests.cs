@@ -31,8 +31,6 @@ namespace RyuSocks.Test.Auth
             Status = 0,
         };
 
-        private static readonly byte[] _expectedUsernameAndPasswordResponseBytes = _expectedUsernameAndPasswordResponse.Bytes;
-
         [Theory]
         [InlineData(new byte[] { 0xFF, 0xFF, 0xAA, 0x00, 0xCC }, false)]
         [InlineData(new byte[] { 0x01, 0x01, 0x01, 0x01, 0x01 }, true)]
@@ -46,14 +44,13 @@ namespace RyuSocks.Test.Auth
                 Database = [],
                 IsClient = false
             };
+
             if (!isValidInput)
             {
                 Assert.Throws<InvalidOperationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
             }
-
             else
             {
-
                 Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(incomingPacket, out _));
             }
         }
@@ -91,7 +88,7 @@ namespace RyuSocks.Test.Auth
             {
                 usernameAndPassword.IsClient = false;
                 usernameAndPassword.Authenticate(outgoingPacket, out ReadOnlySpan<byte> responsePacket);
-                Assert.Equal(_expectedUsernameAndPasswordResponseBytes, responsePacket);
+                Assert.Equal(_expectedUsernameAndPasswordResponse.AsSpan(), responsePacket);
             }
         }
 

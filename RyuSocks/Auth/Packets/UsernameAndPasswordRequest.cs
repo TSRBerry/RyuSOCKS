@@ -92,20 +92,25 @@ namespace RyuSocks.Auth.Packets
             {
                 throw new InvalidOperationException($"IncomingPacket is of wrong length: Expected: > 4 || < 513; Actual {packetBytes.Length}");
             }
+
             Bytes = packetBytes;
             Version = Bytes[0];
             UsernameLength = Bytes[1];
+
             try
-            { Username = Encoding.ASCII.GetString(Bytes[2..(2 + UsernameLength)]); }
+            {
+                Username = Encoding.ASCII.GetString(Bytes[2..(2 + UsernameLength)]);
+            }
             catch (Exception e)
             {
                 throw new InvalidOperationException($"UsernameLength and actual Username length do not match: {Bytes[1]:X} (throws {e})");
             }
+
             PasswordLength = Bytes[2 + UsernameLength];
+
             try
             {
-                Password = Encoding.ASCII.GetString(
-                    Bytes[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
+                Password = Encoding.ASCII.GetString(Bytes[(2 + UsernameLength + 1)..((2 + UsernameLength + 1) + PasswordLength)]);
             }
             catch (Exception e)
             {
@@ -127,14 +132,15 @@ namespace RyuSocks.Auth.Packets
         {
             const int MinLength = 4;
             const int MaxLength = 513;
+
             if (Bytes.Length is < MinLength or > MaxLength)
             {
                 throw new InvalidOperationException($"$Package has wrong Length: {Bytes.Length:X} (Expected: >= {MinLength} || <= {MaxLength})");
             }
+
             if (Version != AuthConsts.UsernameAndPasswordVersion)
             {
-                throw new InvalidOperationException(
-                    $"${nameof(Version)} is invalid: {Version:X} (Expected: {AuthConsts.UsernameAndPasswordVersion})");
+                throw new InvalidOperationException($"${nameof(Version)} is invalid: {Version:X} (Expected: {AuthConsts.UsernameAndPasswordVersion:X})");
             }
 
             if (Username == null)
