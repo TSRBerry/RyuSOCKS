@@ -1,6 +1,11 @@
 ![RyuSOCKS](assets/logo.png)
 
-An extensible SOCKS5 proxy library written in C#.
+RyuSOCKS is a *work-in-progress* extensible SOCKS5 library, providing server and client implementations which are **almost** compliant with [RFC1928](https://datatracker.ietf.org/doc/html/rfc1928).
+
+The extensibility of RyuSOCKS mainly focuses on two parts of the protocol: Authentication and commands.
+
+This means in addition to the standard SOCKS5 commands (`CONNECT`, `BIND` and `UDP ASSOCIATE`), custom commands can also be added.
+Similarly, custom implementations for authentication methods are supported as well.
 
 ## LICENSE
 
