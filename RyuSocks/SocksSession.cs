@@ -40,7 +40,7 @@ namespace RyuSocks
 
         public SocksSession(TcpServer server) : base(server) { }
 
-        private bool IsDestinationValid(CommandRequest request)
+        public bool IsDestinationValid(ProxyEndpoint destination)
         {
             if (!Server.UseAllowList && !Server.UseBlockList)
             {
@@ -50,11 +50,11 @@ namespace RyuSocks
             bool isDestinationValid = false;
 
             // Check whether the client is allowed to connect to the requested destination.
-            foreach (IPAddress destinationAddress in request.ProxyEndpoint.Addresses)
+            foreach (IPAddress destinationAddress in destination.Addresses)
             {
                 if (Server.UseAllowList
                     && Server.AllowedDestinations.TryGetValue(destinationAddress, out ushort[] allowedPorts)
-                    && allowedPorts.Contains(request.DestinationPort))
+                    && allowedPorts.Contains(destination.Port))
                 {
                     isDestinationValid = true;
                     break;
@@ -62,7 +62,7 @@ namespace RyuSocks
 
                 if (Server.UseBlockList
                     && (!Server.BlockedDestinations.TryGetValue(destinationAddress, out allowedPorts)
-                        || !allowedPorts.Contains(request.DestinationPort)))
+                        || !allowedPorts.Contains(destination.Port)))
                 {
                     isDestinationValid = true;
                     break;
@@ -72,7 +72,35 @@ namespace RyuSocks
             return isDestinationValid;
         }
 
-        protected virtual void ProcessAuthMethodSelection(ReadOnlySpan<byte> buffer)
+        // TODO: Remove this once async Send/Receive for commands has been implemented.
+        public Span<byte> Unwrap(Span<byte> packet, out ProxyEndpoint remoteEndpoint, out int wrapperLength)
+        {
+            if (!IsConnected || IsClosing)
+            {
+                throw new InvalidOperationException("Session is not connected or closing soon.");
+            }
+
+            remoteEndpoint = null;
+            int totalWrapperLength = 0;
+
+            if (IsAuthenticated)
+            {
+                packet = Auth.Unwrap(packet, out remoteEndpoint, out wrapperLength);
+                totalWrapperLength += wrapperLength;
+            }
+
+            if (Command != null)
+            {
+                packet = Command.Unwrap(packet, out remoteEndpoint, out wrapperLength);
+                totalWrapperLength += wrapperLength;
+            }
+
+            wrapperLength = totalWrapperLength;
+
+            return packet;
+        }
+
+        protected virtual void ProcessAuthMethodSelection(Span<byte> buffer)
         {
             var request = new MethodSelectionRequest(buffer.ToArray());
             request.Validate();
@@ -102,8 +130,9 @@ namespace RyuSocks
             IsClosing = true;
         }
 
-        protected virtual void ProcessCommandRequest(ReadOnlySpan<byte> buffer)
+        protected virtual void ProcessCommandRequest(Span<byte> buffer)
         {
+            buffer = Unwrap(buffer, out _, out _);
             var request = new CommandRequest(buffer.ToArray());
             request.Validate();
 
@@ -115,7 +144,8 @@ namespace RyuSocks
             // Check whether the client requested a valid command.
             if (Server.OfferedCommands.Contains(request.Command))
             {
-                if (IsDestinationValid(request))
+                // FIXME: Some commands use this field as the client endpoint, not the destination.
+                if (IsDestinationValid(request.ProxyEndpoint))
                 {
                     Command = request.Command.GetServerCommand()(this, (IPEndPoint)Server.Endpoint, request.ProxyEndpoint);
                     return;
@@ -135,12 +165,13 @@ namespace RyuSocks
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            ReadOnlySpan<byte> bufferSpan = buffer.AsSpan((int)offset, (int)size);
+            Span<byte> bufferSpan = buffer.AsSpan((int)offset, (int)size);
 
             // Choose the authentication method.
             if (Auth == null)
             {
                 ProcessAuthMethodSelection(bufferSpan);
+                // TODO: We should avoid having special cases. Is this fine?
                 IsAuthenticated = Auth.GetAuth() == AuthMethod.NoAuth;
 
                 return;
@@ -163,8 +194,6 @@ namespace RyuSocks
                 return;
             }
 
-            bufferSpan = Auth.Unwrap(bufferSpan);
-
             // Attempt to process a command request.
             if (Command == null)
             {
@@ -178,7 +207,7 @@ namespace RyuSocks
                 return;
             }
 
-            bufferSpan = Command.Unwrap(bufferSpan);
+            bufferSpan = Unwrap(bufferSpan, out _, out _);
 
             Command.OnReceived(bufferSpan);
         }
@@ -195,12 +224,22 @@ namespace RyuSocks
         {
             if (Command != null)
             {
-                buffer = Command.Wrap(buffer);
+                buffer = Command.Wrap(buffer, null, out _);
             }
 
             if (IsAuthenticated)
             {
-                buffer = Auth.Wrap(buffer);
+                buffer = Auth.Wrap(buffer, null, out _);
+            }
+
+            if (Command is { UsesDatagrams: true })
+            {
+                throw new InvalidOperationException($"{nameof(SendAsync)} can't be used when sending datagrams.");
+            }
+
+            if (Command is { HandlesCommunication: true })
+            {
+                throw new NotImplementedException("Async Send/Receive for commands has not been implemented yet.");
             }
 
             return base.SendAsync(buffer);
@@ -210,15 +249,60 @@ namespace RyuSocks
         {
             if (Command != null)
             {
-                buffer = Command.Wrap(buffer);
+                buffer = Command.Wrap(buffer, null, out _);
             }
 
             if (IsAuthenticated)
             {
-                buffer = Auth.Wrap(buffer);
+                buffer = Auth.Wrap(buffer, null, out _);
+            }
+
+            if (Command is { UsesDatagrams: true })
+            {
+                throw new InvalidOperationException($"{nameof(Send)} can't be used when sending datagrams.");
+            }
+
+            if (Command is { HandlesCommunication: true })
+            {
+                return Command.Send(buffer);
             }
 
             return base.Send(buffer);
+        }
+
+        public int SendTo(ReadOnlySpan<byte> buffer, ProxyEndpoint endpoint)
+        {
+            if (Command == null)
+            {
+                throw new InvalidOperationException("No command was requested yet.");
+            }
+
+            if (!Command.UsesDatagrams)
+            {
+                throw new InvalidOperationException("The requested command is not able to send datagrams.");
+            }
+
+            buffer = Command.Wrap(buffer, endpoint, out int totalWrapperLength);
+
+            if (IsAuthenticated)
+            {
+                buffer = Auth.Wrap(buffer, endpoint, out int wrapperLength);
+                totalWrapperLength += wrapperLength;
+            }
+
+            return Command.SendTo(buffer, endpoint.ToEndPoint()) - totalWrapperLength;
+        }
+
+        public int SendTo(ReadOnlySpan<byte> buffer, EndPoint endpoint)
+        {
+            ProxyEndpoint remoteEndpoint = endpoint switch
+            {
+                IPEndPoint ipEndpoint => new ProxyEndpoint(ipEndpoint),
+                DnsEndPoint dnsEndpoint => new ProxyEndpoint(dnsEndpoint),
+                _ => throw new ArgumentException($"The provided type {endpoint} is not supported.", nameof(endpoint)),
+            };
+
+            return SendTo(buffer, remoteEndpoint);
         }
     }
 }
