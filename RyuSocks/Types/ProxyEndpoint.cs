@@ -20,7 +20,7 @@ using System.Net.Sockets;
 
 namespace RyuSocks.Types
 {
-    public class ProxyEndpoint
+    public class ProxyEndpoint : IEquatable<ProxyEndpoint>
     {
         public static ProxyEndpoint Null => new(new IPEndPoint(0, 0));
 
@@ -73,6 +73,58 @@ namespace RyuSocks.Types
         public override string ToString()
         {
             return ToEndPoint().ToString();
+        }
+
+        public bool Equals(ProxyEndpoint other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Type == other.Type &&
+                   Port == other.Port &&
+                   ((Type == AddressType.DomainName && StringComparer.OrdinalIgnoreCase.Equals(DomainName, other.DomainName)) ||
+                    Addresses.SetEquals(other.Addresses));
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj switch
+            {
+                ProxyEndpoint proxyEndpoint => Equals(proxyEndpoint),
+                EndPoint endpoint => ToEndPoint() == endpoint,
+                _ => false,
+            };
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+
+            hashCode.Add((int)Type);
+            hashCode.Add(Port);
+
+            if (Type == AddressType.DomainName)
+            {
+                hashCode.Add(DomainName, StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                hashCode.Add(Addresses.Single());
+            }
+
+            return hashCode.ToHashCode();
+        }
+
+        public static bool operator ==(ProxyEndpoint left, ProxyEndpoint right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(ProxyEndpoint left, ProxyEndpoint right)
+        {
+            return !Equals(left, right);
         }
     }
 }
