@@ -21,6 +21,9 @@ namespace RyuSocks.Commands.Client
     [ProxyCommandImpl(0x03)]
     public partial class UdpAssociateCommand : ClientCommand
     {
+        public override bool HandlesCommunication => true;
+        public override bool UsesDatagrams => true;
+
         public UdpAssociateCommand(SocksClient client, ProxyEndpoint source) : base(client, source)
         {
             CommandRequest request = new(source)

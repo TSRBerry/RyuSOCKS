@@ -23,6 +23,8 @@ namespace RyuSocks.Commands.Server
     [ProxyCommandImpl(0x03)]
     public partial class UdpAssociateCommand : ServerCommand, IDisposable
     {
+        public override bool HandlesCommunication => true;
+        public override bool UsesDatagrams => true;
         private UdpServer _server;
 
         public UdpAssociateCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint source) : base(session, boundEndpoint, source)
