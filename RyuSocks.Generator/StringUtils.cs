@@ -19,6 +19,7 @@ namespace RyuSocks.Generator
         /// <summary>
         /// Wrapper for <see cref="string.Substring(int, int)"/> to handle negative lengths.
         /// </summary>
+        /// <see cref="string.Substring(int, int)"/>
         public static string Extract(this string source, int startIndex, int length)
         {
             if (length >= 0)
