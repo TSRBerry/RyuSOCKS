@@ -22,6 +22,8 @@ namespace RyuSocks.Packets
 {
     public class UdpPacket : EndpointPacket
     {
+        public int HeaderLength => GetEndpointPacketLength();
+
         public ushort Reserved
         {
             get
