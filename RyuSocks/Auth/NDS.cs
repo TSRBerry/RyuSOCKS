@@ -14,6 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Types;
 using System;
 
 namespace RyuSocks.Auth
@@ -29,12 +30,12 @@ namespace RyuSocks.Auth
             throw new NotImplementedException();
         }
 
-        public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet)
+        public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet, ProxyEndpoint remoteEndpoint, out int wrapperLength)
         {
             throw new NotImplementedException();
         }
 
-        public ReadOnlySpan<byte> Unwrap(ReadOnlySpan<byte> packet)
+        public Span<byte> Unwrap(Span<byte> packet, out ProxyEndpoint remoteEndpoint, out int wrapperLength)
         {
             throw new NotImplementedException();
         }
