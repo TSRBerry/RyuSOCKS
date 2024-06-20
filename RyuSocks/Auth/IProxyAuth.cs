@@ -14,12 +14,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using RyuSocks.Types;
 using System;
 using System.Security.Authentication;
 
 namespace RyuSocks.Auth
 {
-    public interface IProxyAuth
+    public interface IProxyAuth : IWrapper
     {
         /// <summary>
         /// Authenticate the current session using a method-specific sub-negotiation.
@@ -29,19 +30,5 @@ namespace RyuSocks.Auth
         /// <returns>Whether the sub-negotiation to authenticate the current session is completed.</returns>
         /// <exception cref="AuthenticationException">Authentication failed.</exception>
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket);
-
-        /// <summary>
-        /// Wrap the packet as required by the negotiated authentication method.
-        /// </summary>
-        /// <param name="packet">The packet to wrap.</param>
-        /// <returns>The wrapped packet.</returns>
-        public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet);
-
-        /// <summary>
-        /// Unwrap the packet and perform the checks as required by the negotiated authentication method.
-        /// </summary>
-        /// <param name="packet">The packet to unwrap.</param>
-        /// <returns>The unwrapped packet.</returns>
-        public ReadOnlySpan<byte> Unwrap(ReadOnlySpan<byte> packet);
     }
 }
