@@ -20,6 +20,7 @@ using System.Formats.Tar;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -252,7 +253,7 @@ namespace RyuSocks.Test.Integration
                 tarMemory,
                 null,
                 null,
-                new Progress<JSONMessage>()
+                new Progress<JSONMessage>(message => Console.WriteLine($"BuildImage: {JsonSerializer.Serialize(message)}"))
             );
 
             await tarMemory.DisposeAsync();
