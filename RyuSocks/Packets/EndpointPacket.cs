@@ -145,7 +145,7 @@ namespace RyuSocks.Packets
         {
             if (endpoint.Host.Length is < MinimumDomainNameLength or > MaximumDomainNameLength)
             {
-                throw new ArgumentException($"Length of Host must be between {MinimumDomainNameLength} and {MaximumDomainNameLength}.", nameof(endpoint));
+                throw new ArgumentOutOfRangeException(nameof(endpoint), $"Length of Host must be between {MinimumDomainNameLength} and {MaximumDomainNameLength}.");
             }
 
             Bytes = new byte[7 + endpoint.Host.Length];
@@ -158,7 +158,7 @@ namespace RyuSocks.Packets
         {
             if (endpoint.Type == AddressType.DomainName && endpoint.DomainName.Length is < MinimumDomainNameLength or > MaximumDomainNameLength)
             {
-                throw new ArgumentException($"Length of Host must be between {MinimumDomainNameLength} and {MaximumDomainNameLength}.", nameof(endpoint));
+                throw new ArgumentOutOfRangeException(nameof(endpoint), $"Length of Host must be between {MinimumDomainNameLength} and {MaximumDomainNameLength}.");
             }
 
             Bytes = endpoint.Type switch
