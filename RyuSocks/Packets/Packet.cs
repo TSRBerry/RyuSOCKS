@@ -32,7 +32,7 @@ namespace RyuSocks.Packets
         public abstract void Validate();
 
         /// <inheritdoc cref="Bytes"/>
-        public ReadOnlySpan<byte> AsSpan() => Bytes;
+        public Span<byte> AsSpan() => Bytes;
 
         protected Packet() { }
 
