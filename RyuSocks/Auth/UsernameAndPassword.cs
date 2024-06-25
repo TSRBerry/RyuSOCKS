@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Auth.Packets;
+using RyuSocks.Types;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
@@ -84,13 +85,16 @@ namespace RyuSocks.Auth
             throw new AuthenticationException("The provided credentials are invalid.");
         }
 
-        public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet)
+        public ReadOnlySpan<byte> Wrap(ReadOnlySpan<byte> packet, ProxyEndpoint remoteEndpoint, out int wrapperLength)
         {
+            wrapperLength = 0;
             return packet;
         }
 
-        public ReadOnlySpan<byte> Unwrap(ReadOnlySpan<byte> packet)
+        public Span<byte> Unwrap(Span<byte> packet, out ProxyEndpoint remoteEndpoint, out int wrapperLength)
         {
+            remoteEndpoint = null;
+            wrapperLength = 0;
             return packet;
         }
     }

@@ -15,12 +15,17 @@
 using RyuSocks.Packets;
 using RyuSocks.Types;
 using RyuSocks.Utils;
+using System;
 
 namespace RyuSocks.Commands.Client
 {
     [ProxyCommandImpl(0x02)]
     public partial class BindCommand : ClientCommand
     {
+        public override bool HandlesCommunication => false;
+        public override bool UsesDatagrams => false;
+        public ProxyEndpoint ClientEndpoint { get; private set; }
+
         public BindCommand(SocksClient client, ProxyEndpoint proxyEndpoint) : base(client, proxyEndpoint)
         {
             CommandRequest request = new(proxyEndpoint)
@@ -30,7 +35,30 @@ namespace RyuSocks.Commands.Client
             };
 
             request.Validate();
-            Client.SendAsync(request.AsSpan());
+            Client.Send(request.AsSpan());
+        }
+
+        public override void ProcessResponse(CommandResponse response)
+        {
+            EnsureSuccessReply(response.ReplyField);
+
+            // Server endpoint used to listen for an incoming connection.
+            if (ServerEndpoint == null)
+            {
+                ServerEndpoint = response.ProxyEndpoint;
+                Accepted = true;
+                return;
+            }
+
+            // Anticipated incoming connection.
+            if (ClientEndpoint == null)
+            {
+                ClientEndpoint = response.ProxyEndpoint;
+                Ready = true;
+                return;
+            }
+
+            throw new InvalidOperationException($"Unexpected invocation of {nameof(ProcessResponse)}. {nameof(ServerEndpoint)} and {nameof(ClientEndpoint)} are already assigned.");
         }
     }
 }

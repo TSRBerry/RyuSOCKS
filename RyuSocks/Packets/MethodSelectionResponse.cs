@@ -46,22 +46,23 @@ namespace RyuSocks.Packets
             }
         }
 
-        public MethodSelectionResponse(byte[] packetBytes)
-        {
-            Bytes = packetBytes;
-        }
+        public MethodSelectionResponse(byte[] bytes) : base(bytes) { }
 
-        public MethodSelectionResponse(AuthMethod method)
+        public MethodSelectionResponse() : base(new byte[2]) { }
+
+        public MethodSelectionResponse(AuthMethod method) : this()
         {
-            Bytes = new byte[2];
             Method = method;
         }
 
         public override void Validate()
         {
-            if (Bytes.Length < 2)
+            // Length: VER(1) + METHOD(1) = 2
+            const int ExpectedLength = 2;
+
+            if (Bytes.Length != ExpectedLength)
             {
-                throw new InvalidOperationException($"Packet length is too short: {Bytes.Length} (Expected: >= 2)");
+                throw new InvalidOperationException($"Invalid packet length: {Bytes.Length} (Expected: {ExpectedLength})");
             }
 
             if (Version != ProxyConsts.Version)

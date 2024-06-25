@@ -22,6 +22,8 @@ namespace RyuSocks.Packets
 {
     public class UdpPacket : EndpointPacket
     {
+        public int HeaderLength => GetEndpointPacketLength();
+
         public ushort Reserved
         {
             get
@@ -68,7 +70,7 @@ namespace RyuSocks.Packets
 
         public Span<byte> UserData => Bytes.AsSpan(GetEndpointPacketLength());
 
-        public UdpPacket(byte[] packetBytes) : base(packetBytes) { }
+        public UdpPacket(byte[] bytes) : base(bytes) { }
 
         public UdpPacket(IPEndPoint endpoint, int payloadLength) : base(endpoint)
         {
@@ -93,9 +95,12 @@ namespace RyuSocks.Packets
 
         public override void Validate()
         {
-            if (Bytes.Length < 8)
+            // Minimum length: RSV(2) + FRAG(1) + 0x03 + 0x01 + FQDN(1) + PORT(2) = 8
+            const int MinimumLength = 8;
+
+            if (Bytes.Length < MinimumLength)
             {
-                throw new InvalidOperationException($"Packet length is too short: {Bytes.Length} (Expected: >= 8)");
+                throw new InvalidOperationException($"Invalid packet length: {Bytes.Length} (Expected: <= {MinimumLength})");
             }
 
             if (Reserved != 0)

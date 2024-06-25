@@ -18,12 +18,54 @@ using System.Net;
 using RyuSocks;
 using RyuSocks.Auth;
 using RyuSocks.Commands;
+using RyuSocks.Types;
 
 namespace TestProject
 {
+    public class TestSession : SocksSession
+    {
+        private EndPoint _remoteEndpoint;
+        public TestSession(NetCoreServer.TcpServer server) : base(server) { }
+
+        private void LogMsg(string msg)
+        {
+            Console.WriteLine($"<SocksSession ({_remoteEndpoint})> {msg}");
+        }
+
+        protected override void OnConnected()
+        {
+            _remoteEndpoint ??= Socket.RemoteEndPoint;
+            LogMsg("Connected!");
+            base.OnConnected();
+        }
+
+        protected override void OnReceived(byte[] buffer, long offset, long size)
+        {
+            _remoteEndpoint ??= Socket.RemoteEndPoint;
+            LogMsg($"Received packet of size: {size}");
+            base.OnReceived(buffer, offset, size);
+            LogMsg($"IsAuthenticated: {IsAuthenticated}");
+            LogMsg($"Command: {Command}");
+        }
+
+    }
+
+    public class TestSocksServer : SocksServer
+    {
+        public TestSocksServer() : base(IPAddress.Any)
+        {
+
+        }
+
+        protected override NetCoreServer.TcpSession CreateSession()
+        {
+            return new TestSession(this);
+        }
+    }
+
     public static class Program
     {
-        private static readonly SocksServer _server = new SocksServer(IPAddress.Any)
+        private static readonly SocksServer _server = new TestSocksServer()
         {
             AcceptableAuthMethods = new HashSet<AuthMethod>() { AuthMethod.NoAuth },
             OfferedCommands = new HashSet<ProxyCommand>() { ProxyCommand.Connect, ProxyCommand.Bind, ProxyCommand.UdpAssociate },

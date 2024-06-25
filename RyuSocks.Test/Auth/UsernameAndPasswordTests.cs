@@ -100,7 +100,7 @@ namespace RyuSocks.Test.Auth
             int packetLength = packet.Length;
             NoAuth noAuth = new();
 
-            byte[] wrappedPacket = noAuth.Wrap(packet).ToArray();
+            byte[] wrappedPacket = noAuth.Wrap(packet, null, out _).ToArray();
 
             Assert.Equal(packetLength, packet.Length);
             Assert.Equal(originalPacket, packet);
@@ -115,7 +115,7 @@ namespace RyuSocks.Test.Auth
             int packetLength = packet.Length;
             NoAuth noAuth = new();
 
-            byte[] wrappedPacket = noAuth.Unwrap(packet).ToArray();
+            byte[] wrappedPacket = noAuth.Unwrap(packet, out _, out _).ToArray();
 
             Assert.Equal(packetLength, packet.Length);
             Assert.Equal(originalPacket, packet);

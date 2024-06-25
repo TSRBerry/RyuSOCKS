@@ -55,7 +55,7 @@ namespace RyuSocks.Packets
 
         // Port
 
-        protected CommandPacket(byte[] packetBytes) : base(packetBytes) { }
+        protected CommandPacket(byte[] bytes) : base(bytes) { }
         protected CommandPacket(IPEndPoint endpoint) : base(endpoint) { }
         protected CommandPacket(DnsEndPoint endpoint) : base(endpoint) { }
         protected CommandPacket(ProxyEndpoint endpoint) : base(endpoint) { }
@@ -63,9 +63,14 @@ namespace RyuSocks.Packets
 
         public override void Validate()
         {
-            if (Bytes.Length < 8)
+            // Minimum length: VER(1) + CMD(1) + RSV(1) + 0x03 + 0x01 + FQDN(1) + PORT(2) = 8
+            const int MinimumLength = 8;
+            // Maximum length: VER(1) + CMD(1) + RSV(1) + 0x03 + 0xFF + FQDN(0xFF) + PORT(2) = 262
+            const int MaximumLength = 262;
+
+            if (Bytes.Length is < MinimumLength or > MaximumLength)
             {
-                throw new InvalidOperationException($"Packet length is too short: {Bytes.Length} (Expected: >= 8)");
+                throw new InvalidOperationException($"Invalid packet length: {Bytes.Length} (Expected: {MinimumLength} <= length <= {MaximumLength})");
             }
 
             if (Version != ProxyConsts.Version)

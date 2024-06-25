@@ -26,6 +26,8 @@ namespace RyuSocks.Commands.Server
     [ProxyCommandImpl(0x01)]
     public partial class ConnectCommand : ServerCommand, IDisposable
     {
+        public override bool HandlesCommunication => false;
+        public override bool UsesDatagrams => false;
         private TcpClient _client;
 
         public ConnectCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint destination) : base(session, boundEndpoint, destination)

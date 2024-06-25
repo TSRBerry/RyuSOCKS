@@ -24,6 +24,8 @@ namespace RyuSocks.Commands.Server
     [ProxyCommandImpl(0x02)]
     public partial class BindCommand : ServerCommand, IDisposable
     {
+        public override bool HandlesCommunication => false;
+        public override bool UsesDatagrams => false;
         private TcpServer _server;
         private TcpSession _serverSession;
 
