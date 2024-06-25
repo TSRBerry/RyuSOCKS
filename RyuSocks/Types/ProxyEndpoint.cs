@@ -22,6 +22,9 @@ namespace RyuSocks.Types
 {
     public class ProxyEndpoint : IEquatable<ProxyEndpoint>
     {
+        private const byte MinimumDomainNameLength = byte.MinValue + 1;
+        private const byte MaximumDomainNameLength = byte.MaxValue;
+
         public static ProxyEndpoint Null => new(new IPEndPoint(0, 0));
 
         public AddressType Type { get; private init; }
@@ -35,7 +38,7 @@ namespace RyuSocks.Types
             {
                 AddressFamily.InterNetwork => AddressType.Ipv4Address,
                 AddressFamily.InterNetworkV6 => AddressType.Ipv6Address,
-                _ => throw new ArgumentException($"Unsupported AddressFamily: {endpoint.AddressFamily}", nameof(endpoint)),
+                _ => throw new ArgumentException($"Unsupported {nameof(AddressFamily)}: {endpoint.AddressFamily}", nameof(endpoint)),
             };
 
             Addresses = new HashSet<IPAddress> { endpoint.Address };
@@ -44,9 +47,9 @@ namespace RyuSocks.Types
 
         public ProxyEndpoint(DnsEndPoint endpoint)
         {
-            if (endpoint.Host.Length is 0 or > 255)
+            if (endpoint.Host.Length is < MinimumDomainNameLength or > MaximumDomainNameLength)
             {
-                throw new ArgumentException("Length of Host must be between 1 and 255.", nameof(endpoint));
+                throw new ArgumentOutOfRangeException(nameof(endpoint), $"Length of Host must be between {MinimumDomainNameLength} and {MaximumDomainNameLength}.");
             }
 
             Type = AddressType.DomainName;
