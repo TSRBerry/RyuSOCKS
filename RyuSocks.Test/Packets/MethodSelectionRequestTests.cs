@@ -28,8 +28,8 @@ namespace RyuSocks.Test.Packets
     {
         [Theory]
         [InlineData(new[] { AuthMethod.NoAuth })]
-        [RangeData<byte>(Byte.MinValue, Byte.MaxValue)]
-        [RangeData<byte>(Byte.MinValue, Byte.MaxValue, [0x0, 0xFF, 0xAA, 0xBB])]
+        [RangeData<byte>(byte.MinValue, byte.MaxValue)]
+        [RangeData<byte>(byte.MinValue, byte.MaxValue, [0x0, 0xFF, 0xAA, 0xBB])]
         [InlineData(new AuthMethod[] { })]
         public void Bytes_Size(AuthMethod[] methods)
         {
@@ -38,7 +38,7 @@ namespace RyuSocks.Test.Packets
             // Methods: 1 - 255 bytes
             // Total: 3 - 257 bytes
 
-            if (methods.Length > Byte.MaxValue)
+            if (methods.Length > byte.MaxValue)
             {
                 Assert.Throws<ArgumentOutOfRangeException>(() => new MethodSelectionRequest(methods));
                 return;
