@@ -47,7 +47,7 @@ namespace RyuSocks.Packets
                 return AddressType switch
                 {
                     AddressType.Ipv4Address => new IPAddress(Bytes[4..8]),
-                    AddressType.DomainName => throw new InvalidOperationException($"Can't get {nameof(Address)} for {AddressType.DomainName}."),
+                    AddressType.DomainName => throw new InvalidOperationException($"Can't get {nameof(Address)} for {nameof(Types.AddressType)} {AddressType.DomainName}."),
                     AddressType.Ipv6Address => new IPAddress(Bytes[4..20]),
                     _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
                 };
@@ -60,7 +60,7 @@ namespace RyuSocks.Packets
                         value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 4));
                         return;
                     case AddressType.DomainName:
-                        throw new InvalidOperationException($"Can't set {nameof(Address)} for {AddressType.DomainName}.");
+                        throw new InvalidOperationException($"Can't set {nameof(Address)} for {nameof(Types.AddressType)} {AddressType.DomainName}.");
                     case AddressType.Ipv6Address:
                         value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 16));
                         return;
@@ -77,11 +77,11 @@ namespace RyuSocks.Packets
                 switch (AddressType)
                 {
                     case AddressType.Ipv4Address:
-                        throw new InvalidOperationException($"Can't get {nameof(DomainName)} for {AddressType.Ipv4Address}.");
+                        throw new InvalidOperationException($"Can't get {nameof(DomainName)} for {nameof(Types.AddressType)} {AddressType.Ipv4Address}.");
                     case AddressType.DomainName:
                         return Encoding.ASCII.GetString(Bytes, 5, Bytes[4]);
                     case AddressType.Ipv6Address:
-                        throw new InvalidOperationException($"Can't get {nameof(DomainName)} for {AddressType.Ipv6Address}.");
+                        throw new InvalidOperationException($"Can't get {nameof(DomainName)} for {nameof(Types.AddressType)} {AddressType.Ipv6Address}.");
                     default:
                         throw new ArgumentOutOfRangeException(nameof(AddressType));
                 }
@@ -91,14 +91,14 @@ namespace RyuSocks.Packets
                 switch (AddressType)
                 {
                     case AddressType.Ipv4Address:
-                        throw new InvalidOperationException($"Can't set {nameof(DomainName)} for {AddressType.Ipv4Address}.");
+                        throw new InvalidOperationException($"Can't set {nameof(DomainName)} for {nameof(Types.AddressType)} {AddressType.Ipv4Address}.");
                     case AddressType.DomainName:
                         ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, MaximumDomainNameLength);
                         Bytes[4] = (byte)value.Length;
                         Encoding.ASCII.GetBytes(value, Bytes.AsSpan(5, Bytes[4]));
                         return;
                     case AddressType.Ipv6Address:
-                        throw new InvalidOperationException($"Can't set {nameof(DomainName)} for {AddressType.Ipv6Address}.");
+                        throw new InvalidOperationException($"Can't set {nameof(DomainName)} for {nameof(Types.AddressType)} {AddressType.Ipv6Address}.");
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value));
                 }
