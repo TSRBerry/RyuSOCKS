@@ -53,7 +53,7 @@ namespace RyuSocks.Test.Packets
             };
 
             Assert.Equal(expectedBytes, response.Bytes);
-            Assert.Equivalent(new MethodSelectionResponse(expectedBytes), response);
+            Assert.Equivalent(new MethodSelectionResponse(expectedBytes), response, true);
         }
 
         [Theory]
