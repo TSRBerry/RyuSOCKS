@@ -15,6 +15,7 @@
  */
 
 using RyuSocks.Auth;
+using RyuSocks.Auth.Extensions;
 using RyuSocks.Types;
 using System;
 using Xunit;
@@ -71,6 +72,16 @@ namespace RyuSocks.Test.Auth
             {
                 Assert.Fail($"{nameof(outgoingPacket)} is not null.");
             }
+        }
+
+        [Fact]
+        public void GetAuth_ReturnsNoAuth()
+        {
+            NoAuth noAuth = new();
+
+            AuthMethod authMethod = noAuth.GetAuth();
+
+            Assert.Equal(AuthMethod.NoAuth, authMethod);
         }
     }
 }
