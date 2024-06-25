@@ -29,11 +29,6 @@ namespace RyuSocks.Test.Packets
 {
     public class CommandRequestTests
     {
-        public static readonly TheoryData<IPEndPoint> IPEndpointData = new(
-            new IPEndPoint(IPAddress.Any, 0),
-            new IPEndPoint(IPAddress.IPv6Any, 0)
-        );
-
         [Theory]
         [StringData(byte.MinValue + 1, byte.MaxValue, 4)]
         [StringData(byte.MinValue, byte.MaxValue + 1)]
@@ -67,8 +62,9 @@ namespace RyuSocks.Test.Packets
         }
 
         [Theory]
-        [MemberData(nameof(IPEndpointData))]
-        public void Bytes_Size_IPEndPoint(IPEndPoint endpoint)
+        [InlineData("10.0.0.5", 2211, true)]
+        [InlineData("2001:db8::abba:c000:1221", 572, false)]
+        public void Bytes_Size_IPEndPoint(string ipAddress, ushort port, bool isIpv4)
         {
             // Version: 1 byte
             // Command: 1 byte
@@ -78,12 +74,11 @@ namespace RyuSocks.Test.Packets
             // Port: 2 bytes
             // Total: 10 or 22 bytes
 
+            IPEndPoint endpoint = new(IPAddress.Parse(ipAddress), port);
             CommandRequest request = new(endpoint);
 
-            AddressFamily expectedAddressFamily = endpoint.AddressFamily == AddressFamily.InterNetwork
-                ? AddressFamily.InterNetwork
-                : AddressFamily.InterNetworkV6;
-            int expectedLength = endpoint.AddressFamily == AddressFamily.InterNetwork ? 10 : 22;
+            AddressFamily expectedAddressFamily = isIpv4 ? AddressFamily.InterNetwork : AddressFamily.InterNetworkV6;
+            int expectedLength = isIpv4 ? 10 : 22;
 
             Assert.Equal(expectedAddressFamily, endpoint.AddressFamily);
             Assert.Equal(expectedLength, request.Bytes.Length);
