@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New interface `IWrapper` which contains `Wrap()` and `Unwrap()`.
 - New properties for `Command` implementations to control communication
   with the proxy server.
+- Username and password authentication method
+  according to [RFC 1929](https://datatracker.ietf.org/doc/html/rfc1929) ([#16](https://github.com/TSRBerry/RyuSOCKS/pull/16))
 
 ### Changed
 
