@@ -56,23 +56,52 @@ namespace RyuSocks.Test.Auth
         }
 
         [Theory]
+        [InlineData("Username", "Password", true)]
+        [InlineData("InvalidUsername", "InvalidPassword", false)]
+        public void Authenticate_WorksOnRegisteredUserAuthenticationClientSide(string username, string password,
+            bool acceptable)
+        {
+            UsernameAndPasswordRequest expectedUsernameAndPasswordRequest =
+                new UsernameAndPasswordRequest(username, password);
+            UsernameAndPasswordResponse expectedUsernameAndPasswordResponse = acceptable ? new UsernameAndPasswordResponse([Constants.UsernameAndPasswordVersion, 0]) : new UsernameAndPasswordResponse([Constants.UsernameAndPasswordVersion, 1]);
+            byte[] expectedUsernameAndPasswordResponseBytes = expectedUsernameAndPasswordResponse.Bytes;
+            byte[] expectedUsernameAndPasswordRequestBytes = expectedUsernameAndPasswordRequest.Bytes;
+            UsernameAndPassword usernameAndPassword = new()
+            {
+                Database = new Dictionary<string, string>{{"Username", "Password"}},
+                Username = username,
+                Password = password,
+                IsClient = true
+            };
+
+            usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> responsePacket);
+            Assert.Equal(responsePacket, expectedUsernameAndPasswordRequestBytes);
+            if (acceptable)
+            {
+                Assert.True(usernameAndPassword.Authenticate(expectedUsernameAndPasswordResponseBytes, out _));
+            }
+            else
+            {
+                 Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(expectedUsernameAndPasswordResponseBytes, out _));
+            }
+        }
+
+        [Theory]
         [InlineData("RegisteredUsername", "RegisteredPassword", 0)]
         [InlineData("NotRegisteredUsername", "NotRegisteredPassword", 1)]
         [InlineData("RegisteredUsername", "WrongPassword", 2)]
-        public void Authenticate_WorksOnRegisteredUserAuthentication(string username, string password, int inputTypes)
+        public void Authenticate_WorksOnRegisteredUserAuthenticationServerSide(string username, string password, int inputTypes)
         {
             UsernameAndPassword usernameAndPassword = new()
             {
-                Database = [],
+                Database = inputTypes switch
+                {
+                    0 => new Dictionary<string, string> { { username, password } },
+                    2 => new Dictionary<string, string> { { username, "RegisteredPassword" } },
+                    _ => []
+                },
                 Username = username,
                 Password = password
-            };
-
-            usernameAndPassword.Database = inputTypes switch
-            {
-                0 => new Dictionary<string, string> { { username, password } },
-                2 => new Dictionary<string, string> { { username, "RegisteredPassword" } },
-                _ => usernameAndPassword.Database
             };
 
             usernameAndPassword.Authenticate(null, out ReadOnlySpan<byte> outgoingPacket);
@@ -83,7 +112,6 @@ namespace RyuSocks.Test.Auth
                 byte[] outgoingPacketByte = outgoingPacket.ToArray();
                 Assert.Throws<AuthenticationException>(() => usernameAndPassword.Authenticate(outgoingPacketByte, out _));
             }
-
             else
             {
                 usernameAndPassword.IsClient = false;
