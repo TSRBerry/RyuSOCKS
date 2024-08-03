@@ -29,7 +29,7 @@ namespace RyuSocks.Test.Auth
         public static readonly TheoryData<AuthMethod, IProxyAuth> AuthImplObjects = new()
         {
             { AuthMethod.NoAuth, new NoAuth() },
-            { AuthMethod.GSSAPI, new GSSAPI() },
+            { AuthMethod.GssApi, new GssApi() },
             { AuthMethod.UsernameAndPassword, new UsernameAndPassword() },
             { AuthMethod.CHAP, new CHAP() },
             { AuthMethod.CRAM, new CRAM() },
@@ -48,8 +48,8 @@ namespace RyuSocks.Test.Auth
                 case AuthMethod.NoAuth:
                     Assert.IsType<NoAuth>(authMethod.GetAuth());
                     break;
-                case AuthMethod.GSSAPI:
-                    Assert.IsType<GSSAPI>(authMethod.GetAuth());
+                case AuthMethod.GssApi:
+                    Assert.IsType<GssApi>(authMethod.GetAuth());
                     break;
                 case AuthMethod.UsernameAndPassword:
                     Assert.IsType<UsernameAndPassword>(authMethod.GetAuth());
