@@ -25,8 +25,8 @@ namespace RyuSocks.Auth
         /// <summary>
         /// Authenticate the current session using a method-specific sub-negotiation.
         /// </summary>
-        /// <param name="incomingPacket">The incoming packet from the server/client. Could be null.</param>
-        /// <param name="outgoingPacket">The outgoing packet for the server/client. Could be null.</param>
+        /// <param name="incomingPacket">The incoming packet from the server/client. Could be empty.</param>
+        /// <param name="outgoingPacket">The outgoing packet for the server/client. Could be empty.</param>
         /// <returns>Whether the sub-negotiation to authenticate the current session is completed.</returns>
         /// <exception cref="AuthenticationException">Authentication failed.</exception>
         public bool Authenticate(ReadOnlySpan<byte> incomingPacket, out ReadOnlySpan<byte> outgoingPacket);

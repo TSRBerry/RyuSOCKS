@@ -256,7 +256,7 @@ namespace RyuSocks
                 {
                     Authenticated = Auth.Authenticate(receivedPacket, out ReadOnlySpan<byte> outgoingPacket);
 
-                    if (outgoingPacket != null)
+                    if (!outgoingPacket.IsEmpty)
                     {
                         sentBytes = Send(outgoingPacket);
                         Debug.Assert(sentBytes == outgoingPacket.Length);
