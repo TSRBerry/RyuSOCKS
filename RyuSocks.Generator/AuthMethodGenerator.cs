@@ -233,6 +233,7 @@ namespace %NAMESPACE%
             sourceExtensions.LeaveScope(";");
             implToEnumBlock.AppendLine("_ => throw new ArgumentException($\"Unknown authentication implementation provided: {authImpl}\", nameof(authImpl)),");
             implToEnumBlock.LeaveScope(";");
+            sourceExtensions.AppendLine();
             sourceExtensions.AppendBlock(implToEnumBlock.GetLines());
             sourceExtensions.LeaveScope();
             sourceExtensions.LeaveScope();

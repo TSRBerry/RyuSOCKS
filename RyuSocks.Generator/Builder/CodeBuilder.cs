@@ -20,8 +20,6 @@ namespace RyuSocks.Generator.Builder
 
         public void AppendBlock(string[] block)
         {
-            AppendLine();
-
             foreach (var line in block)
             {
                 AppendLine(line);
