@@ -57,7 +57,7 @@ namespace RyuSocks.Generator.Packet
             {
                 Accessibility.NotApplicable => string.Empty,
                 Accessibility.Private => "private",
-                Accessibility.ProtectedAndInternal => "internal protected",
+                Accessibility.ProtectedAndInternal => "protected internal",
                 Accessibility.Protected => "protected",
                 Accessibility.Internal => "internal",
                 Accessibility.Public => "public",
