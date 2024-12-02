@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RyuSocks.Generator
+namespace RyuSocks.Generator.Builder
 {
     class BlockBuilder : AbstractBuilder
     {

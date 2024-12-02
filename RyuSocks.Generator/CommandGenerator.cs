@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using RyuSocks.Generator.Builder;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

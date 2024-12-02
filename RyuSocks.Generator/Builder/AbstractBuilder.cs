@@ -1,4 +1,4 @@
-namespace RyuSocks.Generator
+namespace RyuSocks.Generator.Builder
 {
     abstract class AbstractBuilder
     {
