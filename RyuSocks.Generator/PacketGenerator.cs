@@ -315,14 +315,9 @@ namespace %NAMESPACE%
             source.EnterScope($"{packetField.PropertyAccessModifier.ToModifierString()} partial {packetField.FieldType.Name} {packetField.PropertyName}");
 
             // Add code for getter
-            source.EnterScope("get");
-            AccessorGenerator.Generate(PacketBytesFieldName, source, packetField, true);
-            source.LeaveScope();
-
+            source.AppendBlock(AccessorGenerator.GenerateGetter(PacketBytesFieldName, packetField));
             // Add code for setter
-            source.EnterScope("set");
-            AccessorGenerator.Generate(PacketBytesFieldName, source, packetField, false);
-            source.LeaveScope();
+            source.AppendBlock(AccessorGenerator.GenerateSetter(PacketBytesFieldName, packetField));
 
             // Leave property and class scope
             source.LeaveScope();
