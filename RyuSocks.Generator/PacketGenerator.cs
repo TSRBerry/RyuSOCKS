@@ -37,7 +37,6 @@ namespace RyuSocks.Generator
         private const string Namespace = "RyuSocks.Packets";
         private const string AbstractClassName = "Packet";
         private const string PacketFieldAttributeName = "PacketFieldAttribute";
-        private const string PacketBytesFieldName = "Bytes";
 
 #region SourceText
         private const string PacketFieldAttributeText = @"
@@ -105,16 +104,36 @@ namespace %NAMESPACE%
         /// <summary>
         /// The contents of the packet.
         /// </summary>
-        public byte[] %BYTES_FIELD_NAME% { get; protected set; }
+        public byte[] Bytes { get; protected set; }
+        
+        /// <inheritdoc cref=""Bytes""/>
+        public byte this[int i]
+        {
+            get => Bytes[i];
+            set => Bytes[i] = value;
+        }
 
-        /// <inheritdoc cref=""%BYTES_FIELD_NAME%""/>
-        public Span<byte> AsSpan() => %BYTES_FIELD_NAME%;
+        /// <summary>
+        /// Creates a new span over the packet.
+        /// </summary>
+        /// <seealso cref=""Bytes""/>
+        /// <seealso cref=""M:System.MemoryExtensions.AsSpan``1(``0[])""/>
+        public Span<byte> AsSpan() => Bytes;
+
+        /// <summary>
+        /// Creates a new Span over the portion of the packet beginning
+        /// at 'start' index and ending at 'end' index (exclusive).
+        /// </summary>
+        /// <param name=""start"">The index at which to begin the Span.</param>
+        /// <param name=""length"">The number of items in the Span.</param>
+        /// <seealso cref=""M:System.MemoryExtensions.AsSpan``1(``0[],System.Int32,System.Int32)""/>
+        public Span<byte> AsSpan(int start, int length) => Bytes.AsSpan(start, length);
 
         protected %CLASS_NAME%() { }
         
         protected %CLASS_NAME%(byte[] bytes)
         {
-            %BYTES_FIELD_NAME% = bytes;
+            Bytes = bytes;
         }
     }
 }
@@ -138,7 +157,6 @@ namespace %NAMESPACE%
                     AbstractPacketClassText
                         .Replace("%NAMESPACE%", Namespace)
                         .Replace("%CLASS_NAME%", AbstractClassName)
-                        .Replace("%BYTES_FIELD_NAME%", PacketBytesFieldName)
                 )
             );
 
@@ -315,9 +333,9 @@ namespace %NAMESPACE%
             source.EnterScope($"{packetField.PropertyAccessModifier.ToModifierString()} partial {packetField.FieldType.Name} {packetField.PropertyName}");
 
             // Add code for getter
-            source.AppendBlock(AccessorGenerator.GenerateGetter(PacketBytesFieldName, packetField));
+            source.AppendBlock(AccessorGenerator.GenerateGetter(packetField));
             // Add code for setter
-            source.AppendBlock(AccessorGenerator.GenerateSetter(PacketBytesFieldName, packetField));
+            source.AppendBlock(AccessorGenerator.GenerateSetter(packetField));
 
             // Leave property and class scope
             source.LeaveScope();

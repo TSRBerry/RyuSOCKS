@@ -38,9 +38,13 @@ namespace RyuSocks.Packets
         // Port
 
         protected CommandPacket(byte[] bytes) : base(bytes) { }
+
         protected CommandPacket(IPEndPoint endpoint) : base(endpoint) { }
+
         protected CommandPacket(DnsEndPoint endpoint) : base(endpoint) { }
+
         protected CommandPacket(ProxyEndpoint endpoint) : base(endpoint) { }
+
         protected CommandPacket() { }
 
         public override void Validate()

@@ -26,7 +26,7 @@ namespace RyuSocks.Generator.Packet
         //       For classes:
         //         - getter: Require a specific constructor?
         //         - setter: Require a specific method/property to get access to a Span<byte> or byte[]?
-        private static string[] Generate(string packetBytesFieldName, PacketFieldModel packetField, bool isGetter)
+        private static string[] Generate(PacketFieldModel packetField, bool isGetter)
         {
             BlockBuilder source = new();
             source.EnterScope(isGetter ? "get" : "set");
@@ -46,7 +46,7 @@ namespace RyuSocks.Generator.Packet
             else if (packetField.FieldType is { ActualType: ActualType.NamedType, Name: "String" }
                 || packetField.FieldType.ActualType != ActualType.NamedType)
             {
-                source.AppendBlock(GenerateSimpleAccessor(packetBytesFieldName, packetField, isGetter));
+                source.AppendBlock(GenerateSimpleAccessor(packetField, isGetter));
             }
             else if (packetField.FieldType.ActualType == ActualType.NamedType)
             {
@@ -62,10 +62,8 @@ namespace RyuSocks.Generator.Packet
             return source.GetLines();
         }
 
-        public static string[] GenerateGetter(string packetBytesFieldName, PacketFieldModel packetField) =>
-            Generate(packetBytesFieldName, packetField, true);
+        public static string[] GenerateGetter(PacketFieldModel packetField) => Generate(packetField, true);
 
-        public static string[] GenerateSetter(string packetBytesFieldName, PacketFieldModel packetField) =>
-            Generate(packetBytesFieldName, packetField, false);
+        public static string[] GenerateSetter(PacketFieldModel packetField) => Generate(packetField, false);
     }
 }
