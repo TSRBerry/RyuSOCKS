@@ -16,6 +16,14 @@ namespace RyuSocks.Generator.Builder
             _block.Add(GetIndentedString(text));
         }
 
+        public void AppendBlock(string[] block)
+        {
+            foreach (var line in block)
+            {
+                AppendLine(line);
+            }
+        }
+
         public string[] GetLines()
         {
             return [.. _block];
