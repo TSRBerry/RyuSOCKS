@@ -18,6 +18,7 @@ namespace RyuSocks.Generator
         private const string ProxyCommandEnumName = "ProxyCommand";
         private const string ProxyCommandExtensionsClassName = "ProxyCommandExtensions";
 
+        #region SourceText
         private const string AttributeText = @"
 using System;
 
@@ -48,6 +49,7 @@ namespace %NAMESPACE%
     }
 }
 ";
+        #endregion
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
