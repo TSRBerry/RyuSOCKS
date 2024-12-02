@@ -20,33 +20,15 @@ using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public class UdpPacket : EndpointPacket
+    public partial class UdpPacket : EndpointPacket
     {
-        public int HeaderLength => GetEndpointPacketLength();
+        public int HeaderLength => PacketLength;
 
-        public ushort Reserved
-        {
-            get
-            {
-                return BitConverter.ToUInt16(Bytes.AsSpan(0, 2));
-            }
-            set
-            {
-                BitConverter.GetBytes(value).CopyTo(Bytes.AsSpan(0, 2));
-            }
-        }
+        [PacketField(0)]
+        public partial ushort Reserved { get; set; }
 
-        public byte Fragment
-        {
-            get
-            {
-                return Bytes[2];
-            }
-            set
-            {
-                Bytes[2] = value;
-            }
-        }
+        [PacketField(2)]
+        public partial byte Fragment { get; set; }
 
         // AddressType
 
@@ -68,7 +50,7 @@ namespace RyuSocks.Packets
             set => Port = value;
         }
 
-        public Span<byte> UserData => Bytes.AsSpan(GetEndpointPacketLength());
+        public Span<byte> UserData => Bytes.AsSpan(PacketLength);
 
         public UdpPacket(byte[] bytes) : base(bytes) { }
 

@@ -24,6 +24,7 @@ namespace RyuSocks.Packets
     {
         // Version
 
+        // TODO: PacketGenerator: Add something like "AssumeEnum" to PacketFieldAttribute
         public ProxyCommand Command
         {
             get

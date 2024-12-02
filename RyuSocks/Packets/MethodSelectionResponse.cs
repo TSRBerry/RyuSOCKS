@@ -20,20 +20,12 @@ using System;
 
 namespace RyuSocks.Packets
 {
-    public class MethodSelectionResponse : Packet
+    public partial class MethodSelectionResponse : Packet
     {
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
+        // TODO: PacketGenerator: Add something like "AssumeEnum" to PacketFieldAttribute
         public AuthMethod Method
         {
             get

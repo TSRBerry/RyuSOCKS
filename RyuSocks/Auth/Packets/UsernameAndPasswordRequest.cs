@@ -20,35 +20,18 @@ using System.Text;
 
 namespace RyuSocks.Auth.Packets
 {
-    public class UsernameAndPasswordRequest : Packet
+    public partial class UsernameAndPasswordRequest : Packet
     {
         private const int MinimumPacketLength = 4;
         private const int MaximumPacketLength = 513;
 
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
-        public byte UsernameLength
-        {
-            get
-            {
-                return Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = value;
-            }
-        }
+        [PacketField(1)]
+        public partial byte UsernameLength { get; set; }
 
+        // TODO: PacketGenerator: Maybe add something for range/length checks?
         public string Username
         {
             get
@@ -63,18 +46,10 @@ namespace RyuSocks.Auth.Packets
             }
         }
 
-        public byte PasswordLength
-        {
-            get
-            {
-                return Bytes[2 + UsernameLength];
-            }
-            set
-            {
-                Bytes[2 + UsernameLength] = value;
-            }
-        }
+        [PacketField(nameof(PasswordOffset))]
+        public partial byte PasswordLength { get; set; }
 
+        // TODO: PacketGenerator: Maybe add something for range/length checks?
         public string Password
         {
             get
@@ -88,6 +63,8 @@ namespace RyuSocks.Auth.Packets
                 Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(3 + UsernameLength, PasswordLength));
             }
         }
+
+        private int PasswordOffset => 2 + UsernameLength;
 
         public UsernameAndPasswordRequest(byte[] packetBytes) : base(packetBytes)
         {

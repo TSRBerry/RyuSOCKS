@@ -21,31 +21,13 @@ using System.Linq;
 
 namespace RyuSocks.Packets
 {
-    public class MethodSelectionRequest : Packet
+    public partial class MethodSelectionRequest : Packet
     {
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
-        public byte NumOfMethods
-        {
-            get
-            {
-                return Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = value;
-            }
-        }
+        [PacketField(1)]
+        public partial byte NumOfMethods { get; set; }
 
         public AuthMethod[] Methods
         {

@@ -23,7 +23,7 @@ using System.Text;
 
 namespace RyuSocks.Packets
 {
-    public abstract class EndpointPacket : Packet
+    public abstract partial class EndpointPacket : Packet
     {
         private const byte MinimumPacketLength = 8;
         private const byte Ipv4PacketLength = 10;
@@ -43,7 +43,7 @@ namespace RyuSocks.Packets
 
                 if (AddressType is AddressType.Ipv4Address or AddressType.Ipv6Address)
                 {
-                    int requiredLength = GetEndpointPacketLength();
+                    int requiredLength = PacketLength;
                     if (Bytes.Length != requiredLength)
                     {
                         byte[] resizeBytes = Bytes;
@@ -105,7 +105,7 @@ namespace RyuSocks.Packets
                 ArgumentOutOfRangeException.ThrowIfLessThan(value, MinimumDomainNameLength);
                 Bytes[4] = value;
 
-                int requiredLength = GetEndpointPacketLength();
+                int requiredLength = PacketLength;
                 if (Bytes.Length != requiredLength)
                 {
                     byte[] resizeBytes = Bytes;
@@ -142,25 +142,28 @@ namespace RyuSocks.Packets
             }
         }
 
-        protected ushort Port
-        {
-            get
-            {
-                Span<byte> portSpan = GetPortSpan();
-                portSpan.Reverse();
-                return BitConverter.ToUInt16(portSpan);
-            }
-            set
-            {
-                byte[] portBytes = BitConverter.GetBytes(value);
-                Array.Reverse(portBytes);
-                portBytes.CopyTo(GetPortSpan());
-            }
-        }
+        [PacketField(nameof(PortOffset), IsBigEndian = true)]
+        protected partial ushort Port { get; set; }
 
         public ProxyEndpoint ProxyEndpoint => AddressType == AddressType.DomainName
             ? new ProxyEndpoint(new DnsEndPoint(DomainName, Port))
             : new ProxyEndpoint(new IPEndPoint(Address, Port));
+
+        protected int PacketLength => AddressType switch
+        {
+            AddressType.Ipv4Address => Ipv4PacketLength,
+            AddressType.DomainName => 7 + DomainNameLength,
+            AddressType.Ipv6Address => Ipv6PacketLength,
+            _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+        };
+
+        private int PortOffset => AddressType switch
+        {
+            AddressType.Ipv4Address => Ipv4PacketLength - 2,
+            AddressType.DomainName => 5 + DomainNameLength,
+            AddressType.Ipv6Address => Ipv6PacketLength - 2,
+            _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+        };
 
         protected EndpointPacket(byte[] bytes) : base(bytes)
         {
@@ -232,28 +235,6 @@ namespace RyuSocks.Packets
         {
             Bytes = new byte[10];
             AddressType = AddressType.Ipv4Address;
-        }
-
-        protected int GetEndpointPacketLength()
-        {
-            return AddressType switch
-            {
-                AddressType.Ipv4Address => Ipv4PacketLength,
-                AddressType.DomainName => 7 + DomainNameLength,
-                AddressType.Ipv6Address => Ipv6PacketLength,
-                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
-            };
-        }
-
-        private Span<byte> GetPortSpan()
-        {
-            return AddressType switch
-            {
-                AddressType.Ipv4Address => Bytes.AsSpan(Ipv4PacketLength - 2, 2),
-                AddressType.DomainName => Bytes.AsSpan(5 + DomainNameLength, 2),
-                AddressType.Ipv6Address => Bytes.AsSpan(Ipv6PacketLength - 2, 2),
-                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
-            };
         }
 
         public override void Validate()

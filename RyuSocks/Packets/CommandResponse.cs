@@ -19,21 +19,12 @@ using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public class CommandResponse : CommandPacket
+    public partial class CommandResponse : CommandPacket
     {
         // Version
 
-        public ReplyField ReplyField
-        {
-            get
-            {
-                return (ReplyField)Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = (byte)value;
-            }
-        }
+        [PacketField(1)]
+        public partial ReplyField ReplyField { get; set; }
 
         // Reserved
 

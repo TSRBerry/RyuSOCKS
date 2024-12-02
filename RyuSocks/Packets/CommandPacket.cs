@@ -21,33 +21,15 @@ using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public abstract class CommandPacket : EndpointPacket
+    public abstract partial class CommandPacket : EndpointPacket
     {
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
         // ProxyCommand or ReplyField
 
-        public byte Reserved
-        {
-            get
-            {
-                return Bytes[2];
-            }
-            set
-            {
-                Bytes[2] = value;
-            }
-        }
+        [PacketField(2)]
+        public partial byte Reserved { get; set; }
 
         // AddressType
 
