@@ -110,16 +110,26 @@ namespace RyuSocks.Generator.Packet
                 BlockBuilder source = new();
                 string valueParameter = packetField.FieldType.IsEnum ? $"Enum.GetName<{packetField.FieldType.Name}>(value)" : "value";
 
+                if (packetField.FieldType.IsEnum)
+                {
+                    source.AppendLine($"string valueString = {valueParameter};");
+                    valueParameter = "valueString";
+                }
+
+                if (packetField.MinLength > 0)
+                {
+                    source.AppendLine($"ArgumentOutOfRangeException.ThrowIfLessThan({valueParameter}.Length, {packetField.MinLength});");
+                }
+                if (packetField.MaxLength > 0)
+                {
+                    source.AppendLine($"ArgumentOutOfRangeException.ThrowIfGreaterThan({valueParameter}.Length, {packetField.MaxLength});");
+                }
+
                 if (packetField.Length <= 0)
                 {
-                    if (packetField.FieldType.IsEnum)
-                    {
-                        source.AppendLine($"string valueString = {valueParameter};");
-                        valueParameter = "valueString";
-                    }
+                    string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
 
-                    // TODO: Add type cast if necessary
-                    source.AppendLine($"this.{packetField.LengthMember} = {valueParameter}.Length;");
+                    source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}{valueParameter}.Length;");
                     source.AppendLine($"Encoding.ASCII.GetBytes({valueParameter}, this.AsSpan({packetField.GetOffset()}, this.{packetField.LengthMember}));");
                 }
                 else
