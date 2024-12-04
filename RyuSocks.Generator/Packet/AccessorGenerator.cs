@@ -35,7 +35,7 @@ namespace RyuSocks.Generator.Packet
             {
                 // TODO: Deal with arrays
                 //       Arrays could contain structs, enums or classes
-                source.AppendLine("// TODO: arrays");
+                source.AppendBlock(GenerateArrayAccessor(packetField, isGetter));
             }
             else if (packetField.FieldType.IsStruct)
             {
