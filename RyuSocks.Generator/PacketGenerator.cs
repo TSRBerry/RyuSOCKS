@@ -181,7 +181,7 @@ namespace %NAMESPACE%
             //       while every class gets only one generated file.
             //       Not sure if that's actually desirable.
             //       Looking for something similar to LINQ GroupBy
-            context.RegisterSourceOutput(packetFieldProvider, ProduceSourceCode);
+            context.RegisterImplementationSourceOutput(packetFieldProvider, ProduceSourceCode);
         }
 
         /// <summary>
