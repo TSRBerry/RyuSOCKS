@@ -21,6 +21,16 @@ namespace RyuSocks.Generator.Packet
 {
     internal static partial class AccessorGenerator
     {
+        private static void AddVerificationMethodIfNecessary(BlockBuilder source, PacketFieldModel packetField, bool isGetter)
+        {
+            if (packetField.ValidationMethodName.Length > 0)
+            {
+                string maybeValueParam = isGetter ? string.Empty : "value";
+
+                source.AppendLine($"this.{packetField.ValidationMethodName}({maybeValueParam});");
+            }
+        }
+
         // TODO: Find a way to deal with classes and structs properly
         //       This probably requires a model change
         //       For classes:

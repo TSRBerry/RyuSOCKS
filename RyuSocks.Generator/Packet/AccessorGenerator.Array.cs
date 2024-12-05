@@ -181,14 +181,18 @@ namespace RyuSocks.Generator.Packet
                 {
                     source.AppendLine($"ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, {packetField.MaxLength});");
                 }
+            }
 
+            AddVerificationMethodIfNecessary(source, packetField, isGetter);
+
+            if (!isGetter)
+            {
                 if (packetField.Length <= 0)
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
-
                     source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}value.Length;");
                 }
-
+                
                 source.AppendLine();
             }
 

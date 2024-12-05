@@ -39,6 +39,7 @@ namespace RyuSocks.Generator.Packet
         string PropertyName,
         Accessibility PropertyAccessModifier,
         string ClassName,
-        string[] Imports
+        string[] Imports,
+        string ValidationMethodName
     );
 }

@@ -104,6 +104,15 @@ namespace %NAMESPACE%
         /// </summary>
         public string AssumeGeneratedEnumType { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The name of the method which should be invoked before the getter/setter is executed.
+        /// </summary> 
+        /// <remarks>
+        /// The method type must be void and have one optional parameter with the same type as the property.
+        /// If verification fails an exception should be thrown.
+        /// </remarks>
+        public string ValidationMethod { get; set; } = string.Empty;
+
         public int Offset => offset;
         public string OffsetMember => offsetMember;
     }
@@ -231,6 +240,7 @@ namespace %NAMESPACE%
             TypedConstant minLengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MinLength").Value;
             TypedConstant maxLengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MaxLength").Value;
             TypedConstant assumeGeneratedEnumTypeArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "AssumeGeneratedEnumType").Value;
+            TypedConstant validationMethodArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "ValidationMethod").Value;
             int length = !lengthArg.IsNull ? (int)lengthArg.Value! : -1;
             string lengthMember = !lengthMemberArg.IsNull ? (string)lengthMemberArg.Value! : string.Empty;
             ActualType lengthMemberType = ActualType.NamedType;
@@ -239,6 +249,9 @@ namespace %NAMESPACE%
             int maxLength = !maxLengthArg.IsNull ? (int)maxLengthArg.Value! : -1;
             string assumeGeneratedEnumType = !assumeGeneratedEnumTypeArg.IsNull
                 ? (string)assumeGeneratedEnumTypeArg.Value!
+                : string.Empty;
+            string validationMethodName = !validationMethodArg.IsNull
+                ? (string)validationMethodArg.Value!
                 : string.Empty;
 
             // Get information about the property type
@@ -323,7 +336,8 @@ namespace %NAMESPACE%
                 propertySymbol.Name,
                 propertySymbol.DeclaredAccessibility,
                 classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                imports
+                imports,
+                validationMethodName
             );
         }
 

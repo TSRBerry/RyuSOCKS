@@ -95,19 +95,24 @@ namespace RyuSocks.Generator.Packet
 
         private static string[] GenerateSimpleStringAccessor(PacketFieldModel packetField, bool isGetter)
         {
+            BlockBuilder source = new();
+
             // FIXME: This implementation assumes strings are always ASCII
             if (isGetter)
             {
+                AddVerificationMethodIfNecessary(source, packetField, true);
+
                 if (packetField.FieldType.IsEnum)
                 {
-                    return [$"Enum.Parse<{packetField.FieldType.Name}>(Encoding.ASCII.GetString(this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})), true);"];
+                    source.AppendLine($"Enum.Parse<{packetField.FieldType.Name}>(Encoding.ASCII.GetString(this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})), true);");
+
+                    return source.GetLines();
                 }
 
-                return [$"return Encoding.ASCII.GetString(this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()}));"];
+                source.AppendLine($"return Encoding.ASCII.GetString(this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()}));");
             }
             else
             {
-                BlockBuilder source = new();
                 string valueParameter = packetField.FieldType.IsEnum ? $"Enum.GetName<{packetField.FieldType.Name}>(value)" : "value";
 
                 if (packetField.FieldType.IsEnum)
@@ -125,6 +130,8 @@ namespace RyuSocks.Generator.Packet
                     source.AppendLine($"ArgumentOutOfRangeException.ThrowIfGreaterThan({valueParameter}.Length, {packetField.MaxLength});");
                 }
 
+                AddVerificationMethodIfNecessary(source, packetField, false);
+
                 if (packetField.Length <= 0)
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
@@ -136,19 +143,28 @@ namespace RyuSocks.Generator.Packet
                 {
                     source.AppendLine($"Encoding.ASCII.GetBytes({valueParameter}, this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()}));");
                 }
-
-                return source.GetLines();
             }
+
+            return source.GetLines();
         }
 
         private static string[] GenerateSimpleAccessor(PacketFieldModel packetField, bool isGetter)
         {
+            BlockBuilder source = new();
+
+            if (packetField.FieldType.ActualType != ActualType.NamedType)
+            {
+                AddVerificationMethodIfNecessary(source, packetField, isGetter);
+            }
+
             switch (packetField.FieldType.ActualType)
             {
                 case ActualType.Byte:
-                    return GenerateSimpleByteAccessor(packetField, isGetter);
+                    source.AppendBlock(GenerateSimpleByteAccessor(packetField, isGetter));
+                    break;
                 case ActualType.SByte:
-                    return GenerateSimpleSByteAccessor(packetField, isGetter);
+                    source.AppendBlock(GenerateSimpleSByteAccessor(packetField, isGetter));
+                    break;
                 case ActualType.Int16:
                 case ActualType.UInt16:
                 case ActualType.Int32:
@@ -156,15 +172,20 @@ namespace RyuSocks.Generator.Packet
                 case ActualType.Int64:
                 case ActualType.UInt64:
                     var converter = TypeConverter.Map[packetField.FieldType.ActualType];
-                    return packetField.IsBigEndian
+                    var accessorBlock = packetField.IsBigEndian
                         ? GenerateSimpleReversedIntegralAccessor(packetField, converter, isGetter)
                         : GenerateSimpleIntegralAccessor(packetField, converter, isGetter);
+                    source.AppendBlock(accessorBlock);
+                    break;
                 case ActualType.NamedType:
                     // Only deal with strings here
-                    return GenerateSimpleStringAccessor(packetField, isGetter);
+                    source.AppendBlock(GenerateSimpleStringAccessor(packetField, isGetter));
+                    break;
                 default:
                     throw new InvalidOperationException($"Unable to generate simple accessor for type: {packetField.FieldType.Name}({packetField.FieldType.ActualType})");
             }
+
+            return source.GetLines();
         }
     }
 }
