@@ -29,20 +29,8 @@ namespace RyuSocks.Packets
         [PacketField(1)]
         public partial byte NumOfMethods { get; set; }
 
-        public AuthMethod[] Methods
-        {
-            get
-            {
-                return Bytes[2..(2 + NumOfMethods)].Cast<AuthMethod>().ToArray();
-
-            }
-            set
-            {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
-                NumOfMethods = (byte)value.Length;
-                value.Cast<byte>().ToArray().CopyTo(Bytes.AsSpan(2, value.Length));
-            }
-        }
+        [PacketField(2, LengthMember = nameof(NumOfMethods), MaxLength = 0xFF, AssumeGeneratedEnumType = nameof(Byte))]
+        public partial AuthMethod[] Methods { get; set; }
 
         public MethodSelectionRequest(byte[] bytes) : base(bytes) { }
 

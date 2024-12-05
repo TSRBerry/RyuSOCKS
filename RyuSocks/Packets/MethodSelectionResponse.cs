@@ -25,18 +25,8 @@ namespace RyuSocks.Packets
         [PacketField(0)]
         public partial byte Version { get; set; }
 
-        // TODO: PacketGenerator: Add something like "AssumeEnum" to PacketFieldAttribute
-        public AuthMethod Method
-        {
-            get
-            {
-                return (AuthMethod)Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = (byte)value;
-            }
-        }
+        [PacketField(1, AssumeGeneratedEnumType = nameof(Byte))]
+        public partial AuthMethod Method { get; set; }
 
         public MethodSelectionResponse(byte[] bytes) : base(bytes) { }
 

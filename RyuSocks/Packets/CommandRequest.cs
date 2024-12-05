@@ -16,26 +16,17 @@
 
 using RyuSocks.Commands;
 using RyuSocks.Types;
+using System;
 using System.Net;
 
 namespace RyuSocks.Packets
 {
-    public class CommandRequest : CommandPacket
+    public partial class CommandRequest : CommandPacket
     {
         // Version
 
-        // TODO: PacketGenerator: Add something like "AssumeEnum" to PacketFieldAttribute
-        public ProxyCommand Command
-        {
-            get
-            {
-                return (ProxyCommand)Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = (byte)value;
-            }
-        }
+        [PacketField(1, AssumeGeneratedEnumType = nameof(Byte))]
+        public partial ProxyCommand Command { get; set; }
 
         // Reserved
 
