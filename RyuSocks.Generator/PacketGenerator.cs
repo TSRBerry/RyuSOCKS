@@ -183,10 +183,6 @@ namespace %NAMESPACE%
                 TransformPacketFieldProperty
             );
 
-            // TODO: Figure out how to group by a field/property, so code can be generated for all classes in parallel,
-            //       while every class gets only one generated file.
-            //       Not sure if that's actually desirable.
-            //       Looking for something similar to LINQ GroupBy
             context.RegisterImplementationSourceOutput(packetFieldProvider, ProduceSourceCode);
         }
 
