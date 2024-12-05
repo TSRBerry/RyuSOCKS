@@ -187,8 +187,9 @@ namespace RyuSocks.Generator.Packet
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
 
                     source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}value.Length;");
-                    source.AppendLine();
                 }
+
+                source.AppendLine();
             }
 
             if (packetField.FieldType.IsStruct)
