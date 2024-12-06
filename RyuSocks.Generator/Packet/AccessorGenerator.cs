@@ -31,11 +31,6 @@ namespace RyuSocks.Generator.Packet
             }
         }
 
-        // TODO: Find a way to deal with classes and structs properly
-        //       This probably requires a model change
-        //       For classes:
-        //         - getter: Require a specific constructor?
-        //         - setter: Require a specific method/property to get access to a Span<byte> or byte[]?
         private static string[] Generate(PacketFieldModel packetField, bool isGetter)
         {
             BlockBuilder source = new();
@@ -60,8 +55,7 @@ namespace RyuSocks.Generator.Packet
             }
             else if (packetField.FieldType.ActualType == ActualType.NamedType)
             {
-                // TODO: Deal with classes
-                source.AppendLine("// TODO: classes");
+                source.AppendBlock(GenerateClassAccessor(packetField, isGetter));
             }
             else
             {
