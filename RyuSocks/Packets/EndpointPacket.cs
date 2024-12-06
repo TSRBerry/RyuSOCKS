@@ -19,7 +19,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace RyuSocks.Packets
 {
@@ -34,34 +33,8 @@ namespace RyuSocks.Packets
         [PacketField(3, ValidationMethod = nameof(ResizeIfNecessary))]
         public partial AddressType AddressType { get; set; }
 
-        protected IPAddress Address
-        {
-            get
-            {
-                return AddressType switch
-                {
-                    AddressType.Ipv4Address => new IPAddress(Bytes[4..8]),
-                    AddressType.Ipv6Address => new IPAddress(Bytes[4..20]),
-                    _ => throw new InvalidOperationException(
-                        $"Can't get {nameof(Address)} for {nameof(Types.AddressType)} {AddressType}."),
-                };
-            }
-            set
-            {
-                switch (AddressType)
-                {
-                    case AddressType.Ipv4Address:
-                        value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 4));
-                        return;
-                    case AddressType.Ipv6Address:
-                        value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 16));
-                        return;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Can't set {nameof(Address)} for {nameof(Types.AddressType)} {AddressType}.");
-                }
-            }
-        }
+        [PacketField(4, LengthMember = nameof(AddressSize))]
+        protected partial IPAddress Address { get; set; }
 
         [PacketField(4, ValidationMethod = nameof(ResizeForDomainNameIfNecessary))]
         protected partial byte DomainNameLength { get; set; }
@@ -82,6 +55,14 @@ namespace RyuSocks.Packets
             AddressType.DomainName => 7 + DomainNameLength,
             AddressType.Ipv6Address => Ipv6PacketLength,
             _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+        };
+
+        private int AddressSize => AddressType switch
+        {
+            AddressType.Ipv4Address => 4,
+            AddressType.Ipv6Address => 16,
+            _ => throw new InvalidOperationException(
+                $"Can't get address size for {nameof(Types.AddressType)} {AddressType}."),
         };
 
         private int PortOffset => AddressType switch
@@ -164,6 +145,7 @@ namespace RyuSocks.Packets
             AddressType = AddressType.Ipv4Address;
         }
 
+        // ReSharper disable once UnusedParameter.Local
         private void EnsureDomainNameType(string value = "")
         {
             if (AddressType != AddressType.DomainName)
