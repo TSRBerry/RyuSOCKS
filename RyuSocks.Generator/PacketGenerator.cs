@@ -130,7 +130,7 @@ namespace %NAMESPACE%
         /// The contents of the packet.
         /// </summary>
         public byte[] Bytes { get; protected set; }
-        
+
         /// <inheritdoc cref=""Bytes""/>
         public byte this[int i]
         {
@@ -155,7 +155,7 @@ namespace %NAMESPACE%
         public Span<byte> AsSpan(int start, int length) => Bytes.AsSpan(start, length);
 
         protected %CLASS_NAME%() { }
-        
+
         protected %CLASS_NAME%(byte[] bytes)
         {
             Bytes = bytes;
@@ -174,6 +174,7 @@ namespace %NAMESPACE%
                         .Replace("%NAMESPACE%", Namespace)
                         .Replace("%ATTRIBUTE_NAME%", PacketFieldAttributeName)
                         .Replace("%ABSTRACT_CLASS_NAME%", AbstractClassName)
+                        .TrimStart()
                 )
             );
             // Register the abstract packet class source
@@ -182,6 +183,7 @@ namespace %NAMESPACE%
                     AbstractPacketClassText
                         .Replace("%NAMESPACE%", Namespace)
                         .Replace("%CLASS_NAME%", AbstractClassName)
+                        .TrimStart()
                 )
             );
 
