@@ -329,7 +329,7 @@ namespace %NAMESPACE%
                 maxLength,
                 isBigEndian,
                 new FieldTypeModel(
-                    propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    RemoveGlobalAlias(propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
                     isArray,
                     isEnum,
                     isStruct,
@@ -337,7 +337,7 @@ namespace %NAMESPACE%
                 ),
                 propertySymbol.Name,
                 propertySymbol.DeclaredAccessibility,
-                classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                RemoveGlobalAlias(classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
                 imports,
                 validationMethodName
             );
@@ -352,11 +352,6 @@ namespace %NAMESPACE%
             {
                 namespaceName = className.Substring(0, className.LastIndexOf(".", StringComparison.Ordinal));
                 className = className.Substring(className.LastIndexOf(".", StringComparison.Ordinal) + 1);
-            }
-
-            if (namespaceName.StartsWith("global::"))
-            {
-                namespaceName = namespaceName.Substring(8);
             }
 
             // Begin building the generated source
@@ -411,6 +406,9 @@ namespace %NAMESPACE%
             string fullyQualifiedName = namespaceName.Length > 0 ? $"{namespaceName}.{className}" : className;
             context.AddSource($"{fullyQualifiedName}.{packetField.PropertyName}.g.cs", source.ToString());
         }
+
+        private static string RemoveGlobalAlias(string classOrNamespaceName) =>
+            classOrNamespaceName.StartsWith("global::") ? classOrNamespaceName.Substring(8) : classOrNamespaceName;
 
         private static bool IsActualStruct(ITypeSymbol typeSymbol)
         {

@@ -43,14 +43,7 @@ namespace RyuSocks.Generator.Packet
 
         private static string[] GenerateClassAccessor(PacketFieldModel packetField, bool isGetter)
         {
-            string typeClassName = packetField.FieldType.Name;
-
-            if (typeClassName.StartsWith("global::"))
-            {
-                typeClassName = typeClassName.Substring(8);
-            }
-
-            switch (typeClassName)
+            switch (packetField.FieldType.Name)
             {
                 case "System.Net.IPAddress":
                     return GenerateIPAddressAccessor(packetField, isGetter);
