@@ -118,7 +118,7 @@ namespace RyuSocks.Test.Utils
                 }
             }
 
-            return data.ToArray();
+            return [.. data];
         }
     }
 }

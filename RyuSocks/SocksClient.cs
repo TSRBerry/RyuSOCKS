@@ -34,7 +34,7 @@ namespace RyuSocks
     {
         // TODO: Keep track of the connection state
 
-        private readonly object _socketLock = new();
+        private readonly Lock _socketLock = new();
         private readonly ProxyEndpoint _proxyEndpoint;
         private Socket _socket;
         private bool _serverEndpointReceived;
