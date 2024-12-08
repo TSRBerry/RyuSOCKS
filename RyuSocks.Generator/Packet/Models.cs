@@ -37,6 +37,8 @@ namespace RyuSocks.Generator.Packet
         FieldTypeModel FieldType,
         string PropertyName,
         string PropertyAccessModifiers,
+        string PropertyGetterModifiers,
+        string PropertySetterModifiers,
         string ClassName,
         string[] Imports,
         string ValidationMethodName

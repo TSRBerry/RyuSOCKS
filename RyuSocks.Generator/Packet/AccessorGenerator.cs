@@ -34,7 +34,7 @@ namespace RyuSocks.Generator.Packet
         private static string[] Generate(PacketFieldModel packetField, bool isGetter)
         {
             BlockBuilder source = new();
-            source.EnterScope(isGetter ? "get" : "set");
+            source.EnterScope(isGetter ? $"{packetField.PropertyGetterModifiers}get" : $"{packetField.PropertySetterModifiers}set");
 
             if (packetField.FieldType.IsArray)
             {

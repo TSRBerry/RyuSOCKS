@@ -28,7 +28,6 @@ namespace RyuSocks.Generator
     // TODO: Write an analyzer for PacketFieldAttribute
     //         - make sure (Offset and OffsetMember) and (Length and LengthMember) aren't used at the same time
     //         - check whether the attribute is used on a property within a class/subclass that extends Packet
-    // FIXME: Get accessibility modifiers of property accessors.
     // FIXME: Pay attention to the endianness, don't assume little endian.
 
     [Generator]
@@ -370,6 +369,8 @@ namespace %NAMESPACE%
                 ),
                 propertySymbol.Name,
                 GetAccessModifierString(propertySymbol),
+                GetAccessorModifierString(propertySymbol, true),
+            GetAccessorModifierString(propertySymbol, false),
                 RemoveGlobalAlias(classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
                 imports,
                 validationMethodName
@@ -477,8 +478,39 @@ namespace %NAMESPACE%
                 result += $"{modifier.ToString()} ";
             }
 
-            // NOTE: Keep the last space
+            // NOTE: Keep the last space to make working with it easier.
             return result;
+        }
+
+        private static string GetAccessorModifierString(IPropertySymbol propertySymbol, bool isGetter)
+        {
+            if (propertySymbol.DeclaringSyntaxReferences.Length != 1)
+            {
+                throw new InvalidOperationException($"PropertySymbol contains wrong amount of declaring syntax references: {propertySymbol.DeclaringSyntaxReferences.Length}");
+            }
+
+            if (propertySymbol.DeclaringSyntaxReferences[0].GetSyntax() is not PropertyDeclarationSyntax propertyDeclarationSyntax)
+            {
+                throw new InvalidOperationException($"DeclaringSyntaxReference is not {nameof(PropertyDeclarationSyntax)}: {propertySymbol.DeclaringSyntaxReferences[0].GetSyntax().Kind()}");
+            }
+
+            SyntaxKind accessorKind = isGetter ? SyntaxKind.GetAccessorDeclaration : SyntaxKind.SetAccessorDeclaration;
+
+            foreach (var accessor in propertyDeclarationSyntax.AccessorList!.Accessors)
+            {
+                if (accessor.IsKind(accessorKind))
+                {
+                    if (accessor.Modifiers.Count > 0)
+                    {
+                        // NOTE: Add a space to the end to make working with it easier.
+                        return $"{accessor.Modifiers} ";
+                    }
+
+                    return string.Empty;
+                }
+            }
+
+            throw new InvalidOperationException($"Couldn't find property accessor for: {propertySymbol.Name}");
         }
     }
 }
