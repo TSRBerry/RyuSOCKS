@@ -4,6 +4,8 @@ public partial class TestPacket : Packet
 {
     private int SecondOffset => 1;
 
+    protected int AStringLength => 2;
+
     public byte Byte0 { get; set; }
 
     [PacketField(0)]
@@ -29,4 +31,10 @@ public partial class TestPacket : Packet
 
     [PacketField(7)]
     public partial long Long1 { get; set; }
+
+    [PacketField(8, Length = 10)]
+    private partial string String1 { get; set; }
+
+    [PacketField(9, LengthMember = nameof(AStringLength))]
+    partial string String2 { get; set; }
 }
