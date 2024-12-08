@@ -14,8 +14,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Microsoft.CodeAnalysis;
-
 namespace RyuSocks.Generator.Packet
 {
     internal record struct FieldTypeModel(
@@ -32,6 +30,7 @@ namespace RyuSocks.Generator.Packet
         int Length,
         string LengthMember,
         ActualType LengthMemberType,
+        Permissions LengthMemberPermissions,
         int MinLength,
         int MaxLength,
         bool IsBigEndian,

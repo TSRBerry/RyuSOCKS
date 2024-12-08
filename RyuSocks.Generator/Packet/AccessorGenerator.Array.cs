@@ -187,10 +187,14 @@ namespace RyuSocks.Generator.Packet
 
             if (!isGetter)
             {
-                if (packetField.Length <= 0)
+                if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadWrite })
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
                     source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}value.Length;");
+                }
+                else if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadOnly })
+                {
+                    source.AppendLine($"ArgumentOutOfRangeException.ThrowIfNotEqual(value.Length, this.{packetField.LengthMember});");
                 }
                 
                 source.AppendLine();

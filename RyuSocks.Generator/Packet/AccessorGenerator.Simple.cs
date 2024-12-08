@@ -132,7 +132,7 @@ namespace RyuSocks.Generator.Packet
 
                 AddVerificationMethodIfNecessary(source, packetField, false);
 
-                if (packetField.Length <= 0)
+                if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadWrite })
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
 
