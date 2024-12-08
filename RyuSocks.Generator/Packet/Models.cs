@@ -37,7 +37,7 @@ namespace RyuSocks.Generator.Packet
         bool IsBigEndian,
         FieldTypeModel FieldType,
         string PropertyName,
-        Accessibility PropertyAccessModifier,
+        string PropertyAccessModifiers,
         string ClassName,
         string[] Imports,
         string ValidationMethodName

@@ -336,7 +336,7 @@ namespace %NAMESPACE%
                     actualType
                 ),
                 propertySymbol.Name,
-                propertySymbol.DeclaredAccessibility,
+                GetAccessModifierString(propertySymbol),
                 RemoveGlobalAlias(classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
                 imports,
                 validationMethodName
@@ -385,7 +385,7 @@ namespace %NAMESPACE%
             // Add class and property
 
             source.EnterScope($"partial class {className}");
-            source.EnterScope($"{packetField.PropertyAccessModifier.ToModifierString()} partial {packetField.FieldType.Name} {packetField.PropertyName}");
+            source.EnterScope($"{packetField.PropertyAccessModifiers}partial {packetField.FieldType.Name} {packetField.PropertyName}");
 
             // Add code for getter
             source.AppendBlock(AccessorGenerator.GenerateGetter(packetField));
@@ -418,6 +418,34 @@ namespace %NAMESPACE%
             }
 
             return typeSymbol.SpecialType is < SpecialType.System_Boolean or > SpecialType.System_String;
+        }
+
+        private static string GetAccessModifierString(IPropertySymbol propertySymbol)
+        {
+            if (propertySymbol.DeclaringSyntaxReferences.Length != 1)
+            {
+                throw new InvalidOperationException($"PropertySymbol contains wrong amount of declaring syntax references: {propertySymbol.DeclaringSyntaxReferences.Length}");
+            }
+
+            if (propertySymbol.DeclaringSyntaxReferences[0].GetSyntax() is not PropertyDeclarationSyntax propertyDeclarationSyntax)
+            {
+                throw new InvalidOperationException($"DeclaringSyntaxReference is not {nameof(PropertyDeclarationSyntax)}: {propertySymbol.DeclaringSyntaxReferences[0].GetSyntax().Kind()}");
+            }
+
+            string result = "";
+
+            foreach (var modifier in propertyDeclarationSyntax.Modifiers)
+            {
+                if (modifier.IsKind(SyntaxKind.PartialKeyword))
+                {
+                    continue;
+                }
+
+                result += $"{modifier.ToString()} ";
+            }
+
+            // NOTE: Keep the last space
+            return result;
         }
     }
 }

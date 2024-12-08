@@ -50,19 +50,5 @@ namespace RyuSocks.Generator.Packet
 
             return $"this.{model.LengthMember}";
         }
-
-        public static string ToModifierString(this Accessibility accessModifier)
-        {
-            return accessModifier switch
-            {
-                Accessibility.NotApplicable => string.Empty,
-                Accessibility.Private => "private",
-                Accessibility.ProtectedAndInternal => "protected internal",
-                Accessibility.Protected => "protected",
-                Accessibility.Internal => "internal",
-                Accessibility.Public => "public",
-                _ => throw new InvalidOperationException($"Couldn't get access modifier string for: {accessModifier}"),
-            };
-        }
     }
 }
