@@ -9,12 +9,6 @@ namespace RyuSocks.Generator.Test
     {
         private const string DataDirectory = "data/PacketGenerator/";
 
-        public PacketGeneratorTests()
-        {
-            Verify.PostInitGeneratedSources.Add(GetGeneratedSourceFromFile("PacketFieldAttribute.g.cs"));
-            Verify.PostInitGeneratedSources.Add(GetGeneratedSourceFromFile("Packet.g.cs"));
-        }
-
         private static string GetSourceFromFile(string path) => File.ReadAllText(DataDirectory + path);
         private static (string filename, string content) GetGeneratedSourceFromFile(string path) =>
             (Path.GetFileName(path), File.ReadAllText(DataDirectory + path));
@@ -29,11 +23,14 @@ namespace RyuSocks.Generator.Test
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
             directory += "/";
-            (string, string)[] generatedSources = new (string, string)[expectedGeneratedSourcePath.Length];
+            (string, string)[] generatedSources = new (string, string)[expectedGeneratedSourcePath.Length + 2];
+
+            generatedSources[0] = GetGeneratedSourceFromFile("PacketFieldAttribute.g.cs");
+            generatedSources[1] = GetGeneratedSourceFromFile("Packet.g.cs");
 
             for (int i = 0; i < expectedGeneratedSourcePath.Length; i++)
             {
-                generatedSources[i] = GetGeneratedSourceFromFile(directory + expectedGeneratedSourcePath[i]);
+                generatedSources[i + 2] = GetGeneratedSourceFromFile(directory + expectedGeneratedSourcePath[i]);
             }
 
             await Verify.VerifyGeneratedSources(
