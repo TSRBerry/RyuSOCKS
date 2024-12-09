@@ -6,6 +6,8 @@ public partial class TestPacket : Packet
 
     protected int AStringLength => 2;
 
+    public int ReadWriteLength { get; set; } = 34;
+
     public byte Byte0 { get; set; }
 
     [PacketField(0)]
@@ -37,4 +39,7 @@ public partial class TestPacket : Packet
 
     [PacketField(9, LengthMember = nameof(AStringLength))]
     partial string String2 { get; set; }
+
+    [PacketField(10, LengthMember = nameof(ReadWriteLength))]
+    protected partial string String3 { get; set; }
 }
