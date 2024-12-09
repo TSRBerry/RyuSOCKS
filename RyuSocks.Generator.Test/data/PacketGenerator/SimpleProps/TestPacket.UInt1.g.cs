@@ -1,5 +1,6 @@
 using RyuSocks.Packets;
 using System;
+using System.Buffers.Binary;
 using System.Text;
 
 partial class TestPacket
@@ -8,11 +9,11 @@ partial class TestPacket
     {
         get
         {
-            return BitConverter.ToUInt32(this.AsSpan(4, 4));
+            return BinaryPrimitives.ReadUInt32LittleEndian(this.AsSpan(4, 4));
         }
         set
         {
-            BitConverter.GetBytes(value).CopyTo(this.AsSpan(4, 4));
+            BinaryPrimitives.WriteUInt32LittleEndian(this.AsSpan(4, 4), value);
         }
     }
 }

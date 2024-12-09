@@ -28,7 +28,6 @@ namespace RyuSocks.Generator
     // TODO: Write an analyzer for PacketFieldAttribute
     //         - make sure (Offset and OffsetMember) and (Length and LengthMember) aren't used at the same time
     //         - check whether the attribute is used on a property within a class/subclass that extends Packet
-    // FIXME: Pay attention to the endianness, don't assume little endian.
 
     [Generator]
     public class PacketGenerator : IIncrementalGenerator
@@ -390,7 +389,7 @@ namespace %NAMESPACE%
 
             // Begin building the generated source
             CodeBuilder source = new();
-            string[] requiredImports = ["using System;", "using System.Text;"];
+            string[] requiredImports = ["using System;", "using System.Buffers.Binary;", "using System.Text;"];
 
             // Add imports
 

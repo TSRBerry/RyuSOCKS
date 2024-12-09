@@ -90,7 +90,7 @@ namespace RyuSocks.Generator.Packet
                 source.AppendLine($"{fieldTypeName}[] result = new {fieldTypeName}[{packetField.GetLength()}];");
                 source.AppendLine();
                 source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"result[i] = {maybeCast}{converter.ConverterMethodName}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}));");
+                source.AppendLine($"result[i] = {maybeCast}{converter.GetReaderName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}));");
                 source.LeaveScope();
                 source.AppendLine();
                 source.AppendLine("return result;");
@@ -100,40 +100,7 @@ namespace RyuSocks.Generator.Packet
                 string valueParameter = packetField.FieldType.IsEnum ? $"({packetField.FieldType.ActualType.ToTypeString()})value" : "value";
 
                 source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"BitConverter.GetBytes({valueParameter}[i]).CopyTo(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}));");
-                source.LeaveScope();
-            }
-
-            return source.GetLines();
-        }
-
-        private static string[] GenerateArrayReversedIntegralAccessor(PacketFieldModel packetField, TypeConverterModel converter, bool isGetter)
-        {
-            BlockBuilder source = new();
-
-            if (isGetter)
-            {
-                string fieldTypeName = packetField.FieldType.Name.Extract(0, -2);
-                string maybeCast = packetField.FieldType.IsEnum ? $"({packetField.FieldType.Name})" : string.Empty;
-
-                source.AppendLine($"{fieldTypeName}[] result = new {fieldTypeName}[{packetField.GetLength()}];");
-                source.AppendLine();
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"Span<byte> valueSpan = this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length})");
-                source.AppendLine("valueSpan.Reverse();");
-                source.AppendLine($"result[i] = {maybeCast}{converter.ConverterMethodName}(valueSpan);");
-                source.LeaveScope();
-                source.AppendLine();
-                source.AppendLine("return result;");
-            }
-            else
-            {
-                string valueParameter = packetField.FieldType.IsEnum ? $"({packetField.FieldType.ActualType.ToTypeString()})value" : "value";
-
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"byte[] valueBytes = BitConverter.GetBytes({valueParameter}[i]);");
-                source.AppendLine("Array.Reverse(valueBytes);");
-                source.AppendLine($"valueBytes.CopyTo(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}));");
+                source.AppendLine($"{converter.GetWriterName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}), {valueParameter}[i]);");
                 source.LeaveScope();
             }
 
@@ -155,9 +122,7 @@ namespace RyuSocks.Generator.Packet
                 case ActualType.Int64:
                 case ActualType.UInt64:
                     var converter = TypeConverter.Map[packetField.FieldType.ActualType];
-                    return packetField.IsBigEndian
-                        ? GenerateArrayReversedIntegralAccessor(packetField, converter, isGetter)
-                        : GenerateArrayIntegralAccessor(packetField, converter, isGetter);
+                    return GenerateArrayIntegralAccessor(packetField, converter, isGetter);
                 case ActualType.NamedType:
                     // Only deal with strings here
                     // TODO: Deal with strings

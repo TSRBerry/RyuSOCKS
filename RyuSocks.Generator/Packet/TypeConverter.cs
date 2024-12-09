@@ -23,14 +23,25 @@ namespace RyuSocks.Generator.Packet
     {
         public static readonly ImmutableDictionary<ActualType, TypeConverterModel> Map = new Dictionary<ActualType, TypeConverterModel>
         {
-            { ActualType.Int16, new TypeConverterModel(sizeof(short), "BitConverter.ToInt16") },
-            { ActualType.UInt16, new TypeConverterModel(sizeof(ushort), "BitConverter.ToUInt16") },
-            { ActualType.Int32, new TypeConverterModel(sizeof(int), "BitConverter.ToInt32") },
-            { ActualType.UInt32, new TypeConverterModel(sizeof(uint), "BitConverter.ToUInt32") },
-            { ActualType.Int64, new TypeConverterModel(sizeof(long), "BitConverter.ToInt64") },
-            { ActualType.UInt64, new TypeConverterModel(sizeof(ulong), "BitConverter.ToUInt64") },
+            { ActualType.Int16, new TypeConverterModel(sizeof(short), "BinaryPrimitives.ReadInt16", "BinaryPrimitives.WriteInt16") },
+            { ActualType.UInt16, new TypeConverterModel(sizeof(ushort), "BinaryPrimitives.ReadUInt16", "BinaryPrimitives.WriteUInt16") },
+            { ActualType.Int32, new TypeConverterModel(sizeof(int), "BinaryPrimitives.ReadInt32", "BinaryPrimitives.WriteInt32") },
+            { ActualType.UInt32, new TypeConverterModel(sizeof(uint), "BinaryPrimitives.ReadUInt32", "BinaryPrimitives.WriteUInt32") },
+            { ActualType.Int64, new TypeConverterModel(sizeof(long), "BinaryPrimitives.ReadInt64", "BinaryPrimitives.WriteInt64") },
+            { ActualType.UInt64, new TypeConverterModel(sizeof(ulong), "BinaryPrimitives.ReadUInt64", "BinaryPrimitives.WriteUInt64") },
         }.ToImmutableDictionary();
     }
 
-    internal record struct TypeConverterModel(int Length, string ConverterMethodName);
+    internal record struct TypeConverterModel(int Length, string ReaderMethodName, string WriterMethodName)
+    {
+        public string GetReaderName(bool isBigEndian)
+        {
+            return isBigEndian ? $"{ReaderMethodName}BigEndian" : $"{ReaderMethodName}LittleEndian";
+        }
+
+        public string GetWriterName(bool isBigEndian)
+        {
+            return isBigEndian ? $"{WriterMethodName}BigEndian" : $"{WriterMethodName}LittleEndian";
+        }
+    }
 }
