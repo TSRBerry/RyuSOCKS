@@ -14,7 +14,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Microsoft.CodeAnalysis;
 using System;
 
 namespace RyuSocks.Generator.Packet
