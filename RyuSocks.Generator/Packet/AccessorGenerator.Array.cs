@@ -175,11 +175,11 @@ namespace RyuSocks.Generator.Packet
             {
                 if (packetField.MinLength > 0)
                 {
-                    source.AppendLine($"ArgumentOutOfRangeException.ThrowIfLessThan(value.Length, {packetField.MinLength});");
+                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfLessThan(source, "value.Length", packetField.MinLength.ToString());
                 }
                 if (packetField.MaxLength > 0)
                 {
-                    source.AppendLine($"ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, {packetField.MaxLength});");
+                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfGreaterThan(source, "value.Length", packetField.MaxLength.ToString());
                 }
             }
 
@@ -194,7 +194,7 @@ namespace RyuSocks.Generator.Packet
                 }
                 else if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadOnly })
                 {
-                    source.AppendLine($"ArgumentOutOfRangeException.ThrowIfNotEqual(value.Length, this.{packetField.LengthMember});");
+                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, "value.Length", $"this.{packetField.LengthMember}");
                 }
                 
                 source.AppendLine();
