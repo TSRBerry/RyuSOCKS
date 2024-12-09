@@ -20,6 +20,12 @@ namespace RyuSocks.Generator.Test
             "TestPacket.UInt1.g.cs", "TestPacket.Int1.g.cs",
             "TestPacket.ULong1.g.cs", "TestPacket.Long1.g.cs",
             "TestPacket.String1.g.cs", "TestPacket.String2.g.cs", "TestPacket.String3.g.cs")]
+        [InlineData("SimplePropsOffsetMember", "TestPacket.cs",
+            "TestPacket.Byte1.g.cs", "TestPacket.SByte1.g.cs",
+            "TestPacket.UShort1.g.cs", "TestPacket.Short1.g.cs",
+            "TestPacket.UInt1.g.cs", "TestPacket.Int1.g.cs",
+            "TestPacket.ULong1.g.cs", "TestPacket.Long1.g.cs",
+            "TestPacket.String1.g.cs", "TestPacket.String2.g.cs", "TestPacket.String3.g.cs")]
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
             directory += "/";
