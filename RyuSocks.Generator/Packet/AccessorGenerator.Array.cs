@@ -124,9 +124,9 @@ namespace RyuSocks.Generator.Packet
                     var converter = TypeConverter.Map[packetField.FieldType.ActualType];
                     return GenerateArrayIntegralAccessor(packetField, converter, isGetter);
                 case ActualType.NamedType:
-                    // Only deal with strings here
-                    // TODO: Deal with strings
-                    // return GenerateArrayStringAccessor(packetField, isGetter);
+                // Only deal with strings here
+                // TODO: Deal with strings
+                // return GenerateArrayStringAccessor(packetField, isGetter);
                 default:
                     throw new InvalidOperationException($"Unable to generate array accessor for type: {packetField.FieldType.Name}({packetField.FieldType.ActualType})");
             }
@@ -161,7 +161,7 @@ namespace RyuSocks.Generator.Packet
                 {
                     ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, "value.Length", $"this.{packetField.LengthMember}");
                 }
-                
+
                 source.AppendLine();
             }
 

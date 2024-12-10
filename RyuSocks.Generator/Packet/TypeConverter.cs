@@ -34,12 +34,12 @@ namespace RyuSocks.Generator.Packet
 
     internal record struct TypeConverterModel(int Length, string ReaderMethodName, string WriterMethodName)
     {
-        public string GetReaderName(bool isBigEndian)
+        public readonly string GetReaderName(bool isBigEndian)
         {
             return isBigEndian ? $"{ReaderMethodName}BigEndian" : $"{ReaderMethodName}LittleEndian";
         }
 
-        public string GetWriterName(bool isBigEndian)
+        public readonly string GetWriterName(bool isBigEndian)
         {
             return isBigEndian ? $"{WriterMethodName}BigEndian" : $"{WriterMethodName}LittleEndian";
         }

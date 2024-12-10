@@ -36,7 +36,7 @@ namespace RyuSocks.Generator
         private const string AbstractClassName = "Packet";
         private const string PacketFieldAttributeName = "PacketFieldAttribute";
 
-#region SourceText
+        #region SourceText
         private const string PacketFieldAttributeText = @"
 using System;
 
@@ -161,7 +161,7 @@ namespace %NAMESPACE%
     }
 }
 ";
-#endregion
+        #endregion
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -474,7 +474,7 @@ namespace %NAMESPACE%
                     continue;
                 }
 
-                result += $"{modifier.ToString()} ";
+                result += $"{modifier} ";
             }
 
             // NOTE: Keep the last space to make working with it easier.
