@@ -26,6 +26,9 @@ namespace RyuSocks.Generator.Test
             "TestPacket.UInt1.g.cs", "TestPacket.Int1.g.cs",
             "TestPacket.ULong1.g.cs", "TestPacket.Long1.g.cs",
             "TestPacket.String1.g.cs", "TestPacket.String2.g.cs", "TestPacket.String3.g.cs")]
+        [InlineData("Namespaces", "TestPacket.cs",
+            "TestSpace.TestPacket.TestField.g.cs", "TestSpace.TestPacket1.FirstField.g.cs",
+            "AnotherSpace.TestPacket.TestField.g.cs", "AnotherSpace.TestPacket2.SecondField.g.cs")]
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
             directory += "/";
