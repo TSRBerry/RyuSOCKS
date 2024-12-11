@@ -33,7 +33,7 @@ namespace RyuSocks.Packets
         /// The length of this field.
         /// Only required if it can't be determined from the property type.
         /// </summary>
-        public int Length { get; set; } = 0;
+        public int Length { get; set; } = -1;
 
         /// <summary>
         /// The name of the member which specifies the length of this field.

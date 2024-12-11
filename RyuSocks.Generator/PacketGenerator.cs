@@ -46,8 +46,8 @@ namespace %NAMESPACE%
     [System.Diagnostics.Conditional(""RyuSocks_PacketGenerator_DEBUG"")]
     public sealed class %ATTRIBUTE_NAME% : Attribute
     {
-        private int offset = -1;
-        private string offsetMember = string.Empty;
+        private int offset = %DEFAULT_OFFSET%;
+        private string offsetMember = %DEFAULT_OFFSET_MEMBER%;
 
         /// <summary>
         /// Marks this property as a field of the packet.
@@ -73,34 +73,34 @@ namespace %NAMESPACE%
         /// The length of this field.
         /// Only required if it can't be determined from the property type.
         /// </summary>
-        public int Length { get; set; } = 0;
+        public int Length { get; set; } = %DEFAULT_LENGTH%;
 
         /// <summary>
         /// The name of the member which specifies the length of this field.
         /// Only required if it can't be determined from the property type.
         /// </summary>
-        public string LengthMember { get; set; } = string.Empty;
+        public string LengthMember { get; set; } = %DEFAULT_LENGTH_MEMBER%;
 
         /// <summary>
         /// Whether this field is big endian.
         /// </summary>
-        public bool IsBigEndian { get; set; } = false;
+        public bool IsBigEndian { get; set; } = %DEFAULT_IS_BIG_ENDIAN%;
 
         /// <summary>
         /// The minimum length of array or string data allowed in this field.
         /// </summary>
-        public int MinLength { get; set; } = -1;
+        public int MinLength { get; set; } = %DEFAULT_MIN_LENGTH%;
 
         /// <summary>
         /// The maximum length of array or string data allowed in this field.
         /// </summary>
-        public int MaxLength { get; set; } = -1;
+        public int MaxLength { get; set; } = %DEFAULT_MAX_LENGTH%;
 
         /// <summary>
         /// The name of the underlying type of the property type.
         /// Only required if the type of the property is source generated.
         /// </summary>
-        public string AssumeGeneratedEnumType { get; set; } = string.Empty;
+        public string AssumeGeneratedEnumType { get; set; } = %DEFAULT_ASSUME_GENERATED_ENUM_TYPE%;
 
         /// <summary>
         /// The name of the method which should be invoked before the getter/setter is executed.
@@ -109,7 +109,7 @@ namespace %NAMESPACE%
         /// The method type must be void and have one optional parameter with the same type as the property.
         /// If verification fails an exception should be thrown.
         /// </remarks>
-        public string ValidationMethod { get; set; } = string.Empty;
+        public string ValidationMethod { get; set; } = %DEFAULT_VALIDATION_METHOD%;
 
         public int Offset => offset;
         public string OffsetMember => offsetMember;
@@ -172,6 +172,15 @@ namespace %NAMESPACE%
                         .Replace("%NAMESPACE%", Namespace)
                         .Replace("%ATTRIBUTE_NAME%", PacketFieldAttributeName)
                         .Replace("%ABSTRACT_CLASS_NAME%", AbstractClassName)
+                        .Replace("%DEFAULT_OFFSET%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.Offset)))
+                        .Replace("%DEFAULT_OFFSET_MEMBER%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.OffsetMember)))
+                        .Replace("%DEFAULT_LENGTH%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.Length)))
+                        .Replace("%DEFAULT_LENGTH_MEMBER%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.LengthMember)))
+                        .Replace("%DEFAULT_IS_BIG_ENDIAN%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.IsBigEndian)))
+                        .Replace("%DEFAULT_MIN_LENGTH%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.MinLength)))
+                        .Replace("%DEFAULT_MAX_LENGTH%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.MaxLength)))
+                        .Replace("%DEFAULT_ASSUME_GENERATED_ENUM_TYPE%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.AssumeGeneratedEnumType)))
+                        .Replace("%DEFAULT_VALIDATION_METHOD%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.ValidationMethod)))
                         .TrimStart()
                 )
             );
@@ -209,52 +218,10 @@ namespace %NAMESPACE%
         private static PacketFieldModel TransformPacketFieldProperty(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
         {
             var propertySymbol = (context.TargetSymbol as IPropertySymbol)!;
-            var attributeData = context.Attributes[0];
+            var attributeData = new PacketFieldAttributeData(context.Attributes[0]);
             var classSymbol = (context.TargetSymbol.ContainingSymbol as INamedTypeSymbol)!;
 
-            if (attributeData.ConstructorArguments.Length == 0)
-            {
-                throw new InvalidOperationException($"Attribute constructor doesn't have arguments: {attributeData.AttributeClass?.Name}");
-            }
-
-            // Parse attribute data
-
-            int offset = -1;
-            string offsetMember = string.Empty;
-
-            switch (attributeData.ConstructorArguments[0].Type!.Name)
-            {
-                case nameof(String):
-                    offsetMember = (string)attributeData.ConstructorArguments[0].Value!;
-                    break;
-                case nameof(Int32):
-                    offset = (int)attributeData.ConstructorArguments[0].Value!;
-                    break;
-                default:
-                    throw new InvalidOperationException($"Attribute constructor argument type is not valid: {attributeData.ConstructorArguments[0].Type!.Name}");
-            }
-
-            TypedConstant lengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "Length").Value;
-            TypedConstant lengthMemberArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "LengthMember").Value;
-            TypedConstant isBigEndianArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "IsBigEndian").Value;
-            TypedConstant minLengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MinLength").Value;
-            TypedConstant maxLengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "MaxLength").Value;
-            TypedConstant assumeGeneratedEnumTypeArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "AssumeGeneratedEnumType").Value;
-            TypedConstant validationMethodArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "ValidationMethod").Value;
-            int length = !lengthArg.IsNull ? (int)lengthArg.Value! : -1;
-            string lengthMember = !lengthMemberArg.IsNull ? (string)lengthMemberArg.Value! : string.Empty;
-            ActualType lengthMemberType = ActualType.NamedType;
-            bool isBigEndian = !isBigEndianArg.IsNull && (bool)isBigEndianArg.Value!;
-            int minLength = !minLengthArg.IsNull ? (int)minLengthArg.Value! : -1;
-            int maxLength = !maxLengthArg.IsNull ? (int)maxLengthArg.Value! : -1;
-            string assumeGeneratedEnumType = !assumeGeneratedEnumTypeArg.IsNull
-                ? (string)assumeGeneratedEnumTypeArg.Value!
-                : string.Empty;
-            string validationMethodName = !validationMethodArg.IsNull
-                ? (string)validationMethodArg.Value!
-                : string.Empty;
-
-            // Get information about the property type
+            // Get information about the type of the property
 
             ITypeSymbol actualTypeSymbol = propertySymbol.Type;
             bool isArray = propertySymbol.Type.TypeKind == TypeKind.Array;
@@ -267,10 +234,12 @@ namespace %NAMESPACE%
 
             if (isArray)
             {
+                // Get the type of the array
                 actualTypeSymbol = (propertySymbol.Type as IArrayTypeSymbol)!.ElementType;
                 isEnum = actualTypeSymbol.TypeKind == TypeKind.Enum;
                 isStruct = IsActualStruct(actualTypeSymbol);
 
+                // Parse the ActualType value if the array type is neither an enum, a struct, a class or a generated type
                 if (!isEnum && !isStruct && actualTypeSymbol.TypeKind != TypeKind.Class && actualTypeSymbol.TypeKind != TypeKind.Error)
                 {
                     actualType = (ActualType)Enum.Parse(typeof(ActualType), actualTypeSymbol.Name, true);
@@ -279,14 +248,16 @@ namespace %NAMESPACE%
 
             if (isEnum)
             {
+                // Parse the underlying type for enums
                 actualType = (ActualType)Enum.Parse(typeof(ActualType), (actualTypeSymbol as INamedTypeSymbol)!.EnumUnderlyingType!.Name, true);
             }
 
             // Get information about length member if applicable
+            ActualType lengthMemberType = ActualType.NamedType;
             Permissions lengthMemberPermissions = Permissions.Unknown;
-            if (lengthMember.Length > 0)
+            if (attributeData.LengthMember.Length > 0)
             {
-                ISymbol lengthMemberSymbol = classSymbol.GetMembers(lengthMember).Single();
+                ISymbol lengthMemberSymbol = classSymbol.GetMembers(attributeData.LengthMember).Single();
 
                 switch (lengthMemberSymbol)
                 {
@@ -333,10 +304,10 @@ namespace %NAMESPACE%
             // Process auto generated property types
 
             // Assume generated enum type
-            if (actualTypeSymbol.TypeKind == TypeKind.Error && assumeGeneratedEnumType.Length > 0)
+            if (actualTypeSymbol.TypeKind == TypeKind.Error && attributeData.AssumeGeneratedEnumType.Length > 0)
             {
                 isEnum = true;
-                actualType = (ActualType)Enum.Parse(typeof(ActualType), assumeGeneratedEnumType, true);
+                actualType = (ActualType)Enum.Parse(typeof(ActualType), attributeData.AssumeGeneratedEnumType, true);
             }
 
             // Get imports
@@ -350,15 +321,15 @@ namespace %NAMESPACE%
 
             // Create model from data
             return new PacketFieldModel(
-                offset,
-                offsetMember,
-                length,
-                lengthMember,
+                attributeData.Offset,
+                attributeData.OffsetMember,
+                attributeData.Length,
+                attributeData.LengthMember,
                 lengthMemberType,
                 lengthMemberPermissions,
-                minLength,
-                maxLength,
-                isBigEndian,
+                attributeData.MinLength,
+                attributeData.MaxLength,
+                attributeData.IsBigEndian,
                 new FieldTypeModel(
                     RemoveGlobalAlias(propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
                     isArray,
@@ -372,7 +343,7 @@ namespace %NAMESPACE%
             GetAccessorModifierString(propertySymbol, false),
                 RemoveGlobalAlias(classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
                 imports,
-                validationMethodName
+                attributeData.ValidationMethod
             );
         }
 
