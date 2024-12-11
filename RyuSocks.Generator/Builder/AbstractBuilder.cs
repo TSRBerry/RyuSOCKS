@@ -35,6 +35,14 @@ namespace RyuSocks.Generator.Builder
             }
         }
 
+        public void AppendBlock(string[] block)
+        {
+            foreach (var line in block)
+            {
+                AppendLine(line);
+            }
+        }
+
         public abstract void AppendLine();
         public abstract void AppendLine(string text);
     }

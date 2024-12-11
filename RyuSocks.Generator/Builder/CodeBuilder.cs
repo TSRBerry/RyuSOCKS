@@ -18,14 +18,6 @@ namespace RyuSocks.Generator.Builder
             _sb.AppendLine(text);
         }
 
-        public void AppendBlock(string[] block)
-        {
-            foreach (var line in block)
-            {
-                AppendLine(line);
-            }
-        }
-
         public override string ToString()
         {
             return _sb.ToString();
