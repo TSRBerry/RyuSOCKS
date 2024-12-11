@@ -23,98 +23,76 @@ namespace RyuSocks.Generator.Packet
     [SuppressMessage("ReSharper", "RedundantIfElseBlock")]
     internal static partial class AccessorGenerator
     {
-        private static string[] GenerateArrayByteAccessor(PacketFieldModel packetField, bool isGetter)
+        private static string GenerateArrayByteAccessor(PacketFieldModel packetField, bool isGetter)
         {
-            BlockBuilder source = new();
-
             if (isGetter)
             {
                 string fieldTypeName = packetField.FieldType.Name.Extract(0, -2);
                 string maybeCast = packetField.FieldType.IsEnum ? $"({fieldTypeName})" : string.Empty;
 
-                source.AppendLine($"{fieldTypeName}[] result = new {fieldTypeName}[{packetField.GetLength()}];");
-                source.AppendLine();
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"result[i] = {maybeCast}this[{packetField.GetOffset()} + i];");
-                source.LeaveScope();
-                source.AppendLine();
-                source.AppendLine("return result;");
+                return $"result[i] = {maybeCast}this[{packetField.GetOffset()} + i];";
             }
             else
             {
                 string maybeCastValue = packetField.FieldType.IsEnum ? "(byte)" : string.Empty;
 
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"this[{packetField.GetOffset()} + i] = {maybeCastValue}value[i];");
-                source.LeaveScope();
+                return $"this[{packetField.GetOffset()} + i] = {maybeCastValue}value[i];";
             }
-
-            return source.GetLines();
         }
 
-        private static string[] GenerateArraySByteAccessor(PacketFieldModel packetField, bool isGetter)
+        private static string GenerateArraySByteAccessor(PacketFieldModel packetField, bool isGetter)
         {
-            BlockBuilder source = new();
-
             if (isGetter)
             {
                 string fieldTypeName = packetField.FieldType.Name.Extract(0, -2);
 
-                source.AppendLine($"{fieldTypeName}[] result = new {fieldTypeName}[{packetField.GetLength()}];");
-                source.AppendLine();
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"result[i] = ({fieldTypeName})this[{packetField.GetOffset()} + i];");
-                source.LeaveScope();
-                source.AppendLine();
-                source.AppendLine("return result;");
+                return $"result[i] = ({fieldTypeName})this[{packetField.GetOffset()} + i];";
             }
             else
             {
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"this[{packetField.GetOffset()} + i] = (byte)value[i];");
-                source.LeaveScope();
+                return $"this[{packetField.GetOffset()} + i] = (byte)value[i];";
             }
-
-            return source.GetLines();
         }
 
-        private static string[] GenerateArrayIntegralAccessor(PacketFieldModel packetField, TypeConverterModel converter, bool isGetter)
+        private static string GenerateArrayIntegralAccessor(PacketFieldModel packetField, TypeConverterModel converter, bool isGetter)
         {
-            BlockBuilder source = new();
-
             if (isGetter)
             {
                 string fieldTypeName = packetField.FieldType.Name.Extract(0, -2);
                 string maybeCast = packetField.FieldType.IsEnum ? $"({fieldTypeName})" : string.Empty;
 
-                source.AppendLine($"{fieldTypeName}[] result = new {fieldTypeName}[{packetField.GetLength()}];");
-                source.AppendLine();
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"result[i] = {maybeCast}{converter.GetReaderName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}));");
-                source.LeaveScope();
-                source.AppendLine();
-                source.AppendLine("return result;");
+                return $"result[i] = {maybeCast}{converter.GetReaderName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}));";
             }
             else
             {
                 string valueParameter = packetField.FieldType.IsEnum ? $"({packetField.FieldType.ActualType.ToTypeString()})value" : "value";
 
-                source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
-                source.AppendLine($"{converter.GetWriterName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}), {valueParameter}[i]);");
-                source.LeaveScope();
+                return $"{converter.GetWriterName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()} + (i * {converter.Length}), {converter.Length}), {valueParameter}[i]);";
             }
-
-            return source.GetLines();
         }
 
         private static string[] GenerateSimpleArrayAccessor(PacketFieldModel packetField, bool isGetter)
         {
+            BlockBuilder source = new();
+
+            if (isGetter)
+            {
+                string fieldTypeName = packetField.FieldType.Name.Extract(0, -2);
+
+                source.AppendLine($"{fieldTypeName}[] result = new {fieldTypeName}[{packetField.GetLength()}];");
+                source.AppendLine();
+            }
+
+            source.EnterScope($"for (int i = 0; i < {packetField.GetLength()}; i++)");
+
             switch (packetField.FieldType.ActualType)
             {
                 case ActualType.Byte:
-                    return GenerateArrayByteAccessor(packetField, isGetter);
+                    source.AppendLine(GenerateArrayByteAccessor(packetField, isGetter));
+                    break;
                 case ActualType.SByte:
-                    return GenerateArraySByteAccessor(packetField, isGetter);
+                    source.AppendLine(GenerateArraySByteAccessor(packetField, isGetter));
+                    break;
                 case ActualType.Int16:
                 case ActualType.UInt16:
                 case ActualType.Int32:
@@ -122,7 +100,8 @@ namespace RyuSocks.Generator.Packet
                 case ActualType.Int64:
                 case ActualType.UInt64:
                     var converter = TypeConverter.Map[packetField.FieldType.ActualType];
-                    return GenerateArrayIntegralAccessor(packetField, converter, isGetter);
+                    source.AppendLine(GenerateArrayIntegralAccessor(packetField, converter, isGetter));
+                    break;
                 case ActualType.NamedType:
                 // Only deal with strings here
                 // TODO: Deal with strings
@@ -130,6 +109,16 @@ namespace RyuSocks.Generator.Packet
                 default:
                     throw new InvalidOperationException($"Unable to generate array accessor for type: {packetField.FieldType.Name}({packetField.FieldType.ActualType})");
             }
+
+            source.LeaveScope();
+
+            if (isGetter)
+            {
+                source.AppendLine();
+                source.AppendLine("return result;");
+            }
+
+            return source.GetLines();
         }
 
         private static string[] GenerateArrayAccessor(PacketFieldModel packetField, bool isGetter)
