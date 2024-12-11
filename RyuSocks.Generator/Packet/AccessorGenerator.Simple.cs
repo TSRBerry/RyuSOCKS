@@ -23,49 +23,49 @@ namespace RyuSocks.Generator.Packet
     [SuppressMessage("ReSharper", "RedundantIfElseBlock")]
     internal static partial class AccessorGenerator
     {
-        private static string[] GenerateSimpleByteAccessor(PacketFieldModel packetField, bool isGetter)
+        private static string GenerateSimpleByteAccessor(PacketFieldModel packetField, bool isGetter)
         {
             if (isGetter)
             {
                 string maybeCast = packetField.FieldType.IsEnum ? $"({packetField.FieldType.Name})" : string.Empty;
 
-                return [$"return {maybeCast}this[{packetField.GetOffset()}];"];
+                return $"return {maybeCast}this[{packetField.GetOffset()}];";
             }
             else
             {
                 string maybeCastValue = packetField.FieldType.IsEnum ? "(byte)" : string.Empty;
 
-                return [$"this[{packetField.GetOffset()}] = {maybeCastValue}value;"];
+                return $"this[{packetField.GetOffset()}] = {maybeCastValue}value;";
             }
         }
 
-        private static string[] GenerateSimpleSByteAccessor(PacketFieldModel packetField, bool isGetter)
+        private static string GenerateSimpleSByteAccessor(PacketFieldModel packetField, bool isGetter)
         {
             if (isGetter)
             {
                 string maybeCast = packetField.FieldType.IsEnum ? $"({packetField.FieldType.Name})" : string.Empty;
 
-                return [$"return {maybeCast}(sbyte)this[{packetField.GetOffset()}];"];
+                return $"return {maybeCast}(sbyte)this[{packetField.GetOffset()}];";
             }
             else
             {
-                return [$"this[{packetField.GetOffset()}] = (byte)value;"];
+                return $"this[{packetField.GetOffset()}] = (byte)value;";
             }
         }
 
-        private static string[] GenerateSimpleIntegralAccessor(PacketFieldModel packetField, TypeConverterModel converter, bool isGetter)
+        private static string GenerateSimpleIntegralAccessor(PacketFieldModel packetField, TypeConverterModel converter, bool isGetter)
         {
             if (isGetter)
             {
                 string maybeCast = packetField.FieldType.IsEnum ? $"({packetField.FieldType.Name})" : string.Empty;
 
-                return [$"return {maybeCast}{converter.GetReaderName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()}, {converter.Length}));"];
+                return $"return {maybeCast}{converter.GetReaderName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()}, {converter.Length}));";
             }
             else
             {
                 string valueParameter = packetField.FieldType.IsEnum ? $"({packetField.FieldType.ActualType.ToTypeString()})value" : "value";
 
-                return [$"{converter.GetWriterName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()}, {converter.Length}), {valueParameter});"];
+                return $"{converter.GetWriterName(packetField.IsBigEndian)}(this.AsSpan({packetField.GetOffset()}, {converter.Length}), {valueParameter});";
             }
         }
 
@@ -141,10 +141,10 @@ namespace RyuSocks.Generator.Packet
             switch (packetField.FieldType.ActualType)
             {
                 case ActualType.Byte:
-                    source.AppendBlock(GenerateSimpleByteAccessor(packetField, isGetter));
+                    source.AppendLine(GenerateSimpleByteAccessor(packetField, isGetter));
                     break;
                 case ActualType.SByte:
-                    source.AppendBlock(GenerateSimpleSByteAccessor(packetField, isGetter));
+                    source.AppendLine(GenerateSimpleSByteAccessor(packetField, isGetter));
                     break;
                 case ActualType.Int16:
                 case ActualType.UInt16:
@@ -153,7 +153,7 @@ namespace RyuSocks.Generator.Packet
                 case ActualType.Int64:
                 case ActualType.UInt64:
                     var converter = TypeConverter.Map[packetField.FieldType.ActualType];
-                    source.AppendBlock(GenerateSimpleIntegralAccessor(packetField, converter, isGetter));
+                    source.AppendLine(GenerateSimpleIntegralAccessor(packetField, converter, isGetter));
                     break;
                 case ActualType.NamedType:
                     // Only deal with strings here
