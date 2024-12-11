@@ -15,7 +15,10 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
+using System.Threading.Tasks;
+using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
@@ -26,6 +29,8 @@ namespace RyuSocks.Test.Utils
         private readonly T _max;
         private readonly T[] _extraElements;
 
+        public override bool SupportsDiscoveryEnumeration() => true;
+
         public RangeDataAttribute(T min, T max, params T[] extraElements)
         {
             _min = min;
@@ -33,21 +38,21 @@ namespace RyuSocks.Test.Utils
             _extraElements = extraElements;
         }
 
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
-            List<object> data = [];
+            List<TheoryDataRow<T[]>> data = [];
 
             for (T i = _min; i < _max; i++)
             {
-                data.Add(i);
+                data.Add(new TheoryDataRow<T[]>([i]));
             }
 
             foreach (T element in _extraElements)
             {
-                data.Add(element);
+                data.Add(new TheoryDataRow<T[]>([element]));
             }
 
-            return [[data.ToArray()]];
+            return ValueTask.FromResult<IReadOnlyCollection<ITheoryDataRow>>(data);
         }
     }
 }
