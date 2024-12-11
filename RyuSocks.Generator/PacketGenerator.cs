@@ -497,16 +497,18 @@ namespace %NAMESPACE%
 
             foreach (var accessor in propertyDeclarationSyntax.AccessorList!.Accessors)
             {
-                if (accessor.IsKind(accessorKind))
+                if (!accessor.IsKind(accessorKind))
                 {
-                    if (accessor.Modifiers.Count > 0)
-                    {
-                        // NOTE: Add a space to the end to make working with it easier.
-                        return $"{accessor.Modifiers} ";
-                    }
-
-                    return string.Empty;
+                    continue;
                 }
+
+                if (accessor.Modifiers.Count > 0)
+                {
+                    // NOTE: Add a space to the end to make working with it easier.
+                    return $"{accessor.Modifiers} ";
+                }
+
+                return string.Empty;
             }
 
             throw new InvalidOperationException($"Couldn't find property accessor for: {propertySymbol.Name}");
