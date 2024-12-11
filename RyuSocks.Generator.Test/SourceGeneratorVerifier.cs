@@ -40,9 +40,7 @@ namespace RyuSocks.Generator.Test
             {
                 string[] args = ["/warnaserror:nullable"];
                 var commandLineArguments = CSharpCommandLineParser.Default.Parse(args, baseDirectory: Environment.CurrentDirectory, sdkDirectory: Environment.CurrentDirectory);
-                var nullableWarnings = commandLineArguments.CompilationOptions.SpecificDiagnosticOptions;
-
-                return nullableWarnings;
+                return commandLineArguments.CompilationOptions.SpecificDiagnosticOptions;
             }
         }
     }
