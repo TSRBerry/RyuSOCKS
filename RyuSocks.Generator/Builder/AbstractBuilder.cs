@@ -1,4 +1,4 @@
-namespace RyuSocks.Generator
+namespace RyuSocks.Generator.Builder
 {
     abstract class AbstractBuilder
     {
@@ -32,6 +32,14 @@ namespace RyuSocks.Generator
             if (CurrentIndentCount - 1 >= 0)
             {
                 CurrentIndentCount--;
+            }
+        }
+
+        public void AppendBlock(string[] block)
+        {
+            foreach (var line in block)
+            {
+                AppendLine(line);
             }
         }
 

@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using RyuSocks.Generator.Builder;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,6 +19,7 @@ namespace RyuSocks.Generator
         private const string ProxyCommandEnumName = "ProxyCommand";
         private const string ProxyCommandExtensionsClassName = "ProxyCommandExtensions";
 
+        #region SourceText
         private const string AttributeText = @"
 using System;
 
@@ -48,6 +50,7 @@ namespace %NAMESPACE%
     }
 }
 ";
+        #endregion
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {

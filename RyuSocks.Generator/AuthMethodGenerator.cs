@@ -16,6 +16,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using RyuSocks.Generator.Builder;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -32,6 +33,7 @@ namespace RyuSocks.Generator
         private const string AuthMethodEnumName = "AuthMethod";
         private const string AuthMethodExtensionsClassName = "AuthMethodExtensions";
 
+        #region SourceText
         private const string AttributeText = @"
 using System;
 
@@ -46,8 +48,8 @@ namespace %NAMESPACE%
         /// <summary>
         /// Marks this class as an authentication method. It must have a parameterless constructor and extend <see cref=""%INTERFACE_NAME%""/>.
         /// </summary>
-        /// <param name=""methodId"">The value between 0x00 and 0xFF used to identify this authentication method.</param>
-        public %ATTRIBUTE_NAME%([System.ComponentModel.DataAnnotations.DeniedValues(0xFF)] byte methodId)
+        /// <param name=""methodId"">The value between 0x00 and 0xFE used to identify this authentication method.</param>
+        public %ATTRIBUTE_NAME%([System.ComponentModel.DataAnnotations.Range(0, 0xFE)] byte methodId)
         {
             this.methodId = methodId;
         }
@@ -61,6 +63,7 @@ namespace %NAMESPACE%
     }
 }
 ";
+        #endregion
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -230,6 +233,7 @@ namespace %NAMESPACE%
             sourceExtensions.LeaveScope(";");
             implToEnumBlock.AppendLine("_ => throw new ArgumentException($\"Unknown authentication implementation provided: {authImpl}\", nameof(authImpl)),");
             implToEnumBlock.LeaveScope(";");
+            sourceExtensions.AppendLine();
             sourceExtensions.AppendBlock(implToEnumBlock.GetLines());
             sourceExtensions.LeaveScope();
             sourceExtensions.LeaveScope();
