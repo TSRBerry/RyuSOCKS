@@ -41,7 +41,7 @@ namespace RyuSocks.Auth
         {
             if (IsClient)
             {
-                if (incomingPacket == null)
+                if (incomingPacket.IsEmpty)
                 {
                     outgoingPacket = new UsernameAndPasswordRequest(Username, Password).AsSpan();
                     return false;

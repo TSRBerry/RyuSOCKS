@@ -65,11 +65,7 @@ namespace RyuSocks.Test.Auth
             bool authDone = noAuth.Authenticate(incomingPacket, out ReadOnlySpan<byte> outgoingPacket);
 
             Assert.True(authDone);
-            // FIXME: Unable to use Assert.Null() for some reason.
-            if (outgoingPacket != null)
-            {
-                Assert.Fail($"{nameof(outgoingPacket)} is not null.");
-            }
+            Assert.True(outgoingPacket.IsEmpty);
         }
 
         [Fact]

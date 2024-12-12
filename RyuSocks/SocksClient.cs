@@ -34,7 +34,7 @@ namespace RyuSocks
     {
         // TODO: Keep track of the connection state
 
-        private readonly object _socketLock = new();
+        private readonly Lock _socketLock = new();
         private readonly ProxyEndpoint _proxyEndpoint;
         private Socket _socket;
         private bool _serverEndpointReceived;
@@ -256,7 +256,7 @@ namespace RyuSocks
                 {
                     Authenticated = Auth.Authenticate(receivedPacket, out ReadOnlySpan<byte> outgoingPacket);
 
-                    if (outgoingPacket != null)
+                    if (!outgoingPacket.IsEmpty)
                     {
                         sentBytes = Send(outgoingPacket);
                         Debug.Assert(sentBytes == outgoingPacket.Length);

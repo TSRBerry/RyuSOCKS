@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Version>0.6.0-alpha</Version>
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
         <IsAotCompatible>true</IsAotCompatible>
@@ -37,7 +37,7 @@ The full changelog is available at: https://github.com/TSRBerry/RyuSOCKS/blob/ma
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="NetCoreServer" Version="8.0.7" />
+        <PackageReference Include="NetCoreServer" />
     </ItemGroup>
 
     <ItemGroup>

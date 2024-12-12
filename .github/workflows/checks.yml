@@ -34,7 +34,7 @@ jobs:
       - name: Overwrite csc problem matcher
         run: echo "::add-matcher::.github/csc.json"
 
-      - run: dotnet restore
+      - run: dotnet build
 
       - name: Print dotnet format version
         run: dotnet format --version

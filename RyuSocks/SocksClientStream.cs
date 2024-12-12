@@ -729,7 +729,7 @@ namespace RyuSocks
             ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
-        private static IOException WrapException(Exception innerException)
+        private static IOException WrapException(SocketException innerException)
         {
             return new IOException(innerException.Message, innerException);
         }
