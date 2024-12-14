@@ -14,19 +14,23 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using NetCoreServer;
 using RyuSocks.Auth;
 using RyuSocks.Commands;
 using RyuSocks.Utils;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 
 namespace RyuSocks
 {
-    public partial class SocksServer : TcpServer
+    public partial class SocksServer : IDisposable
     {
         // TODO: Add (generated) properties for auth methods and commands
+        private readonly Socket _socket;
+        private readonly EndPoint _bindEndpoint;
+        private SocketAsyncEventArgs _socketAcceptEvent;
+        protected readonly List<SocksSession> Sessions = [];
 
         public IReadOnlySet<AuthMethod> AcceptableAuthMethods { get; set; } = new HashSet<AuthMethod>();
         public IReadOnlySet<ProxyCommand> OfferedCommands { get; set; } = new HashSet<ProxyCommand>();
@@ -35,19 +39,74 @@ namespace RyuSocks
         public IReadOnlyDictionary<IPAddress, ushort[]> AllowedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
         public IReadOnlyDictionary<IPAddress, ushort[]> BlockedDestinations { get; set; } = new Dictionary<IPAddress, ushort[]>();
 
-        public SocksServer(IPAddress address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
-        public SocksServer(string address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
-        public SocksServer(DnsEndPoint endpoint) : base(endpoint) { }
-        public SocksServer(IPEndPoint endpoint) : base(endpoint) { }
+        public EndPoint LocalEndPoint => _socket.LocalEndPoint;
 
-        protected override TcpSession CreateSession()
+        public SocksServer(IPAddress address, ushort port = ProxyConsts.DefaultPort) : this(new IPEndPoint(address, port)) { }
+
+        public SocksServer(DnsEndPoint endpoint)
         {
-            return new SocksSession(this);
+            _socket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _bindEndpoint = endpoint;
         }
 
-        public override bool Multicast(ReadOnlySpan<byte> buffer)
+        public SocksServer(IPEndPoint endpoint)
         {
-            throw new NotSupportedException();
+            _socket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _bindEndpoint = endpoint;
+        }
+
+        public void Start()
+        {
+            _socket.Bind(_bindEndpoint);
+            _socket.Listen();
+            AcceptNewSession();
+        }
+
+        private void AcceptNewSession()
+        {
+            _socketAcceptEvent?.Dispose();
+            _socketAcceptEvent = new SocketAsyncEventArgs();
+            _socketAcceptEvent.Completed += OnSessionAccepted;
+
+            if (!_socket.AcceptAsync(_socketAcceptEvent))
+            {
+                OnSessionAccepted(this, _socketAcceptEvent);
+            }
+        }
+
+        private void OnSessionAccepted(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError != SocketError.Success)
+            {
+                // TODO: Log error
+                return;
+            }
+
+            SocksSession session = new(this, e.AcceptSocket!);
+            Sessions.Add(session);
+
+            AcceptNewSession();
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _socketAcceptEvent?.Dispose();
+                _socketAcceptEvent = null;
+                foreach (var session in Sessions)
+                {
+                    session?.Dispose();
+                }
+                Sessions.Clear();
+                _socket?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

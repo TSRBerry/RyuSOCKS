@@ -37,10 +37,6 @@ The full changelog is available at: https://github.com/TSRBerry/RyuSOCKS/blob/ma
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="NetCoreServer" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\RyuSocks.Generator\RyuSocks.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

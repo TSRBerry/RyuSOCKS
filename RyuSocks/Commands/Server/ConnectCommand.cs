@@ -28,33 +28,33 @@ namespace RyuSocks.Commands.Server
     {
         public override bool HandlesCommunication => false;
         public override bool UsesDatagrams => false;
-        private TcpClient _client;
+        private readonly Socket _clientSocket;
+        private SocketAsyncEventArgs _clientReceiveEvent;
+        private byte[] _clientReceiveBuffer;
 
         public ConnectCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint destination) : base(session, boundEndpoint, destination)
         {
-            _client = destination.ToEndPoint() switch
-            {
-                IPEndPoint ipDestination => new TcpClient(this, ipDestination),
-                DnsEndPoint dnsDestination => new TcpClient(this, dnsDestination),
-                _ => throw new ArgumentException(
-                    "Invalid EndPoint type provided.", nameof(destination)),
-            };
+            _clientSocket = new Socket(destination.ToEndPoint().AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-            if (!_client.Connect())
+            try
+            {
+                _clientSocket.Connect(destination.ToEndPoint());
+            }
+            catch (SocketException e)
             {
                 Session.SendAsync(new CommandResponse
                 {
                     Version = ProxyConsts.Version,
-                    ReplyField = _client.Error.ToReplyField(),
+                    ReplyField = e.SocketErrorCode.ToReplyField(),
                 }.AsSpan());
 
-                _client.ResetError();
-                session.Disconnect();
-
+                Session.Disconnect();
                 return;
             }
 
-            CommandResponse response = _client.Socket.LocalEndPoint switch
+            ReceiveFromServer();
+
+            CommandResponse response = _clientSocket.LocalEndPoint switch
             {
                 IPEndPoint ipEndPoint => new CommandResponse(ipEndPoint)
                 {
@@ -67,32 +67,76 @@ namespace RyuSocks.Commands.Server
                     ReplyField = ReplyField.Succeeded,
                 },
                 _ => throw new InvalidOperationException(
-                    $"The type of LocalEndPoint is not supported: {_client.Socket.LocalEndPoint}"),
+                    $"The type of LocalEndPoint is not supported: {_clientSocket.LocalEndPoint}"),
             };
 
             Session.SendAsync(response.AsSpan());
         }
 
+        private void ReceiveFromServer()
+        {
+            if (_clientSocket is not { Connected: true })
+            {
+                // TODO: Log error
+                Session.Disconnect();
+                return;
+            }
+
+            _clientReceiveBuffer ??= new byte[_clientSocket.ReceiveBufferSize];
+            _clientReceiveEvent?.Dispose();
+            _clientReceiveEvent = new SocketAsyncEventArgs();
+            _clientReceiveEvent.SetBuffer(_clientReceiveBuffer);
+            _clientReceiveEvent.Completed += OnClientReceived;
+
+            if (!_clientSocket.ReceiveAsync(_clientReceiveEvent))
+            {
+                OnClientReceived(this, _clientReceiveEvent);
+            }
+        }
+
+        private void OnClientReceived(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError != SocketError.Success)
+            {
+                // TODO: Log error
+                Session.Disconnect();
+                return;
+            }
+
+            if (e.BytesTransferred == 0)
+            {
+                // Connection closed
+                _clientSocket.Disconnect(false);
+                Session.Disconnect();
+                return;
+            }
+
+            // Copy the buffer with the received data - not sure if that's necessary
+            byte[] receivedData = new byte[e.BytesTransferred];
+            _clientReceiveBuffer.CopyTo(receivedData.AsSpan());
+
+            Session.SendAsync(receivedData);
+
+            ReceiveFromServer();
+        }
+
         public override void OnReceived(ReadOnlySpan<byte> buffer)
         {
-            if (_client is not { IsConnected: true })
+            if (_clientSocket is not { Connected: true })
             {
                 throw new InvalidOperationException("Client is not connected.");
             }
 
-            _client.SendAsync(buffer);
+            _clientSocket.SendAsync(buffer.ToArray());
         }
 
         private void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_client != null)
-                {
-                    _client.Disconnect();
-                    _client.Dispose();
-                    _client = null;
-                }
+                _clientReceiveEvent?.Dispose();
+                _clientReceiveEvent = null;
+                _clientSocket?.Dispose();
             }
         }
 
@@ -100,56 +144,6 @@ namespace RyuSocks.Commands.Server
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        class TcpClient : NetCoreServer.TcpClient
-        {
-            private readonly ConnectCommand _command;
-
-            public SocketError Error = SocketError.Success;
-
-            public TcpClient(ConnectCommand command, DnsEndPoint endpoint) : base(endpoint)
-            {
-                _command = command;
-            }
-
-            public TcpClient(ConnectCommand command, IPEndPoint endpoint) : base(endpoint)
-            {
-                _command = command;
-            }
-
-            public void ResetError()
-            {
-                Error = SocketError.Success;
-            }
-
-            public override bool Connect()
-            {
-                ResetError();
-                bool result = base.Connect();
-
-                if (!result && Error == SocketError.Success)
-                {
-                    Error = SocketError.ConnectionRefused;
-                }
-
-                return result;
-            }
-
-            protected override void OnError(SocketError error)
-            {
-                Error = error;
-            }
-
-            protected override void OnConnected()
-            {
-                ReceiveAsync();
-            }
-
-            protected override void OnReceived(byte[] buffer, long offset, long size)
-            {
-                _command.Session.SendAsync(buffer.AsSpan((int)offset, (int)size));
-            }
         }
     }
 }
