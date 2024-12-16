@@ -17,15 +17,21 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
     public class StringDataAttribute : DataAttribute
     {
+        private const char Char = 'a';
         private readonly int _min;
         private readonly int _max;
         private int _count;
+
+        public override bool SupportsDiscoveryEnumeration() => true;
 
         public StringDataAttribute(int min, int max, int count)
         {
@@ -41,9 +47,9 @@ namespace RyuSocks.Test.Utils
             _count = 2;
         }
 
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
-            List<object[]> data = [];
+            List<TheoryDataRow<string>> data = [];
             StringBuilder builder = new();
             int currentMin = _min;
             int currentMax = _max;
@@ -60,8 +66,8 @@ namespace RyuSocks.Test.Utils
                 {
                     isMin = false;
 
-                    builder.Append('a', currentMin);
-                    data.Add([builder.ToString()]);
+                    builder.Append(Char, currentMin);
+                    data.Add(new TheoryDataRow<string>(builder.ToString()));
 
                     if (!isMinReverse)
                     {
@@ -90,8 +96,8 @@ namespace RyuSocks.Test.Utils
                 {
                     isMin = true;
 
-                    builder.Append('a', currentMax);
-                    data.Add([builder.ToString()]);
+                    builder.Append(Char, currentMax);
+                    data.Add(new TheoryDataRow<string>(builder.ToString()));
 
                     if (!isMaxReverse)
                     {
@@ -118,7 +124,7 @@ namespace RyuSocks.Test.Utils
                 }
             }
 
-            return [.. data];
+            return ValueTask.FromResult<IReadOnlyCollection<ITheoryDataRow>>(data);
         }
     }
 }

@@ -15,19 +15,29 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
+using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
     public class EnumDataAttribute<T> : DataAttribute
         where T : struct, Enum
     {
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override bool SupportsDiscoveryEnumeration() => true;
+
+        public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
-            foreach (T value in Enum.GetValues<T>())
+            T[] values = Enum.GetValues<T>();
+            TheoryDataRow<T>[] rows = new TheoryDataRow<T>[values.Length];
+
+            for (int i = 0; i < values.Length; i++)
             {
-                yield return [value];
+                rows[i] = new TheoryDataRow<T>(values[i]);
             }
+
+            return ValueTask.FromResult<IReadOnlyCollection<ITheoryDataRow>>(rows);
         }
     }
 }
