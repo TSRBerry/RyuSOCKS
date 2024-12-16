@@ -22,7 +22,7 @@ namespace RyuSocks.Generator.Packet
     {
         public static string GetOffset(this PacketFieldModel model)
         {
-            if (model.Offset > PacketFieldAttributeData.Default.Offset)
+            if (model.Offset > -1)
             {
                 return model.Offset.ToString();
             }
@@ -37,7 +37,7 @@ namespace RyuSocks.Generator.Packet
 
         public static string GetLength(this PacketFieldModel model)
         {
-            if (model.Length > PacketFieldAttributeData.Default.Length)
+            if (model.Length > -1)
             {
                 return model.Length.ToString();
             }

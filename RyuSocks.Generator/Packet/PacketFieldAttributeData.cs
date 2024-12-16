@@ -22,8 +22,8 @@ namespace RyuSocks.Generator.Packet
 {
     internal class PacketFieldAttributeData
     {
-        public int Offset { get; } = Default.Offset;
-        public string OffsetMember { get; } = Default.OffsetMember;
+        public int Offset { get; } = -1;
+        public string OffsetMember { get; } = string.Empty;
         public int Length { get; }
         public string LengthMember { get; }
         public bool IsBigEndian { get; }
@@ -32,7 +32,6 @@ namespace RyuSocks.Generator.Packet
         public string AssumeGeneratedEnumType { get; }
         public string ValidationMethod { get; }
 
-        // ReSharper disable once SimplifyConditionalTernaryExpression
         public PacketFieldAttributeData(AttributeData attributeData)
         {
             if (attributeData.ConstructorArguments.Length == 0)
@@ -62,60 +61,18 @@ namespace RyuSocks.Generator.Packet
             TypedConstant assumeGeneratedEnumTypeArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(AssumeGeneratedEnumType)).Value;
             TypedConstant validationMethodArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(ValidationMethod)).Value;
 
-#pragma warning disable IDE0075 // Conditional expression can be simplified
             // Get the actual value of every named argument which was specified
-            Length = !lengthArg.IsNull ? (int)lengthArg.Value! : Default.Length;
-            LengthMember = !lengthMemberArg.IsNull ? (string)lengthMemberArg.Value! : Default.LengthMember;
-            IsBigEndian = !isBigEndianArg.IsNull ? (bool)isBigEndianArg.Value! : Default.IsBigEndian;
-            MinLength = !minLengthArg.IsNull ? (int)minLengthArg.Value! : Default.MinLength;
-            MaxLength = !maxLengthArg.IsNull ? (int)maxLengthArg.Value! : Default.MaxLength;
+            Length = !lengthArg.IsNull ? (int)lengthArg.Value! : -1;
+            LengthMember = !lengthMemberArg.IsNull ? (string)lengthMemberArg.Value! : string.Empty;
+            IsBigEndian = !isBigEndianArg.IsNull && (bool)isBigEndianArg.Value!;
+            MinLength = !minLengthArg.IsNull ? (int)minLengthArg.Value! : -1;
+            MaxLength = !maxLengthArg.IsNull ? (int)maxLengthArg.Value! : -1;
             AssumeGeneratedEnumType = !assumeGeneratedEnumTypeArg.IsNull
                 ? (string)assumeGeneratedEnumTypeArg.Value!
-                : Default.AssumeGeneratedEnumType;
+                : string.Empty;
             ValidationMethod = !validationMethodArg.IsNull
                 ? (string)validationMethodArg.Value!
-                : Default.ValidationMethod;
-#pragma warning restore IDE0075 // Conditional expression can be simplified
-        }
-
-        public static class Default
-        {
-            public const int Offset = -1;
-            public const string OffsetMember = "";
-            public const int Length = -1;
-            public const string LengthMember = "";
-            public const bool IsBigEndian = false;
-            public const int MinLength = -1;
-            public const int MaxLength = -1;
-            public const string AssumeGeneratedEnumType = "";
-            public const string ValidationMethod = "";
-
-            public static string AsSourceString(string memberName)
-            {
-                switch (memberName)
-                {
-                    case nameof(Offset):
-                        return Offset.ToString();
-                    case nameof(OffsetMember):
-                        return OffsetMember.Length > 0 ? $"\"{OffsetMember}\"" : "string.Empty";
-                    case nameof(Length):
-                        return Length.ToString();
-                    case nameof(LengthMember):
-                        return LengthMember.Length > 0 ? $"\"{LengthMember}\"" : "string.Empty";
-                    case nameof(IsBigEndian):
-                        return IsBigEndian.ToString().ToLower();
-                    case nameof(MinLength):
-                        return MinLength.ToString();
-                    case nameof(MaxLength):
-                        return MaxLength.ToString();
-                    case nameof(AssumeGeneratedEnumType):
-                        return AssumeGeneratedEnumType.Length > 0 ? $"\"{AssumeGeneratedEnumType}\"" : "string.Empty";
-                    case nameof(ValidationMethod):
-                        return ValidationMethod.Length > 0 ? $"\"{ValidationMethod}\"" : "string.Empty";
-                    default:
-                        throw new ArgumentException($"No member with name: {memberName}");
-                }
-            }
+                : string.Empty;
         }
     }
 }

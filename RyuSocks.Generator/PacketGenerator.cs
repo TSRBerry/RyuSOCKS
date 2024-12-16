@@ -46,8 +46,8 @@ namespace %NAMESPACE%
     [System.Diagnostics.Conditional(""RyuSocks_PacketGenerator_DEBUG"")]
     public sealed class %ATTRIBUTE_NAME% : Attribute
     {
-        private int offset = %DEFAULT_OFFSET%;
-        private string offsetMember = %DEFAULT_OFFSET_MEMBER%;
+        private int offset = -1;
+        private string offsetMember = string.Empty;
 
         /// <summary>
         /// Marks this property as a field of the packet.
@@ -73,34 +73,34 @@ namespace %NAMESPACE%
         /// The length of this field.
         /// Only required if it can't be determined from the property type.
         /// </summary>
-        public int Length { get; set; } = %DEFAULT_LENGTH%;
+        public int Length { get; set; } = -1;
 
         /// <summary>
         /// The name of the member which specifies the length of this field.
         /// Only required if it can't be determined from the property type.
         /// </summary>
-        public string LengthMember { get; set; } = %DEFAULT_LENGTH_MEMBER%;
+        public string LengthMember { get; set; } = string.Empty;
 
         /// <summary>
         /// Whether this field is big endian.
         /// </summary>
-        public bool IsBigEndian { get; set; } = %DEFAULT_IS_BIG_ENDIAN%;
+        public bool IsBigEndian { get; set; } = false;
 
         /// <summary>
         /// The minimum length of array or string data allowed in this field.
         /// </summary>
-        public int MinLength { get; set; } = %DEFAULT_MIN_LENGTH%;
+        public int MinLength { get; set; } = -1;
 
         /// <summary>
         /// The maximum length of array or string data allowed in this field.
         /// </summary>
-        public int MaxLength { get; set; } = %DEFAULT_MAX_LENGTH%;
+        public int MaxLength { get; set; } = -1;
 
         /// <summary>
         /// The name of the underlying type of the property type.
         /// Only required if the type of the property is source generated.
         /// </summary>
-        public string AssumeGeneratedEnumType { get; set; } = %DEFAULT_ASSUME_GENERATED_ENUM_TYPE%;
+        public string AssumeGeneratedEnumType { get; set; } = string.Empty;
 
         /// <summary>
         /// The name of the method which should be invoked before the getter/setter is executed.
@@ -109,7 +109,7 @@ namespace %NAMESPACE%
         /// The method type must be void and have one optional parameter with the same type as the property.
         /// If verification fails an exception should be thrown.
         /// </remarks>
-        public string ValidationMethod { get; set; } = %DEFAULT_VALIDATION_METHOD%;
+        public string ValidationMethod { get; set; } = string.Empty;
 
         public int Offset => offset;
         public string OffsetMember => offsetMember;
@@ -172,15 +172,6 @@ namespace %NAMESPACE%
                         .Replace("%NAMESPACE%", Namespace)
                         .Replace("%ATTRIBUTE_NAME%", PacketFieldAttributeName)
                         .Replace("%ABSTRACT_CLASS_NAME%", AbstractClassName)
-                        .Replace("%DEFAULT_OFFSET%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.Offset)))
-                        .Replace("%DEFAULT_OFFSET_MEMBER%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.OffsetMember)))
-                        .Replace("%DEFAULT_LENGTH%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.Length)))
-                        .Replace("%DEFAULT_LENGTH_MEMBER%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.LengthMember)))
-                        .Replace("%DEFAULT_IS_BIG_ENDIAN%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.IsBigEndian)))
-                        .Replace("%DEFAULT_MIN_LENGTH%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.MinLength)))
-                        .Replace("%DEFAULT_MAX_LENGTH%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.MaxLength)))
-                        .Replace("%DEFAULT_ASSUME_GENERATED_ENUM_TYPE%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.AssumeGeneratedEnumType)))
-                        .Replace("%DEFAULT_VALIDATION_METHOD%", PacketFieldAttributeData.Default.AsSourceString(nameof(PacketFieldAttributeData.Default.ValidationMethod)))
                         .TrimStart()
                 )
             );
