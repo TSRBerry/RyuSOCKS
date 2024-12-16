@@ -31,10 +31,14 @@ namespace RyuSocks.Commands.Server
         //       This is currently set to the maximum length of an EndpointPacket,
         //       but we usually don't need that much space.
         public override int WrapperLength => 262;
-        private UdpServer _server;
+        private readonly HashSet<ProxyEndpoint> _destinationEndpoints = [];
+        private readonly Socket _socket;
+        private SocketAsyncEventArgs _socketReceiveEvent;
+        private byte[] _socketReceiveBuffer;
+        private IPEndPoint _remoteEndPoint;
 
-        public override int Available { get => _server.Socket.Available; }
-        public override bool Blocking { get => _server.Socket.Blocking; set => _server.Socket.Blocking = value; }
+        public override int Available { get => _socket.Available; }
+        public override bool Blocking { get => _socket.Blocking; set => _socket.Blocking = value; }
 
         public UdpAssociateCommand(SocksSession session, IPEndPoint boundEndpoint, ProxyEndpoint source) : base(session, boundEndpoint, source)
         {
@@ -51,11 +55,118 @@ namespace RyuSocks.Commands.Server
                 return;
             }
 
-            _server = new UdpServer(this, boundEndpoint);
+            _socket = new Socket(boundEndpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 
-            _server.Start();
+            try
+            {
+                _socket.Bind(boundEndpoint);
+            }
+            catch (SocketException e)
+            {
+                Session.SendAsync(new CommandResponse
+                {
+                    Version = ProxyConsts.Version,
+                    ReplyField = e.SocketErrorCode.ToReplyField(),
+                }.AsSpan());
 
-            // CommandResponse sent by UdpServer.OnStarted() below.
+                session.Disconnect();
+                return;
+            }
+
+            StartReceiveFrom();
+
+            CommandResponse response = _socket.LocalEndPoint switch
+            {
+                IPEndPoint ipEndPoint => new CommandResponse(ipEndPoint)
+                {
+                    Version = ProxyConsts.Version,
+                    ReplyField = ReplyField.Succeeded,
+                },
+                DnsEndPoint dnsEndPoint => new CommandResponse(dnsEndPoint)
+                {
+                    Version = ProxyConsts.Version,
+                    ReplyField = ReplyField.Succeeded,
+                },
+                _ => throw new InvalidOperationException(
+                    $"The type of EndPoint is not supported: {_socket.LocalEndPoint}"),
+            };
+
+            Session.SendAsync(response.AsSpan());
+        }
+
+        private bool IsClientEndpoint(EndPoint endpoint)
+        {
+            return endpoint == ProxyEndpoint.ToEndPoint() ||
+                   (endpoint is IPEndPoint ipEndpoint && ProxyEndpoint.Contains(ipEndpoint));
+        }
+
+        private void StartReceiveFrom()
+        {
+            _socketReceiveBuffer ??= new byte[_socket.ReceiveBufferSize];
+            _socketReceiveEvent?.Dispose();
+            _socketReceiveEvent = new SocketAsyncEventArgs();
+            _socketReceiveEvent.SetBuffer(_socketReceiveBuffer);
+            // TODO: Allow the use of DnsEndPoint
+            _remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            _socketReceiveEvent.RemoteEndPoint = _remoteEndPoint;
+            _socketReceiveEvent.Completed += OnReceivedFrom;
+
+            if (!_socket.ReceiveFromAsync(_socketReceiveEvent))
+            {
+                OnReceivedFrom(this, _socketReceiveEvent);
+            }
+        }
+
+        private void OnReceivedFrom(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError != SocketError.Success)
+            {
+                // TODO: Log error
+                Session.Disconnect();
+                return;
+            }
+
+            Span<byte> bufferSpan = _socketReceiveBuffer.AsSpan(0, e.BytesTransferred);
+
+            if (IsClientEndpoint(e.RemoteEndPoint))
+            {
+                int bufferLength = bufferSpan.Length;
+                int requiredWrapperSpace = Session.GetRequiredWrapperSpace();
+
+                if (requiredWrapperSpace != 0)
+                {
+                    byte[] wrapperBuffer = new byte[bufferSpan.Length + requiredWrapperSpace];
+                    bufferSpan.CopyTo(wrapperBuffer);
+                    bufferSpan = wrapperBuffer;
+                }
+
+                bufferLength = Session.Unwrap(bufferSpan, bufferLength, out ProxyEndpoint remoteEndpoint);
+
+                if (!_destinationEndpoints.Contains(remoteEndpoint) && !Session.IsDestinationValid(remoteEndpoint))
+                {
+                    return;
+                }
+
+                _destinationEndpoints.Add(remoteEndpoint);
+
+                _socket.SendToAsync(bufferSpan[..bufferLength].ToArray(), remoteEndpoint.ToEndPoint());
+
+                return;
+            }
+
+            ProxyEndpoint proxyEndpoint = e.RemoteEndPoint switch
+            {
+                IPEndPoint ipEndpoint => new ProxyEndpoint(ipEndpoint),
+                DnsEndPoint dnsEndpoint => new ProxyEndpoint(dnsEndpoint),
+                _ => throw new ArgumentException($"The type {e.RemoteEndPoint} is not supported.", nameof(e)),
+            };
+
+            if (!_destinationEndpoints.Contains(proxyEndpoint))
+            {
+                return;
+            }
+
+            Session.SendTo(bufferSpan, proxyEndpoint);
         }
 
         public override int Wrap(Span<byte> buffer, int packetLength, ProxyEndpoint remoteEndpoint)
@@ -84,37 +195,37 @@ namespace RyuSocks.Commands.Server
 
         public override void Shutdown(SocketShutdown how)
         {
-            _server.Socket.Shutdown(how);
+            _socket.Shutdown(how);
         }
 
         public override void GetSocketOption(SocketOptionLevel optionLevel, SocketOptionName optionName, byte[] optionValue)
         {
-            _server.Socket.GetSocketOption(optionLevel, optionName, optionValue);
+            _socket.GetSocketOption(optionLevel, optionName, optionValue);
         }
 
         public override object GetSocketOption(SocketOptionLevel optionLevel, SocketOptionName optionName)
         {
-            return _server.Socket.GetSocketOption(optionLevel, optionName);
+            return _socket.GetSocketOption(optionLevel, optionName);
         }
 
         public override void SetSocketOption(SocketOptionLevel optionLevel, SocketOptionName optionName, byte[] optionValue)
         {
-            _server.Socket.SetSocketOption(optionLevel, optionName, optionValue);
+            _socket.SetSocketOption(optionLevel, optionName, optionValue);
         }
 
         public override void SetSocketOption(SocketOptionLevel optionLevel, SocketOptionName optionName, int optionValue)
         {
-            _server.Socket.SetSocketOption(optionLevel, optionName, optionValue);
+            _socket.SetSocketOption(optionLevel, optionName, optionValue);
         }
 
         public override bool Poll(int microSeconds, SelectMode mode)
         {
-            return _server.Socket.Poll(microSeconds, mode);
+            return _socket.Poll(microSeconds, mode);
         }
 
         public override int SendTo(ReadOnlySpan<byte> buffer, SocketFlags socketFlags, EndPoint remoteEP)
         {
-            return _server.Socket.SendTo(buffer, socketFlags, remoteEP);
+            return _socket.SendTo(buffer, socketFlags, remoteEP);
         }
 
         public override void OnReceived(ReadOnlySpan<byte> buffer)
@@ -126,12 +237,7 @@ namespace RyuSocks.Commands.Server
         {
             if (disposing)
             {
-                if (_server != null)
-                {
-                    _server.Stop();
-                    _server.Dispose();
-                    _server = null;
-                }
+                _socket?.Dispose();
             }
         }
 
@@ -139,89 +245,6 @@ namespace RyuSocks.Commands.Server
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        class UdpServer : NetCoreServer.UdpServer
-        {
-            private readonly UdpAssociateCommand _command;
-            private readonly HashSet<ProxyEndpoint> _destinationEndpoints = [];
-
-            public UdpServer(UdpAssociateCommand command, IPEndPoint endpoint) : base(endpoint)
-            {
-                _command = command;
-            }
-
-            protected override void OnStarted()
-            {
-                CommandResponse response = Endpoint switch
-                {
-                    IPEndPoint ipEndPoint => new CommandResponse(ipEndPoint)
-                    {
-                        Version = ProxyConsts.Version,
-                        ReplyField = ReplyField.Succeeded,
-                    },
-                    DnsEndPoint dnsEndPoint => new CommandResponse(dnsEndPoint)
-                    {
-                        Version = ProxyConsts.Version,
-                        ReplyField = ReplyField.Succeeded,
-                    },
-                    _ => throw new InvalidOperationException(
-                        $"The type of EndPoint is not supported: {Endpoint}"),
-                };
-
-                _command.Session.SendAsync(response.AsSpan());
-            }
-
-            private bool IsClientEndpoint(EndPoint endpoint)
-            {
-                return endpoint == _command.ProxyEndpoint.ToEndPoint() ||
-                       (endpoint is IPEndPoint ipEndpoint && _command.ProxyEndpoint.Contains(ipEndpoint));
-            }
-
-            protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
-            {
-                Span<byte> bufferSpan = buffer.AsSpan((int)offset, (int)size);
-
-                if (IsClientEndpoint(endpoint))
-                {
-                    int bufferLength = bufferSpan.Length;
-                    int requiredWrapperSpace = _command.Session.GetRequiredWrapperSpace();
-
-                    if (requiredWrapperSpace != 0)
-                    {
-                        byte[] wrapperBuffer = new byte[bufferSpan.Length + requiredWrapperSpace];
-                        bufferSpan.CopyTo(wrapperBuffer);
-                        bufferSpan = wrapperBuffer;
-                    }
-
-                    bufferLength = _command.Session.Unwrap(bufferSpan, bufferLength, out ProxyEndpoint remoteEndpoint);
-
-                    if (!_destinationEndpoints.Contains(remoteEndpoint) && !_command.Session.IsDestinationValid(remoteEndpoint))
-                    {
-                        return;
-                    }
-
-                    _destinationEndpoints.Add(remoteEndpoint);
-
-                    this.SendAsync(remoteEndpoint.ToEndPoint(), bufferSpan[..bufferLength]);
-
-                    return;
-                }
-
-                ProxyEndpoint proxyEndpoint = endpoint switch
-                {
-                    IPEndPoint ipEndpoint => new ProxyEndpoint(ipEndpoint),
-                    DnsEndPoint dnsEndpoint => new ProxyEndpoint(dnsEndpoint),
-                    _ => throw new ArgumentException($"The type {endpoint} is not supported.", nameof(endpoint)),
-                };
-
-                if (!_destinationEndpoints.Contains(proxyEndpoint))
-                {
-                    return;
-                }
-
-                _command.Session.SendTo(bufferSpan, proxyEndpoint);
-            }
         }
     }
 }

@@ -14,14 +14,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using NetCoreServer;
 using RyuSocks.Auth;
 using RyuSocks.Commands;
 using RyuSocks.Utils;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using Xunit;
@@ -36,7 +33,7 @@ namespace RyuSocks.Test
         public SocksClientTests(SocksServerFixture fixture)
         {
             _fixture = fixture;
-            _client = new SocksClient((IPEndPoint)_fixture.Server.Endpoint)
+            _client = new SocksClient((IPEndPoint)_fixture.Server.LocalEndPoint)
             {
                 OfferedAuthMethods = new Dictionary<AuthMethod, IProxyAuth>
                 {
@@ -55,9 +52,8 @@ namespace RyuSocks.Test
         public void Authenticate_Succeeds()
         {
             _client.Authenticate();
-            Guid sessionId = _fixture.Server.Sessions.Keys.First();
 
-            Assert.Equal(1, _fixture.Server.ConnectedSessions);
+            Assert.Single(_fixture.Server.Sessions);
 
             // FIXME: Race condition here. We are (currently) getting packets asynchronously.
 
@@ -65,7 +61,7 @@ namespace RyuSocks.Test
             const int MaxTries = 10;
             const int SleepSeconds = 1;
             int currentTry = 1;
-            SocksSession session = _fixture.Server.GetSession(sessionId);
+            SocksSession session = _fixture.Server.Sessions[0];
 
             while (currentTry <= MaxTries && !session.Authenticated)
             {
@@ -75,7 +71,7 @@ namespace RyuSocks.Test
 
             // END: Temp workaround
 
-            Assert.True(_fixture.Server.GetSession(sessionId).Authenticated);
+            Assert.True(_fixture.Server.Sessions[0].Authenticated);
         }
     }
 
@@ -115,15 +111,9 @@ namespace RyuSocks.Test
     public class TestSocksServer : SocksServer
     {
         public TestSocksServer(IPAddress address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
-        public TestSocksServer(string address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }
         public TestSocksServer(DnsEndPoint endpoint) : base(endpoint) { }
         public TestSocksServer(IPEndPoint endpoint) : base(endpoint) { }
 
-        public new ConcurrentDictionary<Guid, TcpSession> Sessions => base.Sessions;
-
-        public SocksSession GetSession(Guid id)
-        {
-            return (SocksSession)base.Sessions[id];
-        }
+        public new List<SocksSession> Sessions => base.Sessions;
     }
 }

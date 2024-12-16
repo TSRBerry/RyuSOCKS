@@ -10,7 +10,6 @@
         <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
         <PackageVersion Include="Moq" Version="4.20.70" />
-        <PackageVersion Include="NetCoreServer" Version="8.0.7" />
         <PackageVersion Include="xunit.v3" Version="1.0.0"/>
         <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0"/>
     </ItemGroup>
