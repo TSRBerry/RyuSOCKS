@@ -77,33 +77,17 @@ namespace RyuSocks.Generator.Packet
             {
                 AddVerificationMethodIfNecessary(source, packetField, true);
 
-                if (packetField.FieldType.IsEnum)
-                {
-                    source.AppendBlock(packetField.FieldStringEncoding.GetStringText($"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian, false));
-                    source.AppendLine($"Enum.Parse<{packetField.FieldType.Name}>(valueString, true);");
-
-                    return source.GetLines();
-                }
-
                 source.AppendBlock(packetField.FieldStringEncoding.GetStringText($"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian));
             }
             else
             {
-                string valueParameter = packetField.FieldType.IsEnum ? $"Enum.GetName<{packetField.FieldType.Name}>(value)" : "value";
-
-                if (packetField.FieldType.IsEnum)
-                {
-                    source.AppendLine($"string valueString = {valueParameter};");
-                    valueParameter = "valueString";
-                }
-
                 if (packetField.MinLength > 0)
                 {
-                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfLessThan(source, $"{valueParameter}.Length", packetField.MinLength.ToString());
+                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfLessThan(source, "value.Length", packetField.MinLength.ToString());
                 }
                 if (packetField.MaxLength > 0)
                 {
-                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfGreaterThan(source, $"{valueParameter}.Length", packetField.MaxLength.ToString());
+                    ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfGreaterThan(source, "value.Length", packetField.MaxLength.ToString());
                 }
 
                 AddVerificationMethodIfNecessary(source, packetField, false);
@@ -112,17 +96,17 @@ namespace RyuSocks.Generator.Packet
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
 
-                    source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}{packetField.FieldStringEncoding.GetByteCountText(valueParameter)};");
-                    source.AppendBlock(packetField.FieldStringEncoding.GetBytesText(valueParameter, $"this.AsSpan({packetField.GetOffset()}, this.{packetField.LengthMember})", packetField.IsBigEndian));
+                    source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}{packetField.FieldStringEncoding.GetByteCountText("value")};");
+                    source.AppendBlock(packetField.FieldStringEncoding.GetBytesText("value", $"this.AsSpan({packetField.GetOffset()}, this.{packetField.LengthMember})", packetField.IsBigEndian));
                 }
                 else
                 {
                     if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadOnly })
                     {
-                        ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, packetField.FieldStringEncoding.GetByteCountText(valueParameter), packetField.GetLength(), "value", "byte length of value");
+                        ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, packetField.FieldStringEncoding.GetByteCountText("value"), packetField.GetLength(), "value", "byte length of value");
                     }
-                    
-                    source.AppendBlock(packetField.FieldStringEncoding.GetBytesText(valueParameter, $"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian));
+
+                    source.AppendBlock(packetField.FieldStringEncoding.GetBytesText("value", $"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian));
                 }
             }
 
