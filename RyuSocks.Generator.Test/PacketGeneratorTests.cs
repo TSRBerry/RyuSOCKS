@@ -29,6 +29,17 @@ namespace RyuSocks.Generator.Test
         [InlineData("Namespaces", "TestPacket.cs",
             "TestSpace.TestPacket.TestField.g.cs", "TestSpace.TestPacket1.FirstField.g.cs",
             "AnotherSpace.TestPacket.TestField.g.cs", "AnotherSpace.TestPacket2.SecondField.g.cs")]
+        [InlineData("StringEncodings", "TestPacket.cs",
+            "LittleEndian.ASCIIPacket.String1.g.cs", "LittleEndian.ASCIIPacket.String2.g.cs", "LittleEndian.ASCIIPacket.String3.g.cs", "LittleEndian.ASCIIPacket.String4.g.cs",
+            "LittleEndian.UnicodePacket.String1.g.cs", "LittleEndian.UnicodePacket.String2.g.cs", "LittleEndian.UnicodePacket.String3.g.cs", "LittleEndian.UnicodePacket.String4.g.cs",
+            "LittleEndian.UTF7Packet.String1.g.cs", "LittleEndian.UTF7Packet.String2.g.cs", "LittleEndian.UTF7Packet.String3.g.cs", "LittleEndian.UTF7Packet.String4.g.cs",
+            "LittleEndian.UTF8Packet.String1.g.cs", "LittleEndian.UTF8Packet.String2.g.cs", "LittleEndian.UTF8Packet.String3.g.cs", "LittleEndian.UTF8Packet.String4.g.cs",
+            "LittleEndian.UTF32Packet.String1.g.cs", "LittleEndian.UTF32Packet.String2.g.cs", "LittleEndian.UTF32Packet.String3.g.cs", "LittleEndian.UTF32Packet.String4.g.cs",
+            "BigEndian.ASCIIPacket.String1.g.cs", "BigEndian.ASCIIPacket.String2.g.cs", "BigEndian.ASCIIPacket.String3.g.cs", "BigEndian.ASCIIPacket.String4.g.cs",
+            "BigEndian.UnicodePacket.String1.g.cs", "BigEndian.UnicodePacket.String2.g.cs", "BigEndian.UnicodePacket.String3.g.cs", "BigEndian.UnicodePacket.String4.g.cs",
+            "BigEndian.UTF7Packet.String1.g.cs", "BigEndian.UTF7Packet.String2.g.cs", "BigEndian.UTF7Packet.String3.g.cs", "BigEndian.UTF7Packet.String4.g.cs",
+            "BigEndian.UTF8Packet.String1.g.cs", "BigEndian.UTF8Packet.String2.g.cs", "BigEndian.UTF8Packet.String3.g.cs", "BigEndian.UTF8Packet.String4.g.cs",
+            "BigEndian.UTF32Packet.String1.g.cs", "BigEndian.UTF32Packet.String2.g.cs", "BigEndian.UTF32Packet.String3.g.cs", "BigEndian.UTF32Packet.String4.g.cs")]
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
             const int DefaultSourcesAmount = 3;
