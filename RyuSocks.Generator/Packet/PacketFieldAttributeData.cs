@@ -20,6 +20,8 @@ using System.Linq;
 
 namespace RyuSocks.Generator.Packet
 {
+    // NOTE: The default values should be the same as the ones specified in PacketFieldAttribute.
+    //       See: PacketGenerator.cs
     internal class PacketFieldAttributeData
     {
         public int Offset { get; } = -1;
