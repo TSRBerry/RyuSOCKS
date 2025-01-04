@@ -73,19 +73,19 @@ namespace RyuSocks.Generator.Packet
         {
             BlockBuilder source = new();
 
-            // FIXME: This implementation assumes strings are always ASCII
             if (isGetter)
             {
                 AddVerificationMethodIfNecessary(source, packetField, true);
 
                 if (packetField.FieldType.IsEnum)
                 {
-                    source.AppendLine($"Enum.Parse<{packetField.FieldType.Name}>(Encoding.ASCII.GetString(this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})), true);");
+                    source.AppendBlock(packetField.FieldStringEncoding.GetStringText($"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian, false));
+                    source.AppendLine($"Enum.Parse<{packetField.FieldType.Name}>(valueString, true);");
 
                     return source.GetLines();
                 }
 
-                source.AppendLine($"return Encoding.ASCII.GetString(this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()}));");
+                source.AppendBlock(packetField.FieldStringEncoding.GetStringText($"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian));
             }
             else
             {
@@ -112,17 +112,17 @@ namespace RyuSocks.Generator.Packet
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
 
-                    source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}{valueParameter}.Length;");
-                    source.AppendLine($"Encoding.ASCII.GetBytes({valueParameter}, this.AsSpan({packetField.GetOffset()}, this.{packetField.LengthMember}));");
+                    source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}{packetField.FieldStringEncoding.GetByteCountText(valueParameter)};");
+                    source.AppendBlock(packetField.FieldStringEncoding.GetBytesText(valueParameter, $"this.AsSpan({packetField.GetOffset()}, this.{packetField.LengthMember})", packetField.IsBigEndian));
                 }
                 else
                 {
                     if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadOnly })
                     {
-                        ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, "value.Length", packetField.GetLength());
+                        ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, packetField.FieldStringEncoding.GetByteCountText(valueParameter), packetField.GetLength(), "value", "byte length of value");
                     }
-
-                    source.AppendLine($"Encoding.ASCII.GetBytes({valueParameter}, this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()}));");
+                    
+                    source.AppendBlock(packetField.FieldStringEncoding.GetBytesText(valueParameter, $"this.AsSpan({packetField.GetOffset()}, {packetField.GetLength()})", packetField.IsBigEndian));
                 }
             }
 

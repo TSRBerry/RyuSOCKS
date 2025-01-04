@@ -9,15 +9,15 @@ partial class TestPacket
     {
         get
         {
-            return Encoding.ASCII.GetString(this.AsSpan(this.AnOffset, this.AStringLength));
+            return Encoding.ASCII.GetString(this.AsSpan(this.AnOffset, this.AStringByteLength));
         }
         set
         {
-            if (value.Length != this.AStringLength)
+            if (Encoding.ASCII.GetByteCount(value) != this.AStringByteLength)
             {
-                throw new ArgumentOutOfRangeException(nameof(value.Length), value.Length, $"{nameof(value.Length)} must be equal to: {this.AStringLength}");
+                throw new ArgumentOutOfRangeException(nameof(value), Encoding.ASCII.GetByteCount(value), $"byte length of value must be equal to: {this.AStringByteLength}");
             }
-            Encoding.ASCII.GetBytes(value, this.AsSpan(this.AnOffset, this.AStringLength));
+            Encoding.ASCII.GetBytes(value, this.AsSpan(this.AnOffset, this.AStringByteLength));
         }
     }
 }

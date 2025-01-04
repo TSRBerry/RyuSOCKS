@@ -35,6 +35,7 @@ namespace RyuSocks.Generator.Packet
         int MaxLength,
         bool IsBigEndian,
         FieldTypeModel FieldType,
+        StringEncoding FieldStringEncoding,
         string PropertyName,
         string PropertyAccessModifiers,
         string PropertyGetterModifiers,

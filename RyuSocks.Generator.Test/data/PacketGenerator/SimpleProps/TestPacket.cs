@@ -4,9 +4,9 @@ public partial class TestPacket : Packet
 {
     private int SecondOffset => 1;
 
-    protected int AStringLength => 2;
+    protected int AStringByteLength => 2;
 
-    public int ReadWriteLength { get; set; } = 34;
+    public int ReadWriteByteLength { get; set; } = 34;
 
     public byte Byte0 { get; set; }
 
@@ -37,9 +37,9 @@ public partial class TestPacket : Packet
     [PacketField(8, Length = 10)]
     private partial string String1 { get; set; }
 
-    [PacketField(9, LengthMember = nameof(AStringLength))]
+    [PacketField(9, LengthMember = nameof(AStringByteLength))]
     partial string String2 { get; set; }
 
-    [PacketField(10, LengthMember = nameof(ReadWriteLength))]
+    [PacketField(10, LengthMember = nameof(ReadWriteByteLength))]
     protected partial string String3 { get; set; }
 }

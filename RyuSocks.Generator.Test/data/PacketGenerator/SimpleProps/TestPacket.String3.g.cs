@@ -9,12 +9,12 @@ partial class TestPacket
     {
         get
         {
-            return Encoding.ASCII.GetString(this.AsSpan(10, this.ReadWriteLength));
+            return Encoding.ASCII.GetString(this.AsSpan(10, this.ReadWriteByteLength));
         }
         set
         {
-            this.ReadWriteLength = value.Length;
-            Encoding.ASCII.GetBytes(value, this.AsSpan(10, this.ReadWriteLength));
+            this.ReadWriteByteLength = Encoding.ASCII.GetByteCount(value);
+            Encoding.ASCII.GetBytes(value, this.AsSpan(10, this.ReadWriteByteLength));
         }
     }
 }

@@ -23,27 +23,33 @@ namespace RyuSocks.Generator.Packet
     {
         public static class ArgumentOutOfRange
         {
-            public static void GenerateThrowIfNotEqual(BlockBuilder source, string value, string other)
+            public static void GenerateThrowIfNotEqual(BlockBuilder source, string value, string other, string overrideValueName = "", string overrideValueText = "")
             {
-                string message = $"$\"{{nameof({value})}} must be equal to: {{{other}}}\"";
+                string nameofText = overrideValueName.Length > 0 ? overrideValueName : value;
+                string valueText = overrideValueText.Length > 0 ? overrideValueText : $"{{nameof({value})}}";
+                string message = $"$\"{valueText} must be equal to: {{{other}}}\"";
                 source.EnterScope($"if ({value} != {other})");
-                source.AppendLine($"throw new ArgumentOutOfRangeException(nameof({value}), {value}, {message});");
+                source.AppendLine($"throw new ArgumentOutOfRangeException(nameof({nameofText}), {value}, {message});");
                 source.LeaveScope();
             }
 
-            public static void GenerateThrowIfLessThan(BlockBuilder source, string value, string other)
+            public static void GenerateThrowIfLessThan(BlockBuilder source, string value, string other, string overrideValueName = "", string overrideValueText = "")
             {
-                string message = $"$\"{{nameof({value})}} must be larger or equal to: {{{other}}}\"";
+                string nameofText = overrideValueName.Length > 0 ? overrideValueName : value;
+                string valueText = overrideValueText.Length > 0 ? overrideValueText : $"{{nameof({value})}}";
+                string message = $"$\"{valueText} must be larger or equal to: {{{other}}}\"";
                 source.EnterScope($"if ({value} < {other})");
-                source.AppendLine($"throw new ArgumentOutOfRangeException(nameof({value}), {value}, {message});");
+                source.AppendLine($"throw new ArgumentOutOfRangeException(nameof({nameofText}), {value}, {message});");
                 source.LeaveScope();
             }
 
-            public static void GenerateThrowIfGreaterThan(BlockBuilder source, string value, string other)
+            public static void GenerateThrowIfGreaterThan(BlockBuilder source, string value, string other, string overrideValueName = "", string overrideValueText = "")
             {
-                string message = $"$\"{{nameof({value})}} must be smaller or equal to: {{{other}}}\"";
+                string nameofText = overrideValueName.Length > 0 ? overrideValueName : value;
+                string valueText = overrideValueText.Length > 0 ? overrideValueText : $"{{nameof({value})}}";
+                string message = $"$\"{valueText} must be smaller or equal to: {{{other}}}\"";
                 source.EnterScope($"if ({value} > {other})");
-                source.AppendLine($"throw new ArgumentOutOfRangeException(nameof({value}), {value}, {message});");
+                source.AppendLine($"throw new ArgumentOutOfRangeException(nameof({nameofText}), {value}, {message});");
                 source.LeaveScope();
             }
         }

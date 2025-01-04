@@ -4,9 +4,9 @@ internal partial class TestPacket : Packet
 {
     private int AnOffset => 2;
 
-    protected int AStringLength => 2;
+    protected int AStringByteLength => 2;
 
-    public int ReadWriteLength { get; set; } = 34;
+    public int ReadWriteByteLength { get; set; } = 34;
 
     [PacketField(nameof(AnOffset))]
     public partial byte Byte1 { get; set; }
@@ -35,9 +35,9 @@ internal partial class TestPacket : Packet
     [PacketField(nameof(AnOffset), Length = 10)]
     private partial string String1 { get; set; }
 
-    [PacketField(nameof(AnOffset), LengthMember = nameof(AStringLength))]
+    [PacketField(nameof(AnOffset), LengthMember = nameof(AStringByteLength))]
     partial string String2 { get; set; }
 
-    [PacketField(nameof(AnOffset), LengthMember = nameof(ReadWriteLength))]
+    [PacketField(nameof(AnOffset), LengthMember = nameof(ReadWriteByteLength))]
     protected partial string String3 { get; set; }
 }

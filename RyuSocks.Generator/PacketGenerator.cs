@@ -359,6 +359,7 @@ namespace %NAMESPACE%
                     isStruct,
                     actualType
                 ),
+                attributeData.StringEncoding,
                 propertySymbol.Name,
                 GetAccessModifierString(propertySymbol),
                 GetAccessorModifierString(propertySymbol, true),
