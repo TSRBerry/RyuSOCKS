@@ -31,6 +31,7 @@ namespace RyuSocks.Generator.Packet
         public bool IsBigEndian { get; }
         public int MinLength { get; }
         public int MaxLength { get; }
+        public StringEncoding StringEncoding { get; }
         public string AssumeGeneratedEnumType { get; }
         public string ValidationMethod { get; }
 
@@ -60,6 +61,7 @@ namespace RyuSocks.Generator.Packet
             TypedConstant isBigEndianArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(IsBigEndian)).Value;
             TypedConstant minLengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(MinLength)).Value;
             TypedConstant maxLengthArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(MaxLength)).Value;
+            TypedConstant stringEncodingArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(StringEncoding)).Value;
             TypedConstant assumeGeneratedEnumTypeArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(AssumeGeneratedEnumType)).Value;
             TypedConstant validationMethodArg = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == nameof(ValidationMethod)).Value;
 
@@ -69,6 +71,9 @@ namespace RyuSocks.Generator.Packet
             IsBigEndian = !isBigEndianArg.IsNull && (bool)isBigEndianArg.Value!;
             MinLength = !minLengthArg.IsNull ? (int)minLengthArg.Value! : -1;
             MaxLength = !maxLengthArg.IsNull ? (int)maxLengthArg.Value! : -1;
+            StringEncoding = !stringEncodingArg.IsNull
+                ? (StringEncoding)stringEncodingArg.Value!
+                : StringEncoding.ASCII;
             AssumeGeneratedEnumType = !assumeGeneratedEnumTypeArg.IsNull
                 ? (string)assumeGeneratedEnumTypeArg.Value!
                 : string.Empty;

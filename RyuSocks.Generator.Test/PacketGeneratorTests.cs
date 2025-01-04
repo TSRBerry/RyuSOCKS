@@ -31,15 +31,18 @@ namespace RyuSocks.Generator.Test
             "AnotherSpace.TestPacket.TestField.g.cs", "AnotherSpace.TestPacket2.SecondField.g.cs")]
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
-            directory += "/";
-            (string, string)[] generatedSources = new (string, string)[expectedGeneratedSourcePath.Length + 2];
+            const int DefaultSourcesAmount = 3;
+            (string, string)[] generatedSources = new (string, string)[expectedGeneratedSourcePath.Length + DefaultSourcesAmount];
 
-            generatedSources[0] = GetGeneratedSourceFromFile("PacketFieldAttribute.g.cs");
-            generatedSources[1] = GetGeneratedSourceFromFile("Packet.g.cs");
+            generatedSources[0] = GetGeneratedSourceFromFile("StringEncoding.g.cs");
+            generatedSources[1] = GetGeneratedSourceFromFile("PacketFieldAttribute.g.cs");
+            generatedSources[2] = GetGeneratedSourceFromFile("Packet.g.cs");
+
+            directory += "/";
 
             for (int i = 0; i < expectedGeneratedSourcePath.Length; i++)
             {
-                generatedSources[i + 2] = GetGeneratedSourceFromFile(directory + expectedGeneratedSourcePath[i]);
+                generatedSources[i + DefaultSourcesAmount] = GetGeneratedSourceFromFile(directory + expectedGeneratedSourcePath[i]);
             }
 
             await Verify.VerifyGeneratedSources(

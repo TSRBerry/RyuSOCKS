@@ -30,13 +30,13 @@ namespace RyuSocks.Packets
         }
 
         /// <summary>
-        /// The length of this field.
+        /// The length of this field in bytes.
         /// Only required if it can't be determined from the property type.
         /// </summary>
         public int Length { get; set; } = -1;
 
         /// <summary>
-        /// The name of the member which specifies the length of this field.
+        /// The name of the member which specifies the length of this field in bytes.
         /// Only required if it can't be determined from the property type.
         /// </summary>
         public string LengthMember { get; set; } = string.Empty;
@@ -47,14 +47,20 @@ namespace RyuSocks.Packets
         public bool IsBigEndian { get; set; } = false;
 
         /// <summary>
-        /// The minimum length of array or string data allowed in this field.
+        /// The minimum length of the array or chars allowed in this field.
         /// </summary>
         public int MinLength { get; set; } = -1;
 
         /// <summary>
-        /// The maximum length of array or string data allowed in this field.
+        /// The maximum length of the array or chars allowed in this field.
         /// </summary>
         public int MaxLength { get; set; } = -1;
+
+        /// <summary>
+        /// The encoding of the underlying string.
+        /// Only required for string properties.
+        /// </summary>
+        public StringEncoding StringEncoding = StringEncoding.ASCII;
 
         /// <summary>
         /// The name of the underlying type of the property type.

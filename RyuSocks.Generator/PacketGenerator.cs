@@ -35,8 +35,23 @@ namespace RyuSocks.Generator
         private const string Namespace = "RyuSocks.Packets";
         private const string AbstractClassName = "Packet";
         private const string PacketFieldAttributeName = "PacketFieldAttribute";
+        private const string StringEncodingEnumName = "StringEncoding";
 
         #region SourceText
+        private const string EncodingEnumText = @"
+namespace %NAMESPACE%
+{
+    public enum %ENUM_NAME% : byte
+    {
+        ASCII,
+        Unicode,
+        UTF7,
+        UTF8,
+        UTF32,
+    }
+}
+";
+
         private const string PacketFieldAttributeText = @"
 using System;
 
@@ -70,13 +85,13 @@ namespace %NAMESPACE%
         }
 
         /// <summary>
-        /// The length of this field.
+        /// The length of this field in bytes.
         /// Only required if it can't be determined from the property type.
         /// </summary>
         public int Length { get; set; } = -1;
 
         /// <summary>
-        /// The name of the member which specifies the length of this field.
+        /// The name of the member which specifies the length of this field in bytes.
         /// Only required if it can't be determined from the property type.
         /// </summary>
         public string LengthMember { get; set; } = string.Empty;
@@ -87,14 +102,20 @@ namespace %NAMESPACE%
         public bool IsBigEndian { get; set; } = false;
 
         /// <summary>
-        /// The minimum length of array or string data allowed in this field.
+        /// The minimum length of the array or chars allowed in this field.
         /// </summary>
         public int MinLength { get; set; } = -1;
 
         /// <summary>
-        /// The maximum length of array or string data allowed in this field.
+        /// The maximum length of the array or chars allowed in this field.
         /// </summary>
         public int MaxLength { get; set; } = -1;
+
+        /// <summary>
+        /// The encoding of the underlying string.
+        /// Only required for string properties.
+        /// </summary>
+        public %STRING_ENCODING_ENUM_NAME% StringEncoding = %STRING_ENCODING_ENUM_NAME%.ASCII;
 
         /// <summary>
         /// The name of the underlying type of the property type.
@@ -165,6 +186,15 @@ namespace %NAMESPACE%
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            // Register the string encoding enum source
+            context.RegisterPostInitializationOutput(static postContext => postContext.AddSource(
+                    $"{StringEncodingEnumName}.g.cs",
+                    EncodingEnumText
+                        .Replace("%NAMESPACE%", Namespace)
+                        .Replace("%ENUM_NAME%", StringEncodingEnumName)
+                        .TrimStart()
+                )
+            );
             // Register the attribute source
             context.RegisterPostInitializationOutput(static postContext => postContext.AddSource(
                     $"{PacketFieldAttributeName}.g.cs",
@@ -172,6 +202,7 @@ namespace %NAMESPACE%
                         .Replace("%NAMESPACE%", Namespace)
                         .Replace("%ATTRIBUTE_NAME%", PacketFieldAttributeName)
                         .Replace("%ABSTRACT_CLASS_NAME%", AbstractClassName)
+                        .Replace("%STRING_ENCODING_ENUM_NAME%", StringEncodingEnumName)
                         .TrimStart()
                 )
             );
