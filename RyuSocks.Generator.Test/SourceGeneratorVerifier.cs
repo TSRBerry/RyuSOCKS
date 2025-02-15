@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -14,7 +13,7 @@ namespace RyuSocks.Generator.Test
     public static class SourceGeneratorVerifier<TSourceGenerator>
         where TSourceGenerator : new()
     {
-        public static Task VerifyGeneratedSources(string source, params (string filename, string content)[] generatedSources)
+        public static Task VerifyGeneratedSources(string source, (string filename, string content)[] generatedSources, DiagnosticResult[] expectedDiagnostics = null)
         {
             var test = new Test
             {
@@ -24,6 +23,11 @@ namespace RyuSocks.Generator.Test
             foreach ((string filename, string content) in generatedSources)
             {
                 test.TestState.GeneratedSources.Add((typeof(TSourceGenerator), filename, content));
+            }
+
+            if (expectedDiagnostics != null)
+            {
+                test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
             }
 
             return test.RunAsync();
