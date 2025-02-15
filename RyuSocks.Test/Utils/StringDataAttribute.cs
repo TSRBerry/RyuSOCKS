@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
+    [ExcludeFromCodeCoverage]
     public class StringDataAttribute : DataAttribute
     {
         private const char Char = 'a';

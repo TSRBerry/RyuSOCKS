@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace RyuSocks.Generator.Builder
 {
+    [ExcludeFromCodeCoverage]
     abstract class AbstractBuilder
     {
         protected const int IndentLength = 4;

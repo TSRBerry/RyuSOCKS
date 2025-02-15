@@ -19,11 +19,13 @@ using RyuSocks.Auth.Extensions;
 using RyuSocks.Test.Utils;
 using RyuSocks.Types;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 
 namespace RyuSocks.Test.Auth
 {
+    [ExcludeFromCodeCoverage]
     public class AuthMethodExtensionsTests
     {
         public static readonly TheoryData<AuthMethod, IProxyAuth> AuthImplObjects = new()
@@ -96,6 +98,7 @@ namespace RyuSocks.Test.Auth
         }
     }
 
+    [ExcludeFromCodeCoverage]
     internal class UnknownAuth : IProxyAuth
     {
         public int WrapperLength => throw new NotImplementedException();

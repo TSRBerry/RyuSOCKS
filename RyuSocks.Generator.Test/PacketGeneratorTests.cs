@@ -1,10 +1,12 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 using Verify = RyuSocks.Generator.Test.SourceGeneratorVerifier<RyuSocks.Generator.PacketGenerator>;
 
 namespace RyuSocks.Generator.Test
 {
+    [ExcludeFromCodeCoverage]
     public class PacketGeneratorTests
     {
         private const string DataDirectory = "data/PacketGenerator/";

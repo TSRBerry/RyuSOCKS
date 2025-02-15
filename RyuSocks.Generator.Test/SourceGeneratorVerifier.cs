@@ -5,10 +5,12 @@ using Microsoft.CodeAnalysis.Testing;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace RyuSocks.Generator.Test
 {
+    [ExcludeFromCodeCoverage]
     public static class SourceGeneratorVerifier<TSourceGenerator>
         where TSourceGenerator : new()
     {

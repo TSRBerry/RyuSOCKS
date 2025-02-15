@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
@@ -22,6 +23,7 @@ using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
+    [ExcludeFromCodeCoverage]
     public class EnumDataAttribute<T> : DataAttribute
         where T : struct, Enum
     {

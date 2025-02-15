@@ -21,6 +21,7 @@ using RyuSocks.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -28,6 +29,7 @@ using Xunit;
 
 namespace RyuSocks.Test
 {
+    [ExcludeFromCodeCoverage]
     public class SocksClientTests : IDisposable, IClassFixture<SocksServerFixture>
     {
         private readonly SocksServerFixture _fixture;
@@ -80,6 +82,7 @@ namespace RyuSocks.Test
     }
 
     // ReSharper disable once ClassNeverInstantiated.Global
+    [ExcludeFromCodeCoverage]
     public class SocksServerFixture : IDisposable
     {
         public TestSocksServer Server { get; }
@@ -112,6 +115,7 @@ namespace RyuSocks.Test
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class TestSocksServer : SocksServer
     {
         public TestSocksServer(IPAddress address, ushort port = ProxyConsts.DefaultPort) : base(address, port) { }

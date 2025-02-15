@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RyuSocks.Generator.Builder
 {
+    [ExcludeFromCodeCoverage]
     class BlockBuilder : AbstractBuilder
     {
         private readonly List<string> _block = [];
