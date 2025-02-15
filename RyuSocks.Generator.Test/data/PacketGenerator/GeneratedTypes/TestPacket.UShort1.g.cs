@@ -1,0 +1,19 @@
+using RyuSocks.Packets;
+using System;
+using System.Buffers.Binary;
+using System.Text;
+
+partial class TestPacket
+{
+    protected partial GeneratedEnumUShort UShort1
+    {
+        get
+        {
+            return (GeneratedEnumUShort)BinaryPrimitives.ReadUInt16LittleEndian(this.AsSpan(2, 2));
+        }
+        set
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(this.AsSpan(2, 2), (ushort)value);
+        }
+    }
+}

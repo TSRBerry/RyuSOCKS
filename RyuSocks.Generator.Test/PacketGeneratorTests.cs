@@ -92,5 +92,71 @@ namespace RyuSocks.Generator.Test
                 expectedDiagnostics
             );
         }
+
+        [Fact]
+        public async Task GeneratedSources_WorksWithGeneratedTypes()
+        {
+            const int ExpectedGeneratedSourcesLength = 11;
+            const string Directory = "GeneratedTypes/";
+            (string, string)[] generatedSources = GetDefaultGeneratedSources(ExpectedGeneratedSourcesLength);
+            DiagnosticResult[] expectedDiagnostics = [
+                // Type not found
+                DiagnosticResult.CompilerError("CS0246").WithSpan(9, 20, 9, 37).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte1.g.cs", 8, 20, 8, 37).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte1.g.cs", 12, 21, 12, 38).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(12, 22, 12, 40).WithArguments("GeneratedEnumSByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.SByte1.g.cs", 8, 22, 8, 40).WithArguments("GeneratedEnumSByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.SByte1.g.cs", 12, 21, 12, 39).WithArguments("GeneratedEnumSByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(15, 23, 15, 42).WithArguments("GeneratedEnumUShort"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.UShort1.g.cs", 8, 23, 8, 42).WithArguments("GeneratedEnumUShort"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.UShort1.g.cs", 12, 21, 12, 40).WithArguments("GeneratedEnumUShort"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(18, 21, 18, 39).WithArguments("GeneratedEnumShort"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Short1.g.cs", 8, 21, 8, 39).WithArguments("GeneratedEnumShort"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Short1.g.cs", 12, 21, 12, 39).WithArguments("GeneratedEnumShort"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(21, 31, 21, 48).WithArguments("GeneratedEnumUInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.UInt1.g.cs", 8, 31, 8, 48).WithArguments("GeneratedEnumUInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.UInt1.g.cs", 12, 21, 12, 38).WithArguments("GeneratedEnumUInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(24, 13, 24, 29).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Int1.g.cs", 8, 13, 8, 29).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Int1.g.cs", 12, 21, 12, 37).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(27, 13, 27, 31).WithArguments("GeneratedEnumULong"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.ULong1.g.cs", 8, 13, 8, 31).WithArguments("GeneratedEnumULong"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.ULong1.g.cs", 12, 21, 12, 39).WithArguments("GeneratedEnumULong"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(30, 20, 30, 37).WithArguments("GeneratedEnumLong"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Long1.g.cs", 8, 20, 8, 37).WithArguments("GeneratedEnumLong"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Long1.g.cs", 12, 21, 12, 38).WithArguments("GeneratedEnumLong"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(33, 20, 33, 37).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte2.g.cs", 8, 20, 8, 37).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte2.g.cs", 12, 21, 12, 38).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(36, 13, 36, 29).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Int2.g.cs", 8, 13, 8, 29).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Int2.g.cs", 12, 13, 12, 29).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Int2.g.cs", 12, 45, 12, 61).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Int2.g.cs", 16, 30, 16, 46).WithArguments("GeneratedEnumInt"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan(39, 23, 39, 40).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte3.g.cs", 8, 23, 8, 40).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte3.g.cs", 12, 13, 12, 30).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte3.g.cs", 12, 46, 12, 63).WithArguments("GeneratedEnumByte"),
+                DiagnosticResult.CompilerError("CS0246").WithSpan("RyuSocks.Generator/RyuSocks.Generator.PacketGenerator/TestPacket.Byte3.g.cs", 16, 30, 16, 47).WithArguments("GeneratedEnumByte"),
+            ];
+
+            generatedSources[DefaultSourcesAmount] = GetGeneratedSourceFromFile(Directory + "TestPacket.Byte1.g.cs");
+            generatedSources[DefaultSourcesAmount + 1] = GetGeneratedSourceFromFile(Directory + "TestPacket.SByte1.g.cs");
+            generatedSources[DefaultSourcesAmount + 2] = GetGeneratedSourceFromFile(Directory + "TestPacket.UShort1.g.cs");
+            generatedSources[DefaultSourcesAmount + 3] = GetGeneratedSourceFromFile(Directory + "TestPacket.Short1.g.cs");
+            generatedSources[DefaultSourcesAmount + 4] = GetGeneratedSourceFromFile(Directory + "TestPacket.UInt1.g.cs");
+            generatedSources[DefaultSourcesAmount + 5] = GetGeneratedSourceFromFile(Directory + "TestPacket.Int1.g.cs");
+            generatedSources[DefaultSourcesAmount + 6] = GetGeneratedSourceFromFile(Directory + "TestPacket.ULong1.g.cs");
+            generatedSources[DefaultSourcesAmount + 7] = GetGeneratedSourceFromFile(Directory + "TestPacket.Long1.g.cs");
+            generatedSources[DefaultSourcesAmount + 8] = GetGeneratedSourceFromFile(Directory + "TestPacket.Byte2.g.cs");
+            generatedSources[DefaultSourcesAmount + 9] = GetGeneratedSourceFromFile(Directory + "TestPacket.Int2.g.cs");
+            generatedSources[DefaultSourcesAmount + 10] = GetGeneratedSourceFromFile(Directory + "TestPacket.Byte3.g.cs");
+
+            await Verify.VerifyGeneratedSources(
+                GetSourceFromFile(Directory + "TestPacket.cs"),
+                generatedSources,
+                expectedDiagnostics
+            );
+        }
     }
 }
