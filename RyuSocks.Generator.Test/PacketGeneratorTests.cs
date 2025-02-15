@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis.Testing;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,10 +11,23 @@ namespace RyuSocks.Generator.Test
     public class PacketGeneratorTests
     {
         private const string DataDirectory = "data/PacketGenerator/";
+        private const int DefaultSourcesAmount = 3;
 
         private static string GetSourceFromFile(string path) => File.ReadAllText(DataDirectory + path);
         private static (string filename, string content) GetGeneratedSourceFromFile(string path) =>
             (Path.GetFileName(path), File.ReadAllText(DataDirectory + path));
+
+        private static (string, string)[] GetDefaultGeneratedSources(int otherExpectedSourcesLength)
+        {
+
+            (string, string)[] generatedSources = new (string, string)[DefaultSourcesAmount + otherExpectedSourcesLength];
+
+            generatedSources[0] = GetGeneratedSourceFromFile("StringEncoding.g.cs");
+            generatedSources[1] = GetGeneratedSourceFromFile("PacketFieldAttribute.g.cs");
+            generatedSources[2] = GetGeneratedSourceFromFile("Packet.g.cs");
+
+            return generatedSources;
+        }
 
         [Theory]
         [InlineData("SimpleProps", "TestPacket.cs",
@@ -44,23 +58,38 @@ namespace RyuSocks.Generator.Test
             "BigEndian.UTF32Packet.String1.g.cs", "BigEndian.UTF32Packet.String2.g.cs", "BigEndian.UTF32Packet.String3.g.cs", "BigEndian.UTF32Packet.String4.g.cs")]
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
-            const int DefaultSourcesAmount = 3;
-            (string, string)[] generatedSources = new (string, string)[expectedGeneratedSourcePath.Length + DefaultSourcesAmount];
-
-            generatedSources[0] = GetGeneratedSourceFromFile("StringEncoding.g.cs");
-            generatedSources[1] = GetGeneratedSourceFromFile("PacketFieldAttribute.g.cs");
-            generatedSources[2] = GetGeneratedSourceFromFile("Packet.g.cs");
-
+            (string, string)[] generatedSources = GetDefaultGeneratedSources(expectedGeneratedSourcePath.Length);
             directory += "/";
 
             for (int i = 0; i < expectedGeneratedSourcePath.Length; i++)
             {
-                generatedSources[i + DefaultSourcesAmount] = GetGeneratedSourceFromFile(directory + expectedGeneratedSourcePath[i]);
+                generatedSources[DefaultSourcesAmount + i] = GetGeneratedSourceFromFile(directory + expectedGeneratedSourcePath[i]);
             }
 
             await Verify.VerifyGeneratedSources(
                 GetSourceFromFile(directory + sourcePath),
                 generatedSources
+            );
+        }
+
+        [Fact]
+        public async Task Generator_Fails_BadConstructorArgs()
+        {
+            const string Directory = "Exceptions/";
+            (string, string)[] generatedSources = GetDefaultGeneratedSources(0);
+            DiagnosticResult[] expectedDiagnostics = [
+                // Generator failed to generate source
+                DiagnosticResult.CompilerWarning("CS8785"),
+                // Argument 1: Cannot convert from float to int
+                DiagnosticResult.CompilerError("CS1503").WithSpan(7, 18, 7, 22).WithArguments("1", "float", "int"),
+                // Partial property must have an implementation part
+                DiagnosticResult.CompilerError("CS9248").WithSpan(8, 25, 8, 30).WithArguments("TestPacket.Byte1"),
+            ];
+
+            await Verify.VerifyGeneratedSources(
+                GetSourceFromFile(Directory + "BadConstructorArgs.cs"),
+                generatedSources,
+                expectedDiagnostics
             );
         }
     }
