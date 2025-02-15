@@ -329,7 +329,7 @@ namespace %NAMESPACE%
             if (actualTypeSymbol.TypeKind == TypeKind.Error && attributeData.AssumeGeneratedEnumType.Length > 0)
             {
                 isEnum = true;
-                actualType = (ActualType)Enum.Parse(typeof(ActualType), attributeData.AssumeGeneratedEnumType, true);
+                actualType = attributeData.AssumeGeneratedEnumType.ToActualType();
             }
 
             // Get imports

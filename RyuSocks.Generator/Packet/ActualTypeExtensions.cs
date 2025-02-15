@@ -35,5 +35,21 @@ namespace RyuSocks.Generator.Packet
                 _ => throw new InvalidOperationException($"Couldn't get type string from {nameof(ActualType)}: {actualType}"),
             };
         }
+
+        public static ActualType ToActualType(this string typeString)
+        {
+            return typeString.Trim().ToLowerInvariant() switch
+            {
+                "sbyte" => ActualType.SByte,
+                "byte" => ActualType.Byte,
+                "short" => ActualType.Int16,
+                "ushort" => ActualType.UInt16,
+                "int" => ActualType.Int32,
+                "uint" => ActualType.UInt32,
+                "long" => ActualType.Int64,
+                "ulong" => ActualType.UInt64,
+                _ => (ActualType)Enum.Parse(typeof(ActualType), typeString, true),
+            };
+        }
     }
 }
