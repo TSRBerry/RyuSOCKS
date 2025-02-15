@@ -32,14 +32,25 @@ namespace RyuSocks.Generator.Packet
         }.ToImmutableDictionary();
     }
 
-    internal record struct TypeConverterModel(int Length, string ReaderMethodName, string WriterMethodName)
+    internal readonly record struct TypeConverterModel
     {
-        public readonly string GetReaderName(bool isBigEndian)
+        public int Length { get; }
+        private string ReaderMethodName { get; }
+        private string WriterMethodName { get; }
+
+        public TypeConverterModel(int length, string readerMethodName, string writerMethodName)
+        {
+            Length = length;
+            ReaderMethodName = readerMethodName;
+            WriterMethodName = writerMethodName;
+        }
+
+        public string GetReaderName(bool isBigEndian)
         {
             return isBigEndian ? $"{ReaderMethodName}BigEndian" : $"{ReaderMethodName}LittleEndian";
         }
 
-        public readonly string GetWriterName(bool isBigEndian)
+        public string GetWriterName(bool isBigEndian)
         {
             return isBigEndian ? $"{WriterMethodName}BigEndian" : $"{WriterMethodName}LittleEndian";
         }
