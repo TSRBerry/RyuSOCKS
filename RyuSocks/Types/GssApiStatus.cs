@@ -2,25 +2,36 @@ namespace RyuSocks.Types
 {
     public enum GssApiStatus
     {
-        // FATAL ERROR CODES
+        // MAJOR STATUS CODES
+        GssComplete,
+        GssContinueNeeded,
+        GssFailure,
+        
+        // ADDITIONAL MAJOR STATUS CODES IN CONJUNCTION WITH THE ONES ABOVE
+        GssDuplicateToken,
+        GssOldToken,
+        GssUnseqToken,
+        GssGapToken,
+        
+        // FATAL ERROR CODES, ONLY IN CONJUNCTION WITH GssFailure
         GssBadBindings,
         GssBadMech,
         GssBadName,
         GssBadNametype,
         GssBadStatus,
+        GssBadSig,
+        GssBadMic,
         GssContextExpired,
         GssCredentialsExpired,
         GssDefectiveCredential,
         GssDefectiveToken,
-        GssFailure,
         GssNoContext,
         GssNoCred,
+        GssBadQOP,
+        GssUnauthorized,
+        GssUnavailable,
+        GssDuplicateElement,
+        GssNameNotMN
         
-        // INFORMATORY STATUS CODES
-        GssComplete,
-        GssContinueNeeded,
-        GssDuplicateToken,
-        GssOldToken,
-        GssUnseqToken
     }
 }
