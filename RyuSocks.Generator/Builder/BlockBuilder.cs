@@ -35,7 +35,7 @@ namespace RyuSocks.Generator.Builder
 
         public override string ToString()
         {
-            return string.Join("\n", _block);
+            return string.Join("\n", _block) + "\n";
         }
     }
 }

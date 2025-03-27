@@ -50,5 +50,6 @@ namespace RyuSocks.Generator.Builder
 
         public abstract void AppendLine();
         public abstract void AppendLine(string text);
+        public abstract override string ToString();
     }
 }
