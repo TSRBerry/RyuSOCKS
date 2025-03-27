@@ -14,8 +14,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace RyuSocks.Generator.Packet
 {
+    // TODO: Try to make these record structs readonly somehow
+
+    // .NET Standard 2.0 doesn't have the Justification property
+    // Justification = "Only used to pass data along during source generation, nothing to test"
+    [ExcludeFromCodeCoverage]
     internal record struct FieldTypeModel(
         string Name,
         bool IsArray,
@@ -24,6 +31,9 @@ namespace RyuSocks.Generator.Packet
         ActualType ActualType
     );
 
+    // .NET Standard 2.0 doesn't have the Justification property
+    // Justification = "Only used to pass data along during source generation, nothing to test"
+    [ExcludeFromCodeCoverage]
     internal record struct PacketFieldModel(
         int Offset,
         string OffsetMember,

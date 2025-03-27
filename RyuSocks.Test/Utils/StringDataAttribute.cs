@@ -25,7 +25,7 @@ using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
-    [ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage(Justification = "Helper test class")]
     public class StringDataAttribute : DataAttribute
     {
         private const char Char = 'a';

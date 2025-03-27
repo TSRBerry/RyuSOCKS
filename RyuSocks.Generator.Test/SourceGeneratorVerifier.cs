@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RyuSocks.Generator.Test
 {
-    [ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage(Justification = "Helper test class")]
     public static class SourceGeneratorVerifier<TSourceGenerator>
         where TSourceGenerator : new()
     {

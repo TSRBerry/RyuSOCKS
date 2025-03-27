@@ -23,7 +23,7 @@ using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
-    [ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage(Justification = "Helper test class")]
     public class RangeDataAttribute<T> : DataAttribute
         where T : INumber<T>
     {
