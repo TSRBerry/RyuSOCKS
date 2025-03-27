@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RyuSocks.Generator.Builder
 {
-    [ExcludeFromCodeCoverage]
-    class BlockBuilder : AbstractBuilder
+    public class BlockBuilder : AbstractBuilder
     {
         private readonly List<string> _block = [];
 
@@ -27,7 +25,7 @@ namespace RyuSocks.Generator.Builder
         {
             string indent = "";
 
-            for (int i = 0; i < IndentLength * CurrentIndentCount; i++)
+            for (int i = 0; i < IndentLength * CurrentIndentLevel; i++)
             {
                 indent += ' ';
             }
