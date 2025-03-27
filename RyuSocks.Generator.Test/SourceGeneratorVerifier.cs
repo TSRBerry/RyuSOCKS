@@ -33,7 +33,7 @@ namespace RyuSocks.Generator.Test
             return test.RunAsync();
         }
 
-        public class Test : CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
+        private class Test : CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
         {
             protected override CompilationOptions CreateCompilationOptions()
             {
