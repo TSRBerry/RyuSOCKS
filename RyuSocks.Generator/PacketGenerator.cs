@@ -383,7 +383,12 @@ namespace %NAMESPACE%
 
             // Begin building the generated source
             CodeBuilder source = new();
-            string[] requiredImports = ["using System;", "using System.Buffers.Binary;", "using System.Text;"];
+            string[] requiredImports = [
+                "using System;",
+                "using System.Buffers.Binary;",
+                "using System.Runtime.InteropServices;",
+                "using System.Text;",
+            ];
 
             // Add imports
 

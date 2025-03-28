@@ -1,6 +1,7 @@
 using RyuSocks.Packets;
 using System;
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace AnotherSpace

@@ -44,8 +44,7 @@ namespace RyuSocks.Generator.Packet
             }
             else if (packetField.FieldType.IsStruct)
             {
-                // TODO: Deal with structs
-                source.AppendLine("// TODO: structs");
+                source.AppendBlock(GenerateStructAccessor(packetField, isGetter));
             }
             // Deal with simple types: enums, strings and integral numeric types
             else if (packetField.FieldType is { ActualType: ActualType.NamedType, Name: "string" }

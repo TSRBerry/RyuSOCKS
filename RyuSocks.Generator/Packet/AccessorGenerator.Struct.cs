@@ -1,0 +1,46 @@
+/*
+ * Copyright (C) RyuSOCKS
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+using RyuSocks.Generator.Builder;
+using System.Diagnostics.CodeAnalysis;
+
+namespace RyuSocks.Generator.Packet
+{
+    [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
+    internal static partial class AccessorGenerator
+    {
+        private static string[] GenerateStructAccessor(PacketFieldModel packetField, bool isGetter)
+        {
+            BlockBuilder source = new();
+
+            AddVerificationMethodIfNecessary(source, packetField, isGetter);
+
+            // Get the Span for the struct
+            string structSpan = $"this.AsSpan({packetField.GetOffset()}, Marshal.SizeOf<{packetField.FieldType.Name}>())";
+
+            if (isGetter)
+            {
+                source.AppendLine($"return MemoryMarshal.Read<{packetField.FieldType.Name}>({structSpan});");
+            }
+            else
+            {
+                source.AppendLine($"MemoryMarshal.Write<{packetField.FieldType.Name}>({structSpan}, value);");
+            }
+
+            return source.GetLines();
+        }
+    }
+}
