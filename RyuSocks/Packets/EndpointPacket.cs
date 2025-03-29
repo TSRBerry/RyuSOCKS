@@ -19,11 +19,10 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace RyuSocks.Packets
 {
-    public abstract class EndpointPacket : Packet
+    public abstract partial class EndpointPacket : Packet
     {
         private const byte MinimumPacketLength = 8;
         private const byte Ipv4PacketLength = 10;
@@ -31,136 +30,48 @@ namespace RyuSocks.Packets
         private const byte MinimumDomainNameLength = byte.MinValue + 1;
         private const byte MaximumDomainNameLength = byte.MaxValue;
 
-        public AddressType AddressType
-        {
-            get
-            {
-                return (AddressType)Bytes[3];
-            }
-            set
-            {
-                Bytes[3] = (byte)value;
+        [PacketField(3, ValidationMethod = nameof(ResizeIfNecessary))]
+        public partial AddressType AddressType { get; set; }
 
-                if (AddressType is AddressType.Ipv4Address or AddressType.Ipv6Address)
-                {
-                    int requiredLength = GetEndpointPacketLength();
-                    if (Bytes.Length != requiredLength)
-                    {
-                        byte[] resizeBytes = Bytes;
-                        Array.Resize(ref resizeBytes, requiredLength);
-                        Bytes = resizeBytes;
-                    }
-                }
-            }
-        }
+        [PacketField(4, LengthMember = nameof(AddressSize))]
+        protected partial IPAddress Address { get; set; }
 
-        protected IPAddress Address
-        {
-            get
-            {
-                return AddressType switch
-                {
-                    AddressType.Ipv4Address => new IPAddress(Bytes[4..8]),
-                    AddressType.Ipv6Address => new IPAddress(Bytes[4..20]),
-                    _ => throw new InvalidOperationException(
-                        $"Can't get {nameof(Address)} for {nameof(Types.AddressType)} {AddressType}."),
-                };
-            }
-            set
-            {
-                switch (AddressType)
-                {
-                    case AddressType.Ipv4Address:
-                        value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 4));
-                        return;
-                    case AddressType.Ipv6Address:
-                        value.GetAddressBytes().CopyTo(Bytes.AsSpan(4, 16));
-                        return;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Can't set {nameof(Address)} for {nameof(Types.AddressType)} {AddressType}.");
-                }
-            }
-        }
+        [PacketField(4, ValidationMethod = nameof(ResizeForDomainNameIfNecessary))]
+        protected partial byte DomainNameLength { get; set; }
 
-        protected byte DomainNameLength
-        {
-            get
-            {
-                return AddressType switch
-                {
-                    AddressType.DomainName => Bytes[4],
-                    _ => throw new InvalidOperationException(
-                        $"Can't get {nameof(DomainNameLength)} for {nameof(Types.AddressType)} {AddressType}."),
-                };
-            }
-            set
-            {
-                if (AddressType != AddressType.DomainName)
-                {
-                    throw new InvalidOperationException(
-                        $"Can't set {nameof(DomainNameLength)} for {nameof(Types.AddressType)} {AddressType}.");
-                }
+        [PacketField(5, LengthMember = nameof(DomainNameLength), MinLength = MinimumDomainNameLength, MaxLength = MaximumDomainNameLength, ValidationMethod = nameof(EnsureDomainNameType))]
+        protected partial string DomainName { get; set; }
 
-                ArgumentOutOfRangeException.ThrowIfLessThan(value, MinimumDomainNameLength);
-                Bytes[4] = value;
-
-                int requiredLength = GetEndpointPacketLength();
-                if (Bytes.Length != requiredLength)
-                {
-                    byte[] resizeBytes = Bytes;
-                    Array.Resize(ref resizeBytes, requiredLength);
-                    Bytes = resizeBytes;
-                }
-            }
-        }
-
-        protected string DomainName
-        {
-            get
-            {
-                return AddressType switch
-                {
-                    AddressType.DomainName => Encoding.ASCII.GetString(Bytes, 5, DomainNameLength),
-                    _ => throw new InvalidOperationException(
-                        $"Can't get {nameof(DomainName)} for {nameof(Types.AddressType)} {AddressType}.")
-                };
-            }
-            set
-            {
-                switch (AddressType)
-                {
-                    case AddressType.DomainName:
-                        ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, MaximumDomainNameLength);
-                        DomainNameLength = (byte)value.Length;
-                        Encoding.ASCII.GetBytes(value, Bytes.AsSpan(5, DomainNameLength));
-                        return;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Can't set {nameof(DomainName)} for {nameof(Types.AddressType)} {AddressType}.");
-                }
-            }
-        }
-
-        protected ushort Port
-        {
-            get
-            {
-                Span<byte> portSpan = GetPortSpan();
-                portSpan.Reverse();
-                return BitConverter.ToUInt16(portSpan);
-            }
-            set
-            {
-                byte[] portBytes = BitConverter.GetBytes(value);
-                Array.Reverse(portBytes);
-                portBytes.CopyTo(GetPortSpan());
-            }
-        }
+        [PacketField(nameof(PortOffset), IsBigEndian = true)]
+        protected partial ushort Port { get; set; }
 
         public ProxyEndpoint ProxyEndpoint => AddressType == AddressType.DomainName
             ? new ProxyEndpoint(new DnsEndPoint(DomainName, Port))
             : new ProxyEndpoint(new IPEndPoint(Address, Port));
+
+        protected int PacketLength => AddressType switch
+        {
+            AddressType.Ipv4Address => Ipv4PacketLength,
+            AddressType.DomainName => 7 + DomainNameLength,
+            AddressType.Ipv6Address => Ipv6PacketLength,
+            _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+        };
+
+        private int AddressSize => AddressType switch
+        {
+            AddressType.Ipv4Address => 4,
+            AddressType.Ipv6Address => 16,
+            _ => throw new InvalidOperationException(
+                $"Can't get address size for {nameof(Types.AddressType)} {AddressType}."),
+        };
+
+        private int PortOffset => AddressType switch
+        {
+            AddressType.Ipv4Address => Ipv4PacketLength - 2,
+            AddressType.DomainName => 5 + DomainNameLength,
+            AddressType.Ipv6Address => Ipv6PacketLength - 2,
+            _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
+        };
 
         protected EndpointPacket(byte[] bytes) : base(bytes)
         {
@@ -234,26 +145,51 @@ namespace RyuSocks.Packets
             AddressType = AddressType.Ipv4Address;
         }
 
-        protected int GetEndpointPacketLength()
+        // ReSharper disable once UnusedParameter.Local
+        private void EnsureDomainNameType(string value = "")
         {
-            return AddressType switch
+            if (AddressType != AddressType.DomainName)
             {
-                AddressType.Ipv4Address => Ipv4PacketLength,
-                AddressType.DomainName => 7 + DomainNameLength,
-                AddressType.Ipv6Address => Ipv6PacketLength,
-                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
-            };
+                throw new InvalidOperationException(
+                    $"Can't get {nameof(DomainNameLength)} for {nameof(Types.AddressType)} {AddressType}.");
+            }
         }
 
-        private Span<byte> GetPortSpan()
+        private void ResizeIfNecessary(AddressType value = 0)
         {
-            return AddressType switch
+            if (value == 0)
             {
-                AddressType.Ipv4Address => Bytes.AsSpan(Ipv4PacketLength - 2, 2),
-                AddressType.DomainName => Bytes.AsSpan(5 + DomainNameLength, 2),
-                AddressType.Ipv6Address => Bytes.AsSpan(Ipv6PacketLength - 2, 2),
-                _ => throw new ArgumentOutOfRangeException(nameof(AddressType)),
-            };
+                return;
+            }
+
+            if (AddressType is AddressType.Ipv4Address or AddressType.Ipv6Address)
+            {
+                int requiredLength = PacketLength;
+                if (Bytes.Length != requiredLength)
+                {
+                    byte[] resizeBytes = Bytes;
+                    Array.Resize(ref resizeBytes, requiredLength);
+                    Bytes = resizeBytes;
+                }
+            }
+        }
+
+        private void ResizeForDomainNameIfNecessary(byte value = 0)
+        {
+            EnsureDomainNameType();
+
+            if (value == 0)
+            {
+                return;
+            }
+
+            int requiredLength = 7 + value;
+            if (Bytes.Length != requiredLength)
+            {
+                byte[] resizeBytes = Bytes;
+                Array.Resize(ref resizeBytes, requiredLength);
+                Bytes = resizeBytes;
+            }
         }
 
         public override void Validate()

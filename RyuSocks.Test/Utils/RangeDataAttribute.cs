@@ -13,6 +13,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ using Xunit.v3;
 
 namespace RyuSocks.Test.Utils
 {
+    [ExcludeFromCodeCoverage(Justification = "Helper test class")]
     public class RangeDataAttribute<T> : DataAttribute
         where T : INumber<T>
     {

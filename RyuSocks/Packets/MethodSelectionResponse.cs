@@ -20,31 +20,13 @@ using System;
 
 namespace RyuSocks.Packets
 {
-    public class MethodSelectionResponse : Packet
+    public partial class MethodSelectionResponse : Packet
     {
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
-        public AuthMethod Method
-        {
-            get
-            {
-                return (AuthMethod)Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = (byte)value;
-            }
-        }
+        [PacketField(1, AssumeGeneratedEnumType = nameof(Byte))]
+        public partial AuthMethod Method { get; set; }
 
         public MethodSelectionResponse(byte[] bytes) : base(bytes) { }
 

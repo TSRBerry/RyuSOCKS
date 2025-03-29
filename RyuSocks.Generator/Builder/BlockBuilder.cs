@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace RyuSocks.Generator.Builder
 {
-    class BlockBuilder : AbstractBuilder
+    public class BlockBuilder : AbstractBuilder
     {
         private readonly List<string> _block = [];
 
@@ -25,7 +25,7 @@ namespace RyuSocks.Generator.Builder
         {
             string indent = "";
 
-            for (int i = 0; i < IndentLength * CurrentIndentCount; i++)
+            for (int i = 0; i < IndentLength * CurrentIndentLevel; i++)
             {
                 indent += ' ';
             }
@@ -35,7 +35,7 @@ namespace RyuSocks.Generator.Builder
 
         public override string ToString()
         {
-            return string.Join("\n", _block);
+            return string.Join("\n", _block) + "\n";
         }
     }
 }

@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RyuSocks.Test", "RyuSocks.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RyuSocks.Test.Integration", "RyuSocks.Test.Integration\RyuSocks.Test.Integration.csproj", "{C0D6DEF0-9544-454A-A009-227EC1BEDCE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RyuSocks.Generator.Test", "RyuSocks.Generator.Test\RyuSocks.Generator.Test.csproj", "{6B63A81D-99FF-4DFF-BA12-5BB173E4E36F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{C0D6DEF0-9544-454A-A009-227EC1BEDCE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0D6DEF0-9544-454A-A009-227EC1BEDCE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0D6DEF0-9544-454A-A009-227EC1BEDCE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B63A81D-99FF-4DFF-BA12-5BB173E4E36F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B63A81D-99FF-4DFF-BA12-5BB173E4E36F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B63A81D-99FF-4DFF-BA12-5BB173E4E36F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B63A81D-99FF-4DFF-BA12-5BB173E4E36F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

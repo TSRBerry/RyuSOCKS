@@ -18,10 +18,12 @@ using RyuSocks.Auth;
 using RyuSocks.Auth.Packets;
 using RyuSocks.Types;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 namespace RyuSocks.Test.Auth
 {
+    [ExcludeFromCodeCoverage]
     public class UsernameAndPasswordTests
     {
         private static readonly UsernameAndPasswordResponse _expectedUsernameAndPasswordResponse = new()

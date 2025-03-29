@@ -16,78 +16,31 @@
 
 using RyuSocks.Packets;
 using System;
-using System.Text;
 
 namespace RyuSocks.Auth.Packets
 {
-    public class UsernameAndPasswordRequest : Packet
+    public partial class UsernameAndPasswordRequest : Packet
     {
         private const int MinimumPacketLength = 4;
         private const int MaximumPacketLength = 513;
 
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
-        public byte UsernameLength
-        {
-            get
-            {
-                return Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = value;
-            }
-        }
+        [PacketField(1)]
+        public partial byte UsernameLength { get; set; }
 
-        public string Username
-        {
-            get
-            {
-                return Encoding.ASCII.GetString(Bytes.AsSpan(2, UsernameLength));
-            }
-            set
-            {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
-                UsernameLength = (byte)value.Length;
-                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(2, UsernameLength));
-            }
-        }
+        [PacketField(2, LengthMember = nameof(UsernameLength), MaxLength = 0xFF)]
+        public partial string Username { get; set; }
 
-        public byte PasswordLength
-        {
-            get
-            {
-                return Bytes[2 + UsernameLength];
-            }
-            set
-            {
-                Bytes[2 + UsernameLength] = value;
-            }
-        }
+        [PacketField(nameof(PasswordLengthOffset))]
+        public partial byte PasswordLength { get; set; }
 
-        public string Password
-        {
-            get
-            {
-                return Encoding.ASCII.GetString(Bytes.AsSpan(3 + UsernameLength, PasswordLength));
-            }
-            set
-            {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
-                PasswordLength = (byte)value.Length;
-                Encoding.ASCII.GetBytes(value).CopyTo(Bytes.AsSpan(3 + UsernameLength, PasswordLength));
-            }
-        }
+        [PacketField(nameof(PasswordOffset), LengthMember = nameof(PasswordLength), MaxLength = 0xFF)]
+        public partial string Password { get; set; }
+
+        private int PasswordLengthOffset => 2 + UsernameLength;
+        private int PasswordOffset => PasswordLengthOffset + 1;
 
         public UsernameAndPasswordRequest(byte[] packetBytes) : base(packetBytes)
         {

@@ -19,6 +19,7 @@ using RyuSocks.Test.Utils;
 using RyuSocks.Types;
 using RyuSocks.Utils;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -27,6 +28,7 @@ using Xunit;
 
 namespace RyuSocks.Test.Packets
 {
+    [ExcludeFromCodeCoverage]
     public class CommandResponseTests : CommandPacketTests<CommandResponse>
     {
 #pragma warning disable IDE0055 // Disable formatting

@@ -18,10 +18,12 @@ using RyuSocks.Auth;
 using RyuSocks.Packets;
 using RyuSocks.Utils;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 namespace RyuSocks.Test.Packets
 {
+    [ExcludeFromCodeCoverage]
     public class MethodSelectionResponseTests
     {
         [Fact]

@@ -21,46 +21,16 @@ using System.Linq;
 
 namespace RyuSocks.Packets
 {
-    public class MethodSelectionRequest : Packet
+    public partial class MethodSelectionRequest : Packet
     {
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
-        public byte NumOfMethods
-        {
-            get
-            {
-                return Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = value;
-            }
-        }
+        [PacketField(1)]
+        public partial byte NumOfMethods { get; set; }
 
-        public AuthMethod[] Methods
-        {
-            get
-            {
-                return Bytes[2..(2 + NumOfMethods)].Cast<AuthMethod>().ToArray();
-
-            }
-            set
-            {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value.Length, 0xFF);
-                NumOfMethods = (byte)value.Length;
-                value.Cast<byte>().ToArray().CopyTo(Bytes.AsSpan(2, value.Length));
-            }
-        }
+        [PacketField(2, LengthMember = nameof(NumOfMethods), MaxLength = 0xFF, AssumeGeneratedEnumType = nameof(Byte))]
+        public partial AuthMethod[] Methods { get; set; }
 
         public MethodSelectionRequest(byte[] bytes) : base(bytes) { }
 

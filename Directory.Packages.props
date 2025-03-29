@@ -8,6 +8,7 @@
         <PackageVersion Include="FluentFTP" Version="50.1.0" />
         <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
         <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
         <PackageVersion Include="Moq" Version="4.20.70" />
         <PackageVersion Include="NetCoreServer" Version="8.0.7" />

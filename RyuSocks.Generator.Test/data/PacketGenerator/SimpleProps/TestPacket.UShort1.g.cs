@@ -1,0 +1,20 @@
+using RyuSocks.Packets;
+using System;
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+using System.Text;
+
+partial class TestPacket
+{
+    protected partial ushort UShort1
+    {
+        get
+        {
+            return BinaryPrimitives.ReadUInt16LittleEndian(this.AsSpan(2, 2));
+        }
+        set
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(this.AsSpan(2, 2), value);
+        }
+    }
+}

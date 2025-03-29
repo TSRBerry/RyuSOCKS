@@ -10,10 +10,11 @@ concurrency:
 
 jobs:
   unit:
-    name: Unit tests (${{ matrix.config }})
+    name: Unit tests (${{ matrix.project }} - ${{ matrix.config }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        project: [RyuSocks.Test, RyuSocks.Generator.Test]
         config: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +30,7 @@ jobs:
         uses: TSRBerry/unstable-commands@v1
         with:
           commands: dotnet test -c "${{ matrix.config }}"
-          working-directory: RyuSocks.Test
+          working-directory: ${{ matrix.project }}
           timeout-minutes: 10
           retry-codes: 139
 

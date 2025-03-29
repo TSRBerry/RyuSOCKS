@@ -1,15 +1,17 @@
+using System;
+
 namespace RyuSocks.Generator.Builder
 {
-    abstract class AbstractBuilder
+    public abstract class AbstractBuilder
     {
         protected const int IndentLength = 4;
-        protected int CurrentIndentCount;
+        protected int CurrentIndentLevel;
 
-        public void EnterScope(string header = null)
+        public void EnterScope(string prefixLine = null)
         {
-            if (header != null)
+            if (prefixLine != null)
             {
-                AppendLine(header);
+                AppendLine(prefixLine);
             }
 
             AppendLine("{");
@@ -24,15 +26,18 @@ namespace RyuSocks.Generator.Builder
 
         public void IncreaseIndentation()
         {
-            CurrentIndentCount++;
+            CurrentIndentLevel++;
         }
 
         public void DecreaseIndentation()
         {
-            if (CurrentIndentCount - 1 >= 0)
+            if (CurrentIndentLevel <= 0)
             {
-                CurrentIndentCount--;
+                throw new InvalidOperationException(
+                    $"Unable to decrease indent level further. {nameof(CurrentIndentLevel)}: {CurrentIndentLevel}");
             }
+
+            CurrentIndentLevel--;
         }
 
         public void AppendBlock(string[] block)
@@ -45,5 +50,6 @@ namespace RyuSocks.Generator.Builder
 
         public abstract void AppendLine();
         public abstract void AppendLine(string text);
+        public abstract override string ToString();
     }
 }

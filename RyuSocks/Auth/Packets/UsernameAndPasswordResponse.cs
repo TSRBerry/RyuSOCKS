@@ -19,31 +19,13 @@ using System;
 
 namespace RyuSocks.Auth.Packets
 {
-    public class UsernameAndPasswordResponse : Packet
+    public partial class UsernameAndPasswordResponse : Packet
     {
-        public byte Version
-        {
-            get
-            {
-                return Bytes[0];
-            }
-            set
-            {
-                Bytes[0] = value;
-            }
-        }
+        [PacketField(0)]
+        public partial byte Version { get; set; }
 
-        public byte Status
-        {
-            get
-            {
-                return Bytes[1];
-            }
-            set
-            {
-                Bytes[1] = value;
-            }
-        }
+        [PacketField(1)]
+        public partial byte Status { get; set; }
 
         public UsernameAndPasswordResponse()
         {
