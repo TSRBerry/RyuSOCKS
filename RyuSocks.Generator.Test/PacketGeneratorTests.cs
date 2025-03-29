@@ -56,6 +56,10 @@ namespace RyuSocks.Generator.Test
             "BigEndian.UTF7Packet.String1.g.cs", "BigEndian.UTF7Packet.String2.g.cs", "BigEndian.UTF7Packet.String3.g.cs", "BigEndian.UTF7Packet.String4.g.cs",
             "BigEndian.UTF8Packet.String1.g.cs", "BigEndian.UTF8Packet.String2.g.cs", "BigEndian.UTF8Packet.String3.g.cs", "BigEndian.UTF8Packet.String4.g.cs",
             "BigEndian.UTF32Packet.String1.g.cs", "BigEndian.UTF32Packet.String2.g.cs", "BigEndian.UTF32Packet.String3.g.cs", "BigEndian.UTF32Packet.String4.g.cs")]
+        [InlineData("Arrays", "TestPacket.cs",
+            "TestPacket.ByteArray1.g.cs", "TestPacket.SByteArray1.g.cs",
+            "TestPacket.UIntArray1.g.cs", "TestPacket.IntArray1.g.cs",
+            "TestPacket.StringArray1.g.cs", "TestPacket.StringArray2.g.cs")]
         public async Task GeneratedSources_AsExpected(string directory, string sourcePath, params string[] expectedGeneratedSourcePath)
         {
             (string, string)[] generatedSources = GetDefaultGeneratedSources(expectedGeneratedSourcePath.Length);

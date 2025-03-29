@@ -28,7 +28,8 @@ namespace RyuSocks.Generator.Packet
         bool IsArray,
         bool IsEnum,
         bool IsStruct,
-        ActualType ActualType
+        ActualType ActualType,
+        int ElementSize
     );
 
     // .NET Standard 2.0 doesn't have the Justification property

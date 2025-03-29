@@ -18,7 +18,7 @@ namespace RyuSocks.Generator.Packet
 {
     internal enum ActualType
     {
-        // class or struct
+        // string, class or struct
         NamedType,
         SByte,
         Byte,

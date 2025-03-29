@@ -47,13 +47,13 @@ namespace RyuSocks.Generator.Packet
                 {
                     string maybeLengthMemberCast = packetField.LengthMemberType != ActualType.Int32 ? $"({packetField.LengthMemberType.ToTypeString()})" : string.Empty;
                     source.AppendLine($"this.{packetField.LengthMember} = {maybeLengthMemberCast}value.Length;");
+                    source.AppendLine();
                 }
                 else if (packetField is { Length: <= 0, LengthMemberPermissions: Permissions.ReadOnly })
                 {
                     ExceptionHelper.ArgumentOutOfRange.GenerateThrowIfNotEqual(source, "value.Length", $"this.{packetField.LengthMember}");
+                    source.AppendLine();
                 }
-
-                source.AppendLine();
             }
 
             if (packetField.FieldType.IsStruct)
@@ -62,7 +62,7 @@ namespace RyuSocks.Generator.Packet
                 source.AppendLine("// TODO: struct arrays");
             }
             // Deal with simple types: enums, strings and integral numeric types
-            else if (packetField.FieldType is { ActualType: ActualType.NamedType, Name: "string" }
+            else if (packetField.FieldType is { ActualType: ActualType.NamedType, Name: "string[]" }
                      || packetField.FieldType.ActualType != ActualType.NamedType)
             {
                 source.AppendBlock(GenerateSimpleArrayAccessor(packetField, isGetter));

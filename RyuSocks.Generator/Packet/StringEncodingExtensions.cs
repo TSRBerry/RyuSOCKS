@@ -49,29 +49,27 @@ namespace RyuSocks.Generator.Packet
             return [$"Encoding.{stringEncoding}.GetBytes({sourceArgText}, {destinationArgText});"];
         }
 
-        public static string[] GetStringText(this StringEncoding stringEncoding, string sourceArgText, bool isBigEndian, bool returnValue = true)
+        public static string[] GetStringText(this StringEncoding stringEncoding, string sourceArgText, bool isBigEndian, string assignPrefix = "return")
         {
-            string returnOrAssignText = returnValue ? "return" : "string valueString =";
-
             if (isBigEndian)
             {
                 switch (stringEncoding)
                 {
                     case StringEncoding.Unicode:
-                        return [$"{returnOrAssignText} Encoding.BigEndianUnicode.GetString({sourceArgText});"];
+                        return [$"{assignPrefix} Encoding.BigEndianUnicode.GetString({sourceArgText});"];
                     case StringEncoding.UTF32:
                         BlockBuilder source = new();
 
                         // Get a temp array, so the original packet doesn't get modified.
                         source.AppendLine($"byte[] stringArray = {sourceArgText}.ToArray();");
                         source.AppendLine("Array.Reverse(stringArray);");
-                        source.AppendLine($"{returnOrAssignText} Encoding.UTF32.GetString(stringArray);");
+                        source.AppendLine($"{assignPrefix} Encoding.UTF32.GetString(stringArray);");
 
                         return source.GetLines();
                 }
             }
 
-            return [$"{returnOrAssignText} Encoding.{stringEncoding}.GetString({sourceArgText});"];
+            return [$"{assignPrefix} Encoding.{stringEncoding}.GetString({sourceArgText});"];
         }
     }
 }

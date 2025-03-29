@@ -112,6 +112,12 @@ namespace %NAMESPACE%
         public int MaxLength { get; set; } = -1;
 
         /// <summary>
+        /// The size of the element type of the array.
+        /// Only required if the element type is a class or a string.
+        /// </summary>
+        public int ElementSize { get; set; } = -1;
+
+        /// <summary>
         /// The encoding of the underlying string.
         /// Only required for string properties.
         /// </summary>
@@ -357,7 +363,8 @@ namespace %NAMESPACE%
                     isArray,
                     isEnum,
                     isStruct,
-                    actualType
+                    actualType,
+                    attributeData.ElementSize
                 ),
                 attributeData.StringEncoding,
                 propertySymbol.Name,

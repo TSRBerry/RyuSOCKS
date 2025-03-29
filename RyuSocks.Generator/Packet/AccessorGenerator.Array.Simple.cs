@@ -21,6 +21,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace RyuSocks.Generator.Packet
 {
     [SuppressMessage("ReSharper", "RedundantIfElseBlock")]
+    [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     internal static partial class AccessorGenerator
     {
         private static string GenerateArrayByteAccessor(PacketFieldModel packetField, bool isGetter)
@@ -71,6 +72,18 @@ namespace RyuSocks.Generator.Packet
             }
         }
 
+        private static string[] GenerateArrayStringAccessor(PacketFieldModel packetField, bool isGetter)
+        {
+            if (isGetter)
+            {
+                return packetField.FieldStringEncoding.GetStringText($"this.AsSpan({packetField.GetOffset()} + (i * {packetField.FieldType.ElementSize}), {packetField.FieldType.ElementSize})", packetField.IsBigEndian, "result[i] =");
+            }
+            else
+            {
+                return packetField.FieldStringEncoding.GetBytesText("value[i]", $"this.AsSpan({packetField.GetOffset()} + (i * {packetField.FieldType.ElementSize}), {packetField.FieldType.ElementSize})", packetField.IsBigEndian);
+            }
+        }
+
         private static string[] GenerateSimpleArrayAccessor(PacketFieldModel packetField, bool isGetter)
         {
             BlockBuilder source = new();
@@ -88,6 +101,8 @@ namespace RyuSocks.Generator.Packet
             switch (packetField.FieldType.ActualType)
             {
                 case ActualType.Byte:
+                    // TODO: Provide access to the underlying array for the specified length.
+                    //       Don't copy bytes to a new array.
                     source.AppendLine(GenerateArrayByteAccessor(packetField, isGetter));
                     break;
                 case ActualType.SByte:
@@ -99,14 +114,14 @@ namespace RyuSocks.Generator.Packet
                 case ActualType.UInt32:
                 case ActualType.Int64:
                 case ActualType.UInt64:
+                    // TODO: Could this be improved with Spans?
                     var converter = TypeConverter.Map[packetField.FieldType.ActualType];
                     source.AppendLine(GenerateArrayIntegralAccessor(packetField, converter, isGetter));
                     break;
                 case ActualType.NamedType:
                     // Only deal with strings here
-                    // TODO: Deal with strings
-                    // return GenerateArrayStringAccessor(packetField, isGetter);
-                    throw new NotImplementedException("Accessors for arrays of strings can't be generated yet.");
+                    source.AppendBlock(GenerateArrayStringAccessor(packetField, isGetter));
+                    break;
                 default:
                     throw new InvalidOperationException($"Unable to generate array accessor for type: {packetField.FieldType.Name}({packetField.FieldType.ActualType})");
             }
