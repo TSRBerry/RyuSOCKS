@@ -64,20 +64,22 @@ namespace RyuSocks.Auth
         }
 
         // CONTEXT-LEVEL CALLS
-        public GssBufferT Gss_Init_sec_context(string targetName, bool mutualRequiredFlag)
+        public uint Gss_Init_sec_context(uint minorStatus, int initiatorCredHandle, int contextHandle, string targetName, uint reqFlags, uint timeReq)
         {
-            if (mutualRequiredFlag)
-            {
-                mutualReqFlag = true;
-                GssBufferT token = new() { TokenFlag = GssApiTokenFlags.ContextLevelToken };
-                Status = GssApiStatus.GssContinueNeeded;
-                return token;
-            }
-
             throw new NotImplementedException();
         }
 
         public void GssAcceptSecContext()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GssGetMIC( )
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GssVerifyMIC()
         {
             throw new NotImplementedException();
         }

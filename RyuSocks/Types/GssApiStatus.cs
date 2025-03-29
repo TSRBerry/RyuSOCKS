@@ -1,6 +1,6 @@
 namespace RyuSocks.Types
 {
-    public enum GssApiStatus
+    public enum GssApiStatus : uint
     {
         // MAJOR STATUS CODES
         GssComplete,
