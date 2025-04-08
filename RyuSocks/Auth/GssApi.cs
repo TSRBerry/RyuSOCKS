@@ -64,12 +64,16 @@ namespace RyuSocks.Auth
         }
 
         // CONTEXT-LEVEL CALLS
-        public uint Gss_Init_sec_context(uint minorStatus, int initiatorCredHandle, int contextHandle, string targetName, uint reqFlags, uint timeReq)
+        unsafe public uint GssInitSecContext(uint *minorStatus, in int initiatorCredHandle, int *contextHandle, 
+            GssNameT targetName, GssOIDDescStruct mechType, uint reqFlags, uint timeReq, GssChannelBindingsStruct inputChanBindings, 
+            GssBufferDescStruct inputToken, GssOIDDescStruct *actualMechType, GssBufferT outputToken, uint *retFlags, uint *timeRec)
         {
-            throw new NotImplementedException();
+            int contextEstablished = 0;
+            GssCtxIdT contextHdl = new (GssApiStatus.GssCNoContext);
+            
         }
 
-        public void GssAcceptSecContext()
+        public void GssAcceptSecContext(uint minorStatus)
         {
             throw new NotImplementedException();
         }

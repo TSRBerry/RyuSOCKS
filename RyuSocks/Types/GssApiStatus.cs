@@ -5,6 +5,7 @@ namespace RyuSocks.Types
         // MAJOR STATUS CODES
         GssComplete,
         GssContinueNeeded,
+        GssCNoContext,
         GssFailure,
         
         // ADDITIONAL MAJOR STATUS CODES IN CONJUNCTION WITH THE ONES ABOVE
